@@ -45,6 +45,19 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # a list of builtin themes.
 #
 html_theme = 'bootstrap'
+import sphinx_bootstrap_theme
+html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
+html_theme_options = {
+    'navbar_title': "Your Project Name",
+    'navbar_site_name': "Documentation",
+    'navbar_links': [
+        ("GitHub", "https://github.com/yourusername/yourproject", True),
+    ],
+    'navbar_pagenav': False,
+    'navbar_sidebarrel': False,
+    'bootstrap_version': "3",
+    'source_link_position': "footer",
+}
 
 
 
