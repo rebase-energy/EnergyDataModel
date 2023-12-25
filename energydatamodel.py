@@ -12,6 +12,8 @@ def generate_id() -> str:
 
 @dataclass
 class Location:
+    """This is the docstring for Location."""
+
     longitude: float
     latitude: float
     altitude: Optional[float] = None
