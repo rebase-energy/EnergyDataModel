@@ -1,0 +1,7 @@
+README.md
+setup.py
+EnergyDataModel.egg-info/PKG-INFO
+EnergyDataModel.egg-info/SOURCES.txt
+EnergyDataModel.egg-info/dependency_links.txt
+EnergyDataModel.egg-info/requires.txt
+EnergyDataModel.egg-info/top_level.txt

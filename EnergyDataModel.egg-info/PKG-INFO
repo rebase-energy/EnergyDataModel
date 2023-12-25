@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: EnergyDataModel
+Version: 0.1
+Summary: Data model for energy modelling.
+Author: rebase.energy
+Requires-Dist: pandas
+Requires-Dist: shapely
+Requires-Dist: pytz
