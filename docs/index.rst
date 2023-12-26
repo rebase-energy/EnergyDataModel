@@ -9,7 +9,7 @@ Indices and tables
 * :ref:`search`
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Table of Contents
 
    installation
