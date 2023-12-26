@@ -5,7 +5,7 @@ from shapely.geometry import Point
 import pytz
 from uuid import uuid4
 
-
+from energydatamodel import Location, EnergyAsset, Site
 
 
 @dataclass
@@ -53,33 +53,3 @@ class EnergySystem:
             summary += f"- {asset.name}\n"
         summary += "=====================\n"
         return summary
-
-
-# Example Usage
-if __name__ == "__main__":
-    site = Site(longitude=15, latitude=55, name="My Site")
-    asset1 = EnergyAsset("Asset 1")
-    asset2 = EnergyAsset("Asset 2")
-
-    site.add_assets(asset1)
-    site.add_assets(asset2)
-
-    # Get and print the site summary
-    site_summary = site.get_summary()
-    print(site_summary)
-
-    energy_system = EnergySystem()
-
-    site1 = Site(longitude=15, latitude=55, name="Site 1")
-    site2 = Site(longitude=25, latitude=65, name="Site 2")
-    site1.add_assets([EnergyAsset("Asset 1"), EnergyAsset("Asset 2")])
-    site2.add_assets(EnergyAsset("Asset 3"))
-
-    energy_system.add_site(site1)
-    energy_system.add_site(site2)
-    energy_system.add_asset(EnergyAsset("Asset 4"))
-
-    # Get and print the energy system summary
-    system_summary = energy_system.get_summary()
-    print(system_summary)
-    print(site1)

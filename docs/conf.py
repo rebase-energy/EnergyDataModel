@@ -44,10 +44,9 @@ extensions = [
 # Set the autodoc default flags
 autodoc_default_options = {
     'members': True,   # Include class and instance methods
-    'undoc-members': True,   # Include members without docstrings
+    'undoc-members': False,   # Include members without docstrings
     'show-inheritance': True,  # Show inheritance links
 }
-numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

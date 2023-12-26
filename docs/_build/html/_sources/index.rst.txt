@@ -9,14 +9,10 @@ Indices and tables
 * :ref:`search`
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: Table of Contents
 
-.. automodule:: energydatamodel
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-.. include:: toc.rst
-
-
+   installation
+   quickstart
+   examples
+   energydatamodel
