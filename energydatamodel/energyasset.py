@@ -8,7 +8,7 @@ from uuid import uuid4
 from energydatamodel import Location
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EnergyAsset:
     name: Optional[str] = None
     location: Optional[Location] = None

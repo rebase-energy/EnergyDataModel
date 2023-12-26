@@ -1,7 +1,10 @@
 *~
 .DS_Store
+.DS_Store?
+Icon?
 __pycache__
 build
+docs/_build/*
 dist
 EnergyDataModel.egg-info
 .venv_energydatamodel

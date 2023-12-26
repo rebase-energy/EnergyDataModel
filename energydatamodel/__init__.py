@@ -9,3 +9,5 @@ from .location import Location
 from .energyasset import EnergyAsset
 from .site import Site
 from .pv import FixedMount, SingleAxisTrackerMount, PVArray, PVSystem
+
+__version__ = '0.0.1'  # Example version

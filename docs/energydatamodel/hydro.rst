@@ -1,7 +1,7 @@
-EnergySystem
+Hydro
 ===============
 
-.. automodule:: energydatamodel.energysystem
+.. automodule:: energydatamodel.hydro
    :members:
    :undoc-members:
    :show-inheritance:

@@ -11,3 +11,6 @@ The energydatamodel package provides...
    energydatamodel/site
    energydatamodel/energysystem
    energydatamodel/pv
+   energydatamodel/wind
+   energydatamodel/hydro
+   energydatamodel/heatpump
