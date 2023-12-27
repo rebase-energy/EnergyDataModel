@@ -1,6 +1,6 @@
-==============
+===================
 Examples
-==============
+===================
 
 This section provides various examples demonstrating the usage of the EnergyDataModel library in different scenarios.
 

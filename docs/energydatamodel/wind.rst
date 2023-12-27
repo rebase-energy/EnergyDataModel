@@ -1,5 +1,5 @@
-Wind
-===============
+Wind classes
+===================
 
 .. automodule:: energydatamodel.wind
    :members:

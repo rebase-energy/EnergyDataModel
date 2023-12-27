@@ -1,16 +1,17 @@
 EnergyDataModel
-=================
+===================
 
 The energydatamodel package provides...
 
 .. toctree::
    :maxdepth: 2
 
-   energydatamodel/location
-   energydatamodel/energyasset
-   energydatamodel/site
-   energydatamodel/energysystem
+   energydatamodel/geospatial
+   energydatamodel/base
+   energydatamodel/timeseries
    energydatamodel/pv
    energydatamodel/wind
    energydatamodel/hydro
    energydatamodel/heatpump
+   energydatamodel/powergrid
+   energydatamodel/container

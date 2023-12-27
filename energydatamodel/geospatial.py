@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from typing import Optional
-from shapely.geometry import Point
+from typing import Optional, List, Union
+from shapely.geometry import Point, LineString, Polygon
 import pytz
 
 
@@ -20,3 +20,15 @@ class Location:
     @classmethod
     def from_point(cls, point: Point):
         return cls(point.x, point.y)
+
+
+@dataclass
+class LineString(LineString):
+    """This is the docstring for LineString."""
+
+
+@dataclass
+class Polygon(Polygon):
+    """This is the docstring for Polygon."""
+
+    name: Optional[str] = None

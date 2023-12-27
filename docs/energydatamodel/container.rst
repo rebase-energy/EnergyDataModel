@@ -1,7 +1,7 @@
-Hydro classes
+Container classes
 ===================
 
-.. automodule:: energydatamodel.hydro
+.. automodule:: energydatamodel.container
    :members:
    :undoc-members:
    :show-inheritance:

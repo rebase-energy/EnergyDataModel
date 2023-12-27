@@ -1,7 +1,7 @@
-PV classes
+Geospatial classes
 ===================
 
-.. automodule:: energydatamodel.pv
+.. automodule:: energydatamodel.geospatial
    :members:
    :undoc-members:
    :show-inheritance:

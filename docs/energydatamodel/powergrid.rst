@@ -1,7 +1,7 @@
-Hydro classes
+Power grid classes
 ===================
 
-.. automodule:: energydatamodel.hydro
+.. automodule:: energydatamodel.powergrid
    :members:
    :undoc-members:
    :show-inheritance:

@@ -1,7 +1,7 @@
-Hydro classes
+Base classes
 ===================
 
-.. automodule:: energydatamodel.hydro
+.. automodule:: energydatamodel.base
    :members:
    :undoc-members:
    :show-inheritance:

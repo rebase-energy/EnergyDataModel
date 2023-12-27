@@ -1,6 +1,6 @@
-==================
+===================
 Quickstart Guide
-==================
+===================
 
 This quickstart guide will help you get started with the EnergyDataModel library, covering the basic installation process and a simple usage example.
 

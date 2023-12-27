@@ -12,3 +12,14 @@ from energydatamodel import Location
 class EnergyAsset:
     name: Optional[str] = None
     location: Optional[Location] = None
+
+
+@dataclass(kw_only=True)
+class TimeSeries(pd.DataFrame):
+    name: Optional[str] = None
+    
+
+@dataclass(kw_only=True)
+class Sensor:
+    name: Optional[str] = None
+    location: Optional[Location] = None

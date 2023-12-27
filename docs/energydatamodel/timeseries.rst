@@ -1,7 +1,7 @@
-Hydro classes
+Time series classes
 ===================
 
-.. automodule:: energydatamodel.hydro
+.. automodule:: energydatamodel.timeseries
    :members:
    :undoc-members:
    :show-inheritance:

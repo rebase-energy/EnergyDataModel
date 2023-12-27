@@ -1,6 +1,6 @@
-================
+===================
 Installation
-================
+===================
 
 This document provides detailed instructions on how to install the EnergyDataModel library.
 
