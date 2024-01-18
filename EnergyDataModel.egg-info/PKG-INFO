@@ -3,6 +3,7 @@ Name: EnergyDataModel
 Version: 0.1
 Summary: Data model for energy modelling.
 Author: rebase.energy
+License-File: LICENCE.md
 Requires-Dist: pandas
 Requires-Dist: shapely
 Requires-Dist: pytz

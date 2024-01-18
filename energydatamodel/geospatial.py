@@ -5,7 +5,7 @@ import pytz
 
 
 @dataclass
-class Location:
+class GeoLocation:
     """This is the docstring for Location."""
 
     longitude: float
@@ -21,6 +21,8 @@ class Location:
     def from_point(cls, point: Point):
         return cls(point.x, point.y)
 
+
+Location = GeoLocation
 
 @dataclass
 class LineString(LineString):

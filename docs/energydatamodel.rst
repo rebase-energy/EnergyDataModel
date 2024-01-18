@@ -1,10 +1,10 @@
-EnergyDataModel
+Data Structures
 ===================
 
 The energydatamodel package provides...
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    energydatamodel/geospatial
    energydatamodel/base

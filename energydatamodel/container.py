@@ -4,6 +4,8 @@ import pandas as pd
 from shapely.geometry import Point
 import pytz
 from uuid import uuid4
+import ipywidgets as widgets
+from IPython.display import display, HTML
 
 from energydatamodel import Location, EnergyAsset
 
@@ -52,6 +54,7 @@ class Site:
 class EnergySystem:
     sites: List[Site] = field(default_factory=list)
     assets: List[EnergyAsset] = field(default_factory=list)
+    name: Optional[str] = None
 
     def add_sites(self, sites: Union[Site, List[Site]]):
         if isinstance(sites, list):
@@ -93,6 +96,35 @@ class EnergySystem:
             summary += f"- {asset.name}\n"
         summary += "=====================\n"
         return summary
+
+    def calculate_summary(self):
+        summary = {}
+        for asset in self.assets:
+            asset_type = type(asset).__name__
+            summary[asset_type] = summary.get(asset_type, 0) + 1
+        return summary
+
+    def _repr_html_(self):
+        summary = self.calculate_summary()
+
+        # Title with bold styling
+        title = widgets.HTML(value=f"<h3><b>EnergySystem: {self.name}</b></h3>")
+
+        # Dropdowns for each asset type
+        dropdowns = []
+        for asset_type, count in summary.items():
+            # Details to display in the dropdown. You can customize this.
+            details = widgets.Label(f'{asset_type} - {count} units, more details here...')
+            dropdown = widgets.Accordion(children=[details])
+            dropdown.set_title(0, asset_type)
+            dropdowns.append(dropdown)
+
+        # Displaying the title and dropdowns
+        display(widgets.VBox([title] + dropdowns))
+        
+        return ""
+
+
 
 
 @dataclass
