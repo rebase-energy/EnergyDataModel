@@ -26,16 +26,20 @@ class SingleAxisTrackerMount:
     module_height: Optional[float] = None
 
 
-@dataclass
+@dataclass(repr=False)
 class PVArray(EnergyAsset):
-    rated_power: Optional[float] = None 
+    capacity: Optional[float] = None 
+    surface_azimuth: Optional[float] = None 
+    surface_tilt: Optional[float] = None 
+    surface_area: Optional[float] = None        # Area in square meters
     efficiency: Optional[float] = None  # Efficiency in percentage
-    area: Optional[float] = None        # Area in square meters
     module: Optional[str] = None
     module_type: str = "glass_polymer"
     module_parameters: Union[dict, pd.Series] = None
     temperature_model_parameters: Union[dict, pd.Series] = None
 
+    def get_timeseries(self):
+        return self.timeseries_df[self.column_df]
 
 @dataclass
 class PVSystem(EnergyAsset):
@@ -50,11 +54,19 @@ class PVSystem(EnergyAsset):
 
     """
 
-    arrays: List[PVArray] = None #: testing here
-    surface_tilt: float = 0.0
+    pv_arrays: List[PVArray] = None #: testing here
+    capacity: float = 0.0
     surface_azimuth: float = 180.0
+    surface_tilt: float = 0.0
     albedo: Optional[float] = None
     surface_type: Optional[str] = None
+
+    def __post_init__(self):
+        # If no PVArray list is provided, but capacity, azimuth, and tilt are,
+        # create a PVArray and add it to the list.
+        if not self.pv_arrays and all([self.capacity, self.surface_azimuth, self.surface_tilt]):
+            self.pv_arrays.append(PVArray(self.capacity, self.surface_azimuth, self.surface_tilt))
+
 
     """
 

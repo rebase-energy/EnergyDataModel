@@ -34,11 +34,16 @@ import sphinx_rtd_theme  # If you're using the ReadTheDocs theme
 
 # Add the path to your project to the sys.path list (if not already present)
 sys.path.insert(0, os.path.abspath('../'))
+sys.path.insert(0, os.path.abspath('../energydatamodel'))
+
 
 # Add 'sphinx.ext.autodoc' to the list of extensions
 extensions = [
     'sphinx.ext.autodoc',
-    # ... other extensions ...
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
+    'sphinx_autodoc_typehints',
+    'sphinx.ext.viewcode',
 ]
 
 # Set the autodoc default flags
@@ -48,6 +53,22 @@ autodoc_default_options = {
     'show-inheritance': True,  # Show inheritance links
 }
 autodoc_member_order = 'bysource'
+
+intersphinx_mapping = {
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'matplotlib': ('https://matplotlib.org/stable/', None),
+}
+
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = True
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = True
+napoleon_use_param = True
+napoleon_use_rtype = True
+napoleon_use_ivar = True
+
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

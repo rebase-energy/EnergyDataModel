@@ -1,13 +1,15 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='EnergyDataModel',
-    version='0.1',
+    name='energydatamodel',
+    version='0.0.2',
     packages=find_packages(),
     install_requires=[
+        "uuid",
         "pandas",
         "shapely",
-        "pytz"
+        "pytz",
+        "ipywidgets"
     ],
     author='rebase.energy',
     description='Data model for energy modelling.',

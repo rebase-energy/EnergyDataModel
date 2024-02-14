@@ -3,9 +3,10 @@ from typing import Optional, List, Union
 from shapely.geometry import Point, LineString, Polygon
 import pytz
 
+from energydatamodel import BaseClass
 
-@dataclass
-class GeoLocation:
+@dataclass(repr=False)
+class GeoLocation(BaseClass):
     """This is the docstring for Location."""
 
     longitude: float
@@ -25,12 +26,12 @@ class GeoLocation:
 Location = GeoLocation
 
 @dataclass
-class LineString(LineString):
+class LineString(BaseClass, LineString):
     """This is the docstring for LineString."""
 
 
 @dataclass
-class Polygon(Polygon):
+class Polygon(BaseClass, Polygon):
     """This is the docstring for Polygon."""
 
     name: Optional[str] = None

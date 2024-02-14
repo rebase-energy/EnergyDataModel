@@ -1,11 +1,6 @@
 LICENCE.md
 README.md
 setup.py
-EnergyDataModel.egg-info/PKG-INFO
-EnergyDataModel.egg-info/SOURCES.txt
-EnergyDataModel.egg-info/dependency_links.txt
-EnergyDataModel.egg-info/requires.txt
-EnergyDataModel.egg-info/top_level.txt
 energydatamodel/__init__.py
 energydatamodel/base.py
 energydatamodel/container.py
@@ -17,3 +12,8 @@ energydatamodel/pv.py
 energydatamodel/timeseries.py
 energydatamodel/weathersensor.py
 energydatamodel/wind.py
+energydatamodel.egg-info/PKG-INFO
+energydatamodel.egg-info/SOURCES.txt
+energydatamodel.egg-info/dependency_links.txt
+energydatamodel.egg-info/requires.txt
+energydatamodel.egg-info/top_level.txt

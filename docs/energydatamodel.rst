@@ -6,8 +6,9 @@ The energydatamodel package provides...
 .. toctree::
    :maxdepth: 3
 
-   energydatamodel/geospatial
    energydatamodel/base
+   energydatamodel/geospatial
+   energydatamodel/abstract
    energydatamodel/timeseries
    energydatamodel/pv
    energydatamodel/wind

@@ -1,17 +1,21 @@
 from dataclasses import dataclass, field
 from typing import List, Optional, Union
+import typing as t
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 from shapely.geometry import Point
 import pytz
 from uuid import uuid4
 import ipywidgets as widgets
 from IPython.display import display, HTML
 
+from energydatamodel import BaseClass
 from energydatamodel import Location, EnergyAsset
 
 
 @dataclass
-class Site:
+class Site(BaseClass):
     assets: List[EnergyAsset] = field(default_factory=list)
     longitude: Optional[float] = None
     latitude: Optional[float] = None
@@ -51,7 +55,7 @@ class Site:
     
 
 @dataclass
-class EnergySystem:
+class EnergySystem(BaseClass):
     sites: List[Site] = field(default_factory=list)
     assets: List[EnergyAsset] = field(default_factory=list)
     name: Optional[str] = None
@@ -74,67 +78,49 @@ class EnergySystem:
     def remove_asset(self, asset: EnergyAsset):
         self.assets.remove(asset)
 
-    def get_summary(self):
-        def recursive_summary(site, level=0):
-            summary = "  " * level + f"- {site.name}\n"
-            for asset in site.assets:
-                summary += "  " * (level + 1) + f"- {asset.name}\n"
-            return summary
 
-        summary = "=====================\n"
-        summary += "Energy System Summary\n"
-        summary += "====================="
-        summary += "\nSites:\n"
-        for site in self.sites:
-            summary += f"- {site.name}\n"
-            summary += "  " + f"{site.location}\n"
-
-            for asset in site.assets:
-                summary += "  " + f"- {asset.name}\n"
-        summary += "\nNon-site assets:\n"
-        for asset in self.assets:
-            summary += f"- {asset.name}\n"
-        summary += "=====================\n"
-        return summary
-
-    def calculate_summary(self):
-        summary = {}
-        for asset in self.assets:
-            asset_type = type(asset).__name__
-            summary[asset_type] = summary.get(asset_type, 0) + 1
-        return summary
-
-    def _repr_html_(self):
-        summary = self.calculate_summary()
-
-        # Title with bold styling
-        title = widgets.HTML(value=f"<h3><b>EnergySystem: {self.name}</b></h3>")
-
-        # Dropdowns for each asset type
-        dropdowns = []
-        for asset_type, count in summary.items():
-            # Details to display in the dropdown. You can customize this.
-            details = widgets.Label(f'{asset_type} - {count} units, more details here...')
-            dropdown = widgets.Accordion(children=[details])
-            dropdown.set_title(0, asset_type)
-            dropdowns.append(dropdown)
-
-        # Displaying the title and dropdowns
-        display(widgets.VBox([title] + dropdowns))
-        
-        return ""
-
-
-
-
-@dataclass
+@dataclass(repr=False)
 class Portfolio(EnergySystem):
     """
     A Portfolio is like an EnergySystem but is used more for the purpose of trading energy rather than maintaining an energy balance. 
     """
 
+    def plot_timeseries(self, start_date: t.Optional[str] = None, end_date: t.Optional[str] = None, subplots: bool = False) -> Union[t.Tuple[plt.Figure, plt.Axes], t.Tuple[plt.Figure, np.ndarray]]:
+        # Convert start_date and end_date to datetime if they are not None
+        if start_date is not None:
+            start_date = pd.to_datetime(start_date)
+        if end_date is not None:
+            end_date = pd.to_datetime(end_date)
 
-@dataclass
+        # Create a single plot or subplots based on the subplots parameter
+        if subplots:
+            fig, axes = plt.subplots(len(self.assets), 1, sharex=True, figsize=(10, len(self.assets) * 3))
+            for i, asset in enumerate(self.assets):
+                column = asset.timeseries.column_name
+                df = asset.timeseries.df
+                # Slice the dataframe for the date range
+                df_filtered = df.loc[start_date:end_date, column]
+                if isinstance(axes, np.ndarray):
+                    ax = axes[i]
+                else:
+                    ax = axes
+                df_filtered.plot(ax=ax)
+            plt.tight_layout()
+            return fig, axes
+        else:
+            fig, ax = plt.subplots()
+            for asset in self.assets:
+                column = asset.timeseries.column_name
+                df = asset.timeseries.df
+                # Slice the dataframe for the date range
+                df_filtered = df.loc[start_date:end_date, column]
+                df_filtered.plot(ax=ax)
+            return fig, ax
+
+
+
+
+@dataclass(repr=False)
 class VirtualPowerPlant(EnergySystem):
     """
     A VirtualPowerPlant is like an EnergySystem but is used more for the purpose of trading flexibility rather than maintaining an energy balance. 
