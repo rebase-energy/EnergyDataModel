@@ -5,7 +5,7 @@
 [![Join us on Slack](https://img.shields.io/badge/Join%20us%20on%20Slack-%2362BEAF?style=flat&logo=slack&logoColor=white)](https://join.slack.com/t/rebase-community/shared_invite/zt-1dtd0tdo6-sXuCEy~zPnvJw4uUe~tKeA) 
 [![GitHub Repo stars](https://img.shields.io/github/stars/rebase-energy/EnergyDataModel?style=social)](https://github.com/rebase-energy/EnergyDataModel)
 
-## TL;DR;
+## TL;DR
 The `energydatamodel` let's you: 
 
 * Create `python` data classes representing energy assets and relevant concepts;
@@ -13,6 +13,17 @@ The `energydatamodel` let's you:
 * Visualise energy systems using built-in plotting functions;
 * Communicate effectively with a common energy system vocabulary; and
 * Convert data format to other energy-relevant data models and ontologies.
+
+## Modules and Data classes
+`energydatamodel` leverages [Python's Data Classes](https://docs.python.org/3/library/dataclasses.html) to represent energy assets as Python objects. The table below gives a summary of the available modules and data classes. 
+
+| Module   | Data Classes     |
+| :---           | :----       |
+| ☀️ `pv`        | [PVSystem](https://docs.energydatamodel.org/en/latest/energydatamodel/pv.html#energydatamodel.pv.PVSystem) | 
+| 🌬️ `wind` | [WindTurbine](https://docs.energydatamodel.org/en/latest/energydatamodel/wind.html#energydatamodel.wind.WindTurbine) |
+| ♻️ `heatpump` | [code](https://github.com/RWTH-EBC/pyCity) |
+| 🏠 `house` | [website](https://pypsa.org/) |
+| 🔋 `battery` | [website](https://www.pandapower.org/) | 
 
 ## Purpose and philosphy
 The ultimate goal of `energydatamodel` is to enable the energy data and modelling community with a `python`-based tool to improve code quality, modularity and collaboration. We believe that bringing rigorous software engineering practices to the energy community has the potential to radically improve productivity and usefulness of software tools. 
@@ -29,7 +40,7 @@ If you are interested in joining our mission to improve the lifes and productive
 
 ## Getting Started
 
-### Install `energydatamodel`
+### Installation
 
 Install the **stable** release: 
 ```bash
@@ -49,7 +60,7 @@ cd EnergyDataModel
 pip install -e . 
 ```
 
-### Quickstart
+### Basic usage
 Create an energy system made up of two sites with co-located solar, wind and batteries and save as a .json. 
 
 ```python
