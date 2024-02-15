@@ -9,7 +9,7 @@ The `energydatamodel` let's you:
 
 * Create `python` objects representing energy assets and relevant concepts
 * Structure your energy assets in graphs and hierarchies representing energy systems
-* Structure energy asset data in `python` dataclasses that can be seralised to files (e.g. `.csv`, `.json`, `.geojson`)
+* Structure energy asset data in `python` dataclasses that can be seralised to files (e.g. .csv, .json, .geojson)
 * Visualise energy systems using built-in plotting functions
 * Convert data to other energy-relevant data models and ontologies
 
@@ -47,3 +47,29 @@ cd EnergyDataModel
 pip install -e . 
 ```
 
+### Quickstart
+Create an energy system made up of two sites with co-located solar, wind and batteries and save as a .json. 
+
+```python
+import energydatamodel as edm
+
+pvsystem_1 = edm.PVSystem(capacity=2400, surface_azimuth=180, surface_tilt=25)
+windturbine_1 = edm.WindTurbine(capacity=3200, hub_height=120, rotor_diameter=100)
+battery_1 = edm.Battery(storage_capacity=1000, min_soc=150, max_charge=500. max_discharge=500)
+
+site_1 = edm.Site(assets=[pvsystem_1, windturbine_1, battery_1],
+                  latitude=46, 
+                  longitude=64)
+
+pvsystem_2 = edm.PVSystem(capacity=2400, surface_azimuth=180, surface_tilt=25)
+windturbine_2 = edm.WindTurbine(capacity=3200, hub_height=120, rotor_diameter=100)
+battery_2 = edm.Battery(storage_capacity=1000, min_soc=150, max_charge=500. max_discharge=500)
+
+site_2 = edm.Site(assets=[pvsystem_2, windturbine_2, battery_2],
+                  latitude=51, 
+                  longitude=58)
+
+energysystem = edm.EnergySystem(sites=[site_1, site_2])
+
+energysystem.save_json('my_energysystem.json')
+```
