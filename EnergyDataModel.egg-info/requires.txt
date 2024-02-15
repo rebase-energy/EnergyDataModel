@@ -1,5 +1,0 @@
-uuid
-pandas
-shapely
-pytz
-ipywidgets
