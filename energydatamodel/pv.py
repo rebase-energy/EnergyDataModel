@@ -41,7 +41,7 @@ class PVArray(EnergyAsset):
     def get_timeseries(self):
         return self.timeseries_df[self.column_df]
 
-@dataclass
+@dataclass(repr=False)
 class PVSystem(EnergyAsset):
     """
     The PVSystem class defines a standard set of PV system attributes
@@ -55,9 +55,9 @@ class PVSystem(EnergyAsset):
     """
 
     pv_arrays: List[PVArray] = None #: testing here
-    capacity: float = 0.0
-    surface_azimuth: float = 180.0
-    surface_tilt: float = 0.0
+    capacity: float = None
+    surface_azimuth: float = None
+    surface_tilt: float = None
     albedo: Optional[float] = None
     surface_type: Optional[str] = None
 

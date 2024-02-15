@@ -54,7 +54,7 @@ class Site(BaseClass):
         return summary
     
 
-@dataclass
+@dataclass(repr=False)
 class EnergySystem(BaseClass):
     sites: List[Site] = field(default_factory=list)
     assets: List[EnergyAsset] = field(default_factory=list)
@@ -77,6 +77,13 @@ class EnergySystem(BaseClass):
 
     def remove_asset(self, asset: EnergyAsset):
         self.assets.remove(asset)
+
+
+@dataclass(repr=False)
+class EnergyCommunity(EnergySystem):
+    """
+    A Portfolio is like an EnergySystem but is used more for the purpose of trading energy rather than maintaining an energy balance. 
+    """
 
 
 @dataclass(repr=False)
@@ -125,3 +132,4 @@ class VirtualPowerPlant(EnergySystem):
     """
     A VirtualPowerPlant is like an EnergySystem but is used more for the purpose of trading flexibility rather than maintaining an energy balance. 
     """
+    pass

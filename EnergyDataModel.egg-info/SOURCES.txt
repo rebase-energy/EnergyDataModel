@@ -2,6 +2,7 @@ LICENCE.md
 README.md
 setup.py
 energydatamodel/__init__.py
+energydatamodel/abstract.py
 energydatamodel/base.py
 energydatamodel/container.py
 energydatamodel/geospatial.py

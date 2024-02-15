@@ -26,12 +26,17 @@ class GeoLocation(BaseClass):
 Location = GeoLocation
 
 @dataclass
-class LineString(BaseClass, LineString):
+class GeoLine(BaseClass, LineString):
     """This is the docstring for LineString."""
 
+@dataclass
+class GeoPolygon(BaseClass, Polygon):
+    """This is the docstring for Polygon."""
+
+    name: Optional[str] = None
 
 @dataclass
-class Polygon(BaseClass, Polygon):
-    """This is the docstring for Polygon."""
+class GeoGraph(BaseClass):
+    """This is the docstring for GeoGraph."""
 
     name: Optional[str] = None

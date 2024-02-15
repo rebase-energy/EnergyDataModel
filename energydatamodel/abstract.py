@@ -16,6 +16,7 @@ class TimeSeries(BaseClass):
     name: t.Optional[str] = None
     df: t.Optional[pd.DataFrame] = None
     column_name: t.Optional[t.Union[str, int, t.Tuple[str], t.Tuple[int]]] = None
+    filename: t.Optional[str] = None
 
     def get_data(self) -> pd.Series: 
         """
