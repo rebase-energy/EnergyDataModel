@@ -1,5 +1,5 @@
 <div align="center">
-    <img width="300" src="https://github.com/rebase-energy/EnergyDataModel/blob/main/assets/energydatamodel-logo.png?raw=true" alt="MindsDB"/>
+    <img width="300" src="https://github.com/rebase-energy/EnergyDataModel/blob/main/assets/energydatamodel-logo.png?raw=true" alt="EnergyDataModel"/>
 <h2 style="margin-top: 0px;">
     🔋 Represent energy systems as Python data classes for improved maintainability and readability
 </h2>
