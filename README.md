@@ -1,9 +1,8 @@
 <h1 align="center">
 	<img width="300" src="https://github.com/rebase-energy/EnergyDataModel/blob/main/assets/energydatamodel-logo.png?raw=true" alt="MindsDB">
+    Subtitle here
 	<br>
 </h1>
-
-# EnergyDataModel
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/energydatamodel.svg)](https://badge.fury.io/py/energydatamodel) 
