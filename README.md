@@ -1,4 +1,4 @@
-<div align="center" >
+<div align="center" style="line-height: 0;">
     <img width="300" src="https://github.com/rebase-energy/EnergyDataModel/blob/main/assets/energydatamodel-logo.png?raw=true" alt="MindsDB"/>
 <h2 style="margin-top: 0px;">
     🔋 Represent energy systems as Python data classes for improved maintainability and readability
