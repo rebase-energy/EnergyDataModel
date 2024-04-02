@@ -1,10 +1,10 @@
-<h1 align="center">
-	<img width="300" src="https://github.com/rebase-energy/EnergyDataModel/blob/main/assets/energydatamodel-logo.png?raw=true" alt="MindsDB">
-    Subtitle here
-</h1>
-<h1 align="center">
-    Subtitle here
-</h1>
+<div style="display: flex; flex-direction: column; align-items: center;">
+<img width="300" src="https://github.com/rebase-energy/EnergyDataModel/blob/main/assets/energydatamodel-logo.png?raw=true" alt="MindsDB"/>
+<h2 style="width: 100%; text-align: center">
+    🔋 Represent energy systems as Python data classes for improved maintainability and readability
+</h2>
+</div>
+
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![PyPI version](https://badge.fury.io/py/energydatamodel.svg)](https://badge.fury.io/py/energydatamodel) 
