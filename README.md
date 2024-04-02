@@ -25,7 +25,7 @@ The `energydatamodel` let's you:
 
 | Module   | Data Classes     |
 | :---           | :----       |
-| ☀️ `pv`        | `[PVSystem](https://docs.energydatamodel.org/en/latest/energydatamodel/pv.html#energydatamodel.pv.PVSystem)` | 
+| ☀️ `pv`        | [`PVSystem`](https://docs.energydatamodel.org/en/latest/energydatamodel/pv.html#energydatamodel.pv.PVSystem) | 
 | 🌬️ `wind` | [WindTurbine](https://docs.energydatamodel.org/en/latest/energydatamodel/wind.html#energydatamodel.wind.WindTurbine) |
 | ♻️ `heatpump` | [code](https://github.com/RWTH-EBC/pyCity) |
 | 🏠 `house` | [website](https://pypsa.org/) |
