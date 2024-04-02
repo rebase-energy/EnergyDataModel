@@ -14,6 +14,10 @@ from energydatamodel import BaseClass
 from energydatamodel import Location, EnergyAsset
 
 
+#TODO Decide if EnergySystem should be a container class or an abstract class. 
+# In the former case, it would be a composition of Site and EnergyAsset objects.
+# In the latter case, it Site would maybe inherit from EnergySystem? 
+
 @dataclass
 class Site(BaseClass):
     assets: List[EnergyAsset] = field(default_factory=list)

@@ -4,7 +4,7 @@ import pandas as pd
 import ipywidgets as widgets
 
 
-from energydatamodel import EnergyAsset
+from energydatamodel import EnergyAsset, GeoPolygon
 
 
 @dataclass
@@ -23,16 +23,18 @@ class WindTurbine(EnergyAsset):
         # ... add more details as needed ...
         return widgets.VBox([name_label, capacity_label])
 
-@dataclass
+@dataclass(repr=False)
 class WindFarm(EnergyAsset): 
-    wind_turbines: list[WindTurbine]
+    wind_turbines: list[WindTurbine] = None
+    capacity: Union[float, pd.DataFrame] = None
     farm_efficiency: Optional[pd.DataFrame] = None
 
     def __post_init__(self):
         super().__post_init__()
 
 @dataclass
-class WindPowerArea: 
+class WindPowerArea:
+    geopolygon: GeoPolygon 
     capacity: Union[float, pd.DataFrame]
     area: float
     wind_turbines: Optional[Union[List[WindTurbine], List[WindFarm]]] = None

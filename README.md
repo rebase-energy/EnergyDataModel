@@ -1,3 +1,8 @@
+<h1 align="center">
+	<img width="300" src="https://github.com/rebase-energy/EnergyDataModel/blob/main/assets/energydatamodel-logo.png?raw=true" alt="MindsDB">
+	<br>
+</h1>
+
 # EnergyDataModel
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
@@ -10,9 +15,10 @@ The `energydatamodel` let's you:
 
 * Create `python` data classes representing energy assets and relevant concepts;
 * Structure your energy assets in graphs and hierarchies representing energy systems that can be seralised to files (e.g. .csv, .json, .geojson);
-* Visualise energy systems using built-in plotting functions;
-* Communicate effectively with a common energy system vocabulary; and
 * Convert data format to other energy-relevant data models and ontologies.
+* Visualise energy systems maps, graphs and flows using built-in plotting functions;
+* Write `python` code with more human-readable expressions using built-in convenience methods;
+* Communicate effectively with a common energy system vocabulary; and
 
 ## Modules and Data classes
 `energydatamodel` leverages [Python's Data Classes](https://docs.python.org/3/library/dataclasses.html) to represent energy assets as Python objects. The table below gives a summary of the available modules and data classes. 
@@ -38,9 +44,7 @@ Project philosophy:
 
 If you are interested in joining our mission to improve the lifes and productiveness of energy modellers world-wide - then [join our slack](https://join.slack.com/t/rebase-community/shared_invite/zt-1dtd0tdo6-sXuCEy~zPnvJw4uUe~tKeA)!
 
-## Getting Started
-
-### Installation
+## Installation
 
 Install the **stable** release: 
 ```bash
@@ -61,6 +65,7 @@ pip install -e .
 ```
 
 ### Basic usage
+
 Create an energy system made up of two sites with co-located solar, wind and batteries and save as a .json. 
 
 ```python
@@ -89,6 +94,9 @@ energysystem.save_json('my_energysystem.json')
 
 For more examples on usage and applications for `energydatamodel` see the documentation page [here](https://docs.energydatamodel.org/en/latest/).
 
+### Feature #2: use `python` data classes to organise 
+
+
 ## Converters
 `energydatamodel` provides converters to and from other popular data models and ontologies. Below is a summary of the available converters: 
 
@@ -99,6 +107,15 @@ For more examples on usage and applications for `energydatamodel` see the docume
 | `PyCity` | [code](https://github.com/RWTH-EBC/pyCity) | ✅ | ✅ |
 | `PyPSA` | [website](https://pypsa.org/) | ✅ | ✅ |
 | `Pandapower` | [website](https://www.pandapower.org/) |  | ✅ |
+
+# Roadmap
+
+* Integration with [erdantic](https://github.com/drivendataorg/erdantic) for creating plots of the data model.
+* Making some kind of graphviz of the energy system RWTH Achen? [uesgraphs](https://github.com/RWTH-EBC/uesgraphs) Seems like uesgraphs needs coordinates? 
+* Use [networkx](https://networkx.org/documentation/stable/reference/drawing.html) to make graphs of the energy system. 
+* Actually, I think pyvis-network is better for this: https://pyvis.readthedocs.io/en/latest/
+* Create maps in jupyter notebooks using [Folium](https://github.com/python-visualization/folium). 
+
 
 ## Relation to rebase.energy
 [rebase.energy](https://www.rebase.energy/) is the company behind `energydatamodel`. The idea behind the project stems from many hard-won lessons on how to improve working with energy-relevant data and is used extensively within rebase.energy today. `energydatamodel` is developed outside of rebase.energy's commercial offering. It is provided under the permissive MIT-licence (see licence [here](https://github.com/rebase-energy/EnergyDataModel/blob/main/LICENCE.md)) and will always be free-to-use for any purpose (including commercial). 

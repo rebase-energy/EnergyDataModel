@@ -4,8 +4,9 @@ import pandas as pd
 from shapely.geometry import Point
 import pytz
 from uuid import uuid4
+import json
 
-from energydatamodel import EnergyAsset
+from energydatamodel import EnergyAsset, GeoPolygon, GeoMultiPolygon
 
 
 @dataclass
@@ -179,3 +180,15 @@ class PVSystem(EnergyAsset):
     pvlib.location.Location
 
     """
+
+@dataclass(repr=False)
+class SolarPowerArea(EnergyAsset): 
+    capacity: Union[float, pd.DataFrame] = None
+    geopolygon: Union[GeoPolygon, GeoMultiPolygon] = None
+
+    def to_geojson(self):
+        return json.loads(json.dumps(self.geopolygon.multipolygon.__geo_interface__))
+
+    @property
+    def geojson(self):
+        return self.to_geojson()

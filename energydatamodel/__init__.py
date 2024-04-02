@@ -6,10 +6,10 @@ import pytz
 from uuid import uuid4
 
 from .base import BaseClass
-from .geospatial import GeoLocation, Location, LineString, Polygon
+from .geospatial import GeoLocation, Location, LineString, GeoPolygon, GeoMultiPolygon
 from .abstract import EnergyAsset, TimeSeries, Sensor
 from .house import House
-from .pv import FixedMount, SingleAxisTrackerMount, PVArray, PVSystem
+from .solar import FixedMount, SingleAxisTrackerMount, PVArray, PVSystem, SolarPowerArea
 from .wind import WindTurbine, WindFarm, WindPowerArea
 from .battery import Battery
 from .container import Site, EnergySystem, EnergyCommunity, Portfolio

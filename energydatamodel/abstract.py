@@ -53,8 +53,8 @@ class EnergyAsset(BaseClass):
 
     name: t.Optional[str] = None
     location: t.Optional[Location] = None
-    longitude: t.Optional[float] = None
     latitude: t.Optional[float] = None
+    longitude: t.Optional[float] = None
     altitude: t.Optional[float] = None
     tz: t.Optional[pytz.timezone] = None
     timeseries: t.Optional[TimeSeries] = None
@@ -67,11 +67,7 @@ class EnergyAsset(BaseClass):
                 self.location.altitude = self.altitude
             if self.tz is not None: 
                 self.location.tz = self.tz
-            del self.longitude
-            del self.latitude
-            del self.altitude
-            del self.tz
-    
+
     def plot_timeseries(self, 
                         start_date: t.Optional[t.Union[str, pd.DatetimeIndex]] = None, 
                         end_date: t.Optional[t.Union[str, pd.DatetimeIndex]] = None) -> plt.Axes: 
@@ -90,7 +86,6 @@ class EnergyAsset(BaseClass):
         ax = df.plot()
 
         return ax
-
 
 @dataclass(kw_only=True)
 class Sensor(BaseClass):
