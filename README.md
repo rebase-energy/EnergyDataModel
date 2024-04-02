@@ -119,3 +119,6 @@ For more examples on usage and applications for `energydatamodel` see the docume
 
 ## Relation to rebase.energy
 [rebase.energy](https://www.rebase.energy/) is the company behind `energydatamodel`. The idea behind the project stems from many hard-won lessons on how to improve working with energy-relevant data and is used extensively within rebase.energy today. `energydatamodel` is developed outside of rebase.energy's commercial offering. It is provided under the permissive MIT-licence (see licence [here](https://github.com/rebase-energy/EnergyDataModel/blob/main/LICENCE.md)) and will always be free-to-use for any purpose (including commercial). 
+
+
+<script src="https://zoomhub.net/Zxa5x.js?width=535px&height=auto&border=none"></script>
