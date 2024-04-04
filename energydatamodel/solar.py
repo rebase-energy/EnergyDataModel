@@ -55,7 +55,7 @@ class PVSystem(EnergyAsset):
 
     """
 
-    pv_arrays: List[PVArray] = None #: testing here
+    pv_arrays: List[PVArray] = field(default_factory=list)
     capacity: float = None
     surface_azimuth: float = None
     surface_tilt: float = None

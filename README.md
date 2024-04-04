@@ -25,8 +25,8 @@ The `energydatamodel` let's you:
 
 | Module   | Data Classes     |
 | :---           | :----       |
-| ☀️ `pv`        | [`PVSystem`](https://docs.energydatamodel.org/en/latest/energydatamodel/pv.html#energydatamodel.pv.PVSystem) | 
-| 🌬️ `wind` | [WindTurbine](https://docs.energydatamodel.org/en/latest/energydatamodel/wind.html#energydatamodel.wind.WindTurbine) |
+| ☀️ `solar`        | [`PVSystem`](https://docs.energydatamodel.org/en/latest/energydatamodel/pv.html#energydatamodel.pv.PVSystem) [`FixedMount`](https://docs.energydatamodel.org/en/latest/energydatamodel/pv.html#energydatamodel.pv.FixedMount) | 
+| 🌬️ `wind` | [`WindTurbine`](https://docs.energydatamodel.org/en/latest/energydatamodel/wind.html#energydatamodel.wind.WindTurbine), [`WindFarm`](https://docs.energydatamodel.org/en/latest/energydatamodel/wind.html#energydatamodel.wind.WindFarm), [`WindPowerArea`](https://docs.energydatamodel.org/en/latest/energydatamodel/wind.html#energydatamodel.wind.WindPowerArea) |
 | ♻️ `heatpump` | [code](https://github.com/RWTH-EBC/pyCity) |
 | 🏠 `house` | [website](https://pypsa.org/) |
 | 🔋 `battery` | [website](https://www.pandapower.org/) | 
@@ -58,8 +58,7 @@ pip install git+https://github.com/rebase-energy/EnergyDataModel
 
 Install in editable mode for **development**: 
 ```bash
-git clone
-pip install https://github.com/rebase-energy/EnergyDataModel.git
+git clone https://github.com/rebase-energy/EnergyDataModel.git
 cd EnergyDataModel
 pip install -e . 
 ```
@@ -73,7 +72,7 @@ import energydatamodel as edm
 
 pvsystem_1 = edm.PVSystem(capacity=2400, surface_azimuth=180, surface_tilt=25)
 windturbine_1 = edm.WindTurbine(capacity=3200, hub_height=120, rotor_diameter=100)
-battery_1 = edm.Battery(storage_capacity=1000, min_soc=150, max_charge=500. max_discharge=500)
+battery_1 = edm.Battery(storage_capacity=1000, min_soc=150, max_charge=500, max_discharge=500)
 
 site_1 = edm.Site(assets=[pvsystem_1, windturbine_1, battery_1],
                   latitude=46, 
@@ -81,7 +80,7 @@ site_1 = edm.Site(assets=[pvsystem_1, windturbine_1, battery_1],
 
 pvsystem_2 = edm.PVSystem(capacity=2400, surface_azimuth=180, surface_tilt=25)
 windturbine_2 = edm.WindTurbine(capacity=3200, hub_height=120, rotor_diameter=100)
-battery_2 = edm.Battery(storage_capacity=1000, min_soc=150, max_charge=500. max_discharge=500)
+battery_2 = edm.Battery(storage_capacity=1000, min_soc=150, max_charge=500, max_discharge=500)
 
 site_2 = edm.Site(assets=[pvsystem_2, windturbine_2, battery_2],
                   latitude=51, 
@@ -107,15 +106,6 @@ For more examples on usage and applications for `energydatamodel` see the docume
 | `PyCity` | [code](https://github.com/RWTH-EBC/pyCity) | ✅ | ✅ |
 | `PyPSA` | [website](https://pypsa.org/) | ✅ | ✅ |
 | `Pandapower` | [website](https://www.pandapower.org/) |  | ✅ |
-
-# Roadmap
-
-* Integration with [erdantic](https://github.com/drivendataorg/erdantic) for creating plots of the data model.
-* Making some kind of graphviz of the energy system RWTH Achen? [uesgraphs](https://github.com/RWTH-EBC/uesgraphs) Seems like uesgraphs needs coordinates? 
-* Use [networkx](https://networkx.org/documentation/stable/reference/drawing.html) to make graphs of the energy system. 
-* Actually, I think pyvis-network is better for this: https://pyvis.readthedocs.io/en/latest/
-* Create maps in jupyter notebooks using [Folium](https://github.com/python-visualization/folium). 
-
 
 ## Relation to rebase.energy
 [rebase.energy](https://www.rebase.energy/) is the company behind `energydatamodel`. The idea behind the project stems from many hard-won lessons on how to improve working with energy-relevant data and is used extensively within rebase.energy today. `energydatamodel` is developed outside of rebase.energy's commercial offering. It is provided under the permissive MIT-licence (see licence [here](https://github.com/rebase-energy/EnergyDataModel/blob/main/LICENCE.md)) and will always be free-to-use for any purpose (including commercial). 
