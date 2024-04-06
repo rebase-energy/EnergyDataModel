@@ -4,3 +4,4 @@ sphinx_autodoc_typehints
 matplotlib
 pandas
 shapely
+geopandas
