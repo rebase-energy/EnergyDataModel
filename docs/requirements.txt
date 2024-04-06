@@ -1,4 +1,4 @@
-Sphinx==4.2.0
+Sphinx==7.2.6
 sphinx_rtd_theme
 
 -e .
