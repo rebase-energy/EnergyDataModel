@@ -8,7 +8,6 @@ The energydatamodel package provides...
 
    energydatamodel/base
    energydatamodel/geospatial
-   energydatamodel/abstract
    energydatamodel/timeseries
    energydatamodel/pv
    energydatamodel/wind

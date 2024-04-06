@@ -1,7 +1,7 @@
-PV classes
-===================
+☀️ Solar classes
+=======================
 
-.. automodule:: energydatamodel.pv
+.. automodule:: energydatamodel.solar
    :members:
    :undoc-members:
    :show-inheritance:

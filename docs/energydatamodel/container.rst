@@ -1,5 +1,5 @@
-Container classes
-===================
+🗃️ Container classes
+=======================
 
 .. automodule:: energydatamodel.container
    :members:

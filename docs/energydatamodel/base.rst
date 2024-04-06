@@ -1,5 +1,5 @@
-Base classes
-===================
+🪑 Base classes
+=======================
 
 .. automodule:: energydatamodel.base
    :members:

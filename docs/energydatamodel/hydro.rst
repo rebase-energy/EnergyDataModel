@@ -1,5 +1,5 @@
-Hydro classes
-===================
+💦 Hydro classes
+=======================
 
 .. automodule:: energydatamodel.hydro
    :members:

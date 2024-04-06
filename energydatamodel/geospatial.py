@@ -5,10 +5,10 @@ import pytz
 import json
 import geopandas as gpd
 
-from energydatamodel import BaseClass
+from energydatamodel import AbstractClass
 
 @dataclass(repr=False)
-class GeoLocation(BaseClass):
+class GeoLocation(AbstractClass):
     """This is the docstring for Location."""
 
     longitude: float
@@ -34,18 +34,18 @@ class GeoLocation(BaseClass):
 Location = GeoLocation
 
 @dataclass
-class GeoLine(BaseClass, LineString):
+class GeoLine(AbstractClass, LineString):
     """This is the docstring for LineString."""
 
 @dataclass
-class GeoPolygon(BaseClass, Polygon):
+class GeoPolygon(AbstractClass, Polygon):
     """This is the docstring for Polygon."""
 
     name: Optional[str] = None
 
 #TODO I think it would be nicer if GeoMultiPolygon was a subclass of MultiPolygon instead of composition. 
 @dataclass
-class GeoMultiPolygon(BaseClass):
+class GeoMultiPolygon(AbstractClass):
     """This is the docstring for Polygon."""
     multipolygon: MultiPolygon = None
     name: Optional[str] = None
@@ -63,7 +63,7 @@ class GeoMultiPolygon(BaseClass):
         return self.to_geojson()
 
 @dataclass
-class GeoGraph(BaseClass):
+class GeoGraph(AbstractClass):
     """This is the docstring for GeoGraph."""
 
     name: Optional[str] = None

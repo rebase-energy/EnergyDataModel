@@ -1,5 +1,5 @@
-Geospatial classes
-===================
+🗺️ Geospatial classes
+=======================
 
 .. automodule:: energydatamodel.geospatial
    :members:

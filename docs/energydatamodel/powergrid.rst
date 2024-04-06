@@ -1,5 +1,5 @@
-Power grid classes
-===================
+⚡ Power grid classes
+=======================
 
 .. automodule:: energydatamodel.powergrid
    :members:

@@ -1,5 +1,5 @@
-HeatPump classes
-===================
+♻️ HeatPump classes
+=======================
 
 .. automodule:: energydatamodel.heatpump
    :members:

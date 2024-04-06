@@ -1,5 +1,5 @@
-Time series classes
-===================
+📈 Time series classes
+=======================
 
 .. automodule:: energydatamodel.timeseries
    :members:

@@ -1,93 +1,111 @@
+import dataclasses
 from dataclasses import dataclass, field, fields
-import typing as t
+from abc import ABC, abstractmethod
+
 import pandas as pd
-import matplotlib
 import matplotlib.pyplot as plt
-from shapely.geometry import Point
-import pytz
-from uuid import uuid4
-
-import energydatamodel as edm
-from energydatamodel import BaseClass, Location
+import shapely
+from shapely.geometry import mapping, Point, Polygon, LineString
 
 
-@dataclass(repr=False, kw_only=True)
-class TimeSeries(BaseClass):
-    name: t.Optional[str] = None
-    df: t.Optional[pd.DataFrame] = None
-    column_name: t.Optional[t.Union[str, int, t.Tuple[str], t.Tuple[int]]] = None
-    filename: t.Optional[str] = None
+@dataclass
+class AbstractClass(ABC):
 
-    def get_data(self) -> pd.Series: 
-        """
-        Get data from :class:`TimeSeries` as a :class:`pandas.Series`.
+    def to_dataframe(self):
+        """Convert data class to a pandas DataFrame."""
 
-        Returns:
-            The time series data. 
-        """
+        data = {field.name: getattr(self, field.name) for field in fields(self)}
+        df = pd.DataFrame({self.__class__.__name__: data})
 
-        s = self.df.loc[:, [self.column_name]]
-        return s
+        return df
+    
+    def _serialize(self, include_none: bool) -> dict:
+        serialized_data = {}
+        for field in dataclasses.fields(self):
+            value = getattr(self, field.name)
 
-    def plot(self, start_date: t.Union[str, pd.DatetimeIndex], end_date: t.Union[str, pd.DatetimeIndex]) -> plt.Axes: 
-        """
-        Plots a pandas Series using its built-in plot method.
+            if value is None and not include_none:
+                continue 
 
-        Args:
-            start_date: The start date for the plot. 
-            end_date: The end date for the plot. 
-            
-        Returns:
-            The Matplotlib Axes object of the plot.
-        """
+            if isinstance(value, pd.DataFrame):
+                serialized_data['pd.DataFrame'] = 'pd.DataFrame'
+            elif dataclasses.is_dataclass(value):
+                key = value.__class__.__name__
+                serialized_data[key] = value._serialize(include_none)
+            elif isinstance(value, list):
+                serialized_data[field.name] = [self._serialize_list_item(item, include_none) for item in value]
+            else:
+                serialized_data[field.name] = value
+        return serialized_data
 
-        series = self.df.loc[start_date:end_date, [self.column_name]]
-        ax = series.plot()
+    @staticmethod
+    def _serialize_list_item(item, include_none):
+        if dataclasses.is_dataclass(item):
+            return {item.__class__.__name__: item._serialize(include_none)}
+        return item
 
-        return ax
+    def to_json(self, include_none: bool=True) -> str:
+        class_name = self.__class__.__name__
+        serialized_data = {class_name: self._serialize(include_none)}
+        return serialized_data
 
+    def geometry_to_geojson(self, geometry):
+        if isinstance(geometry, shapely.geometry.Point):
+            return {"type": "Point", "coordinates": list(geometry.coords)[0]}
+        elif isinstance(geometry, shapely.geometry.Polygon):
+            return {"type": "Polygon", "coordinates": [list(geometry.exterior.coords)]}
+        elif isinstance(geometry, shapely.geometry.LineString):
+            return {"type": "LineString", "coordinates": list(geometry.coords)}
+        else:
+            return None
 
-@dataclass(repr=False, kw_only=True)
-class EnergyAsset(BaseClass):
-    """Get data from :class: `TimeSeries`"""
+    def to_geojson(self, exclude_none=True):
+        if hasattr(self, 'assets'):  # Check for the presence of an 'assets' attribute
+            # Handle container classes: create a FeatureCollection
+            features = [asset.to_geojson(exclude_none=exclude_none) for asset in self.assets]
+            geojson_obj = {"type": "FeatureCollection", "features": features}
+            return geojson_obj
 
-    name: t.Optional[str] = None
-    location: t.Optional[Location] = None
-    latitude: t.Optional[float] = None
-    longitude: t.Optional[float] = None
-    altitude: t.Optional[float] = None
-    tz: t.Optional[pytz.timezone] = None
-    timeseries: t.Optional[TimeSeries] = None
+#            return json.dumps(geojson_obj, indent=4)
+        else:
+            # Handle single asset classes
+            geojson_geometry, geojson_properties = self._extract_geojson_data(self, exclude_none)
+            if not geojson_geometry:
+                raise ValueError("No valid geometry found for GeoJSON conversion")
 
-    def __post_init__(self):
-        if self.location is None: 
-            if self.longitude is not None and self.latitude is not None:
-                self.location = Location(self.longitude, self.latitude)
-            if self.altitude is not None: 
-                self.location.altitude = self.altitude
-            if self.tz is not None: 
-                self.location.tz = self.tz
+            geojson_obj = {
+                "type": "Feature",
+                "geometry": geojson_geometry,
+                "properties": geojson_properties
+            }
+            return geojson_obj
 
-    def plot_timeseries(self, 
-                        start_date: t.Optional[t.Union[str, pd.DatetimeIndex]] = None, 
-                        end_date: t.Optional[t.Union[str, pd.DatetimeIndex]] = None) -> plt.Axes: 
-        """
-        Plots a pandas Series using its built-in plot method.
+          #  return json.dumps(geojson_obj, indent=4)
+        
+    def _extract_geojson_data(self, obj, exclude_none=True):
+        geojson_geometry = None
+        geojson_properties = {}
 
-        Args:
-            start_date: The start date for the plot. 
-            end_date: The end date for the plot. 
-            
-        Returns:
-            The Matplotlib Axes object of the plot.
-        """
+        for attr_name, attr_value in obj.__dict__.items():
+            if isinstance(attr_value, (Point, Polygon, LineString)):
+                geojson_geometry = mapping(attr_value)
+            elif isinstance(attr_value, pd.DataFrame):
+                # Skip pandas DataFrame attributes
+                continue
+            elif hasattr(attr_value, '__dict__'):  # Check for nested objects
+                nested_geometry, nested_properties = self._extract_geojson_data(attr_value)
+                if nested_geometry:
+                    geojson_geometry = nested_geometry
+                geojson_properties.update(nested_properties)
+            else:
+                if not (exclude_none and attr_value is None):
+                    geojson_properties[attr_name] = attr_value
+        return geojson_geometry, geojson_properties
 
-        df = self.timeseries.df.loc[start_date:end_date, [self.timeseries.column_name]]
-        ax = df.plot()
-
-        return ax
-
-@dataclass(kw_only=True)
-class Sensor(BaseClass):
-    name: t.Optional[str] = None
-    location: t.Optional[Location] = None
+    def __repr__(self):
+        attrs = []
+        for field, value in self.__dict__.items():
+            if (value is not None) and (type(value) not in set([pd.DataFrame, Point, LineString, Polygon])):
+                attrs.append(f"{field}={value!r}")
+        return f"{self.__class__.__name__}({', '.join(attrs)})"
+    
