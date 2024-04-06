@@ -1,3 +1,6 @@
 Sphinx==7.2.6
 sphinx_rtd_theme
 sphinx_autodoc_typehints
+matplotlib
+pandas
+shapely
