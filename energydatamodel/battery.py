@@ -1,11 +1,11 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import typing as t
 
-from energydatamodel import EnergyAsset
+import energydatamodel as edm
 
 
 @dataclass(repr=False)
-class Battery(EnergyAsset):
+class Battery(edm.EnergyAsset):
     storage_capacity: t.Optional[float] = None
     min_soc: t.Optional[float] = None
     max_charge: t.Optional[float] = None

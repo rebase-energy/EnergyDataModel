@@ -1,17 +1,18 @@
-Data Structures
-===================
+Modules and Data Classes
+========================
 
 The energydatamodel package provides...
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    energydatamodel/base
    energydatamodel/geospatial
    energydatamodel/timeseries
-   energydatamodel/pv
+   energydatamodel/solar
    energydatamodel/wind
+   energydatamodel/battery
    energydatamodel/hydro
    energydatamodel/heatpump
    energydatamodel/powergrid
-   energydatamodel/container
+   energydatamodel/energysystem

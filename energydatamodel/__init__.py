@@ -8,10 +8,10 @@ from uuid import uuid4
 from .abstract import AbstractClass
 from .geospatial import GeoLocation, Location, LineString, GeoPolygon, GeoMultiPolygon
 from .base import EnergyAsset, TimeSeries, Sensor, EnergySystem
-from .house import House
+from .building import House
 from .solar import FixedMount, SingleAxisTrackerMount, PVArray, PVSystem, SolarPowerArea
 from .wind import WindTurbine, WindFarm, WindPowerArea
 from .battery import Battery
-from .container import Site, EnergyCommunity, Portfolio
+from .energysystem import Site, EnergyCommunity, Portfolio
 
 __version__ = '0.0.1'

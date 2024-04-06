@@ -1,4 +1,4 @@
-🪑 Base classes
+🪑 Base
 =======================
 
 .. automodule:: energydatamodel.base
