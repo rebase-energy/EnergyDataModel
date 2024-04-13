@@ -2,12 +2,10 @@
 Installation
 ===================
 
-This document provides detailed instructions on how to install the EnergyDataModel library.
-
 Requirements
 ------------
 
-Before installing EnergyDataModel, ensure that you have the following:
+Before installing **EnergyDataModel**, ensure that you have the following:
 
 - Python 3.6 or later
 - pip (Python package manager)
@@ -15,11 +13,26 @@ Before installing EnergyDataModel, ensure that you have the following:
 Installing with pip
 -------------------
 
-To install EnergyDataModel using pip, run the following command in your terminal:
+To install the latest **stable** release using ``pip``, run the following command in your terminal:
 
 .. code-block:: bash
 
    pip install energydatamodel
+
+
+To install the **latest** release from Github: 
+
+.. code-block:: bash
+
+   pip install git+https://github.com/rebase-energy/EnergyDataModel
+
+To install in **editable** mode for development:
+
+.. code-block:: bash
+
+   git clone https://github.com/rebase-energy/EnergyDataModel.git
+   cd EnergyDataModel
+   pip install -e . 
 
 Verifying Installation
 ----------------------

@@ -1,7 +1,7 @@
 <div align="center">
     <img width="300" src="https://github.com/rebase-energy/EnergyDataModel/blob/main/assets/energydatamodel-logo.png?raw=true" alt="EnergyDataModel"/>
 <h2 style="margin-top: 0px;">
-    🔋 Represent energy systems as Python data classes for improved maintainability and readability
+    🔋 Represent energy systems as Python data classes for improved modularity and readability
 </h2>
 </div>
 
@@ -19,7 +19,7 @@
 * 👀 **Visualization** - Visualise energy systems maps, graphs, flows and structure using built-in plotting functions;
 * 🤓 **Readability** - Write more explicit Python code through human-readable expressions and built-in convenience methods; 
 * 🧩 **Interoperability** - Convert data format to other energy-relevant data models and ontologies; and 
-* 💬 **Communicate** Communicate effectively in teams with a common energy system data vocabulary. 
+* 💬 **Communicate** - Communicate effectively in teams with a common energy system data vocabulary. 
 
 **📖 [Documentation](https://docs.energydatamodel.org/en/latest/)**
 &ensp;|&ensp;
