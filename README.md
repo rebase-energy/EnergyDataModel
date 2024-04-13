@@ -12,14 +12,18 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/rebase-energy/EnergyDataModel?style=social)](https://github.com/rebase-energy/EnergyDataModel)
 
 ## TL;DR
-The `energydatamodel` let's you: 
+The aim of **EnergyDataModel** is to provide a Python-based data model that enables energy data scientists and modellers to: 
 
-* Create Python data classes representing energy assets and relevant concepts;
-* Structure your energy assets in graphs and hierarchies representing energy systems that can be seralised to files (e.g. .csv, .json, .geojson);
-* Convert data format to other energy-relevant data models and ontologies.
-* Visualise energy systems maps, graphs and flows using built-in plotting functions;
-* Write more explicit Python code through human-readable expressions and built-in convenience methods;
-* Communicate effectively with a common energy system vocabulary; and
+* 🧱 **Modularity** - Represent energy assets, energy systems and other relevant concepts as object-oriented building blocks;
+* 🏗️ **Relationships** - Structure your energy assets in graphs and hierarchies representing energy systems that can be serialized to files (e.g. .csv, .json, and .geojson files);
+* 👀 **Visualization** - Visualise energy systems maps, graphs, flows and structure using built-in plotting functions;
+* 🤓 **Readability** - Write more explicit Python code through human-readable expressions and built-in convenience methods; 
+* 🧩 **Interoperability** - Convert data format to other energy-relevant data models and ontologies; and 
+* 💬 **Communicate** Communicate effectively in teams with a common energy system data vocabulary. 
+
+**📖 [Documentation](https://docs.energydatamodel.org/en/latest/)**
+&ensp;|&ensp;
+**🚀 [Quickstart - Try out now in Colab](-)**
 
 ## Modules and Data Classes
 `energydatamodel` leverages [Python's Data Classes](https://docs.python.org/3/library/dataclasses.html) to represent energy assets as Python objects. The table below gives a summary of the available modules and data classes. 
@@ -38,7 +42,7 @@ The `energydatamodel` let's you:
 Explore the full data model [here](https://zoomhub.net/Zxa5x). 
 
 ## Purpose and philosphy
-The aim of `energydatamodel` is to provide the energy data and modelling community with a Python-based tool to improve code quality, modularity/reusability, interoperability and collaboration. We believe that bringing more rigorous software engineering practices to the energy community has the potential to radically improve productivity and usefulness of software tools, utimately leading to better energy decisions. 
+The aim of `energydatamodel` is to provide the energy data and modelling community with a Python-based tool to improve code quality/maintainability, modularity/reusability, interoperability and collaboration. We believe that bringing more rigorous software engineering practices to the energy community has the potential to radically improve productivity and usefulness of software tools, utimately leading to better energy decisions. 
 
 Project philosophy: 
 
@@ -69,8 +73,7 @@ cd EnergyDataModel
 pip install -e . 
 ```
 
-### Basic usage
-
+## Basic usage
 Create an energy system made up of two sites with co-located solar, wind and batteries and save as a .json-file. 
 
 ```python
@@ -103,9 +106,9 @@ For more examples on usage and applications of `energydatamodel` see the documen
 `energydatamodel` provides converters to and from other popular energy data models and ontologies. Below is a summary of the available converters: 
 
 | Project name   | Links     | Converter to  | Converter from  |
-| :---           | :----       | :----         | :----           |
+| :---           | :----       | :----:         | :----:           |
 | `pvlib`        | [code](https://github.com/pvlib/pvlib-python), [docs](https://pvlib-python.readthedocs.io/en/stable/index.html) | ✅ | ✅ |
-| `Windpowerlib` | [code](https://github.com/wind-python/windpowerlib), [docs](https://windpowerlib.readthedocs.io/en/stable/) | ✅ | ✅ |
+| `windpowerlib` | [code](https://github.com/wind-python/windpowerlib), [docs](https://windpowerlib.readthedocs.io/en/stable/) | ✅ | ✅ |
 
 ## Contributors
 

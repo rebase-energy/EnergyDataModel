@@ -90,6 +90,7 @@ class Portfolio(EnergySystem):
     """
     A Portfolio is like an EnergySystem but is used more for the purpose of trading energy rather than maintaining an energy balance. 
     """
+    sites: t.List[Site] = field(default_factory=list)
 
     def plot_timeseries(self, start_date: t.Optional[str] = None, end_date: t.Optional[str] = None, subplots: bool = False) -> Union[t.Tuple[plt.Figure, plt.Axes], t.Tuple[plt.Figure, np.ndarray]]:
         # Convert start_date and end_date to datetime if they are not None

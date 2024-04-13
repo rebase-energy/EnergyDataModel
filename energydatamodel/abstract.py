@@ -44,7 +44,7 @@ class AbstractClass(ABC):
             return {item.__class__.__name__: item._serialize(include_none)}
         return item
 
-    def to_json(self, include_none: bool=True) -> str:
+    def to_json(self, include_none: bool=False) -> str:
         class_name = self.__class__.__name__
         serialized_data = {class_name: self._serialize(include_none)}
         return serialized_data

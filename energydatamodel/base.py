@@ -8,6 +8,7 @@ from shapely.geometry import mapping, Point, Polygon, LineString
 import pytz
 from uuid import uuid4
 
+import energydatamodel as edm
 from energydatamodel import AbstractClass, Location
 
 @dataclass(repr=False, kw_only=True)
@@ -91,6 +92,7 @@ class EnergySystem(AbstractClass):
     """EnergySystem base class."""
 
     name: t.Optional[str] = None
+    assets: t.Optional[t.List[EnergyAsset]] = None
 
 @dataclass(kw_only=True)
 class Sensor(AbstractClass):
