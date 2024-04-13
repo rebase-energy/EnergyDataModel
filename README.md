@@ -12,7 +12,7 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/rebase-energy/EnergyDataModel?style=social)](https://github.com/rebase-energy/EnergyDataModel)
 
 ## TL;DR
-The aim of **EnergyDataModel** is to provide a Python-based data model that enables energy data scientists and modellers to: 
+**EnergyDataModel** provides a Python-based data model that enables energy data scientists and modellers to: 
 
 * 🧱 **Modularity** - Represent energy assets, energy systems and other relevant concepts as object-oriented building blocks;
 * 🏗️ **Relationships** - Structure your energy assets in graphs and hierarchies representing energy systems that can be serialized to files (e.g. .csv, .json, and .geojson files);
@@ -23,10 +23,12 @@ The aim of **EnergyDataModel** is to provide a Python-based data model that enab
 
 **📖 [Documentation](https://docs.energydatamodel.org/en/latest/)**
 &ensp;|&ensp;
-**🚀 [Quickstart - Try out now in Colab](-)**
+**🚀 [Try out now in Colab](https://colab.research.google.com/github/rebase-energy/EnergyDataModel/blob/main/energydatamodel/examples/example-1-to-json.ipynb)**
+&ensp;|&ensp;
+**👥 [Join the Slack](https://join.slack.com/t/rebase-community/shared_invite/zt-1dtd0tdo6-sXuCEy~zPnvJw4uUe~tKeA)**
 
 ## Modules and Data Classes
-`energydatamodel` leverages [Python's Data Classes](https://docs.python.org/3/library/dataclasses.html) to represent energy assets as Python objects. The table below gives a summary of the available modules and data classes. 
+**EnergyDataModel** leverages [Python's Data Classes](https://docs.python.org/3/library/dataclasses.html) to represent energy assets as Python objects. The table below gives a summary of the available modules and data classes. 
 
 | Module         | Data Classes     |
 | :----          | :----            |
@@ -39,20 +41,19 @@ The aim of **EnergyDataModel** is to provide a Python-based data model that enab
 | ♻️&nbsp;`heatpump` | [`HeatPump`](https://docs.energydatamodel.org/en/latest/energydatamodel/heatpump.html#energydatamodel.heatpump.HeatPump) |
 | ⚡&nbsp;`powergrid` | [`Carrier`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Carrier), [`Bus`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Bus), [`Line`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Line), [`Transformer`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Transformer), [`Link`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Link), [`SubNetwork`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.SubNetwork), [`Network`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Network), |
 
-Explore the full data model [here](https://zoomhub.net/Zxa5x). 
+Explore the data model visually [here](https://zoomhub.net/Zxa5x). \
+Read the full documentation [here](https://docs.energydatamodel.org/en/latest/).
 
 ## Purpose and philosphy
-The aim of `energydatamodel` is to provide the energy data and modelling community with a Python-based tool to improve code quality/maintainability, modularity/reusability, interoperability and collaboration. We believe that bringing more rigorous software engineering practices to the energy community has the potential to radically improve productivity and usefulness of software tools, utimately leading to better energy decisions. 
+The aim of **EnergyDataModel** is to provide the energy data and modelling community with a Python-based open-source tool to enable improvement of software engineering aspects like code quality, maintainability, modularity, reusability and interoperability. We believe that bringing more rigorous software engineering practices to the energy data community has the potential to radically improve productivity, collaboration and usefulness of software tools, utimately leading to better energy decisions. 
 
-Project philosophy: 
+Our philosophy is aligned on usefulness and practicality over maximizing execution performance or some kind of theoretical rigor. A well-know quote by Abelson & Sussman comes to mind: 
 
-- Making code explicit, readable and intuitive counts. *"Programs (software) are meant to be read by humans and only incidentally for computers to execute"*
+> "Programs [software] are meant to be read by humans and only incidentally for computers to execute"
 
-- Occam’s Razor: the best solution is usually also the simplest one. *"Over-engineering is the root of all evil."* 
+Making code explicit, readable and intuitive counts. 
 
-- Start with the end outcome in mind. A data model is a standard and standards are only useful if they make your life easier. 
-
-If you are interested in joining our mission to build open-source tools that improve productiveness and workflow of energy modellers world-wide - then [join our slack](https://join.slack.com/t/rebase-community/shared_invite/zt-1dtd0tdo6-sXuCEy~zPnvJw4uUe~tKeA)!
+If you are interested in joining our mission to build open-source tools that improve productiveness and workflow of energy modellers worldwide - then [join our Slack](https://join.slack.com/t/rebase-community/shared_invite/zt-1dtd0tdo6-sXuCEy~zPnvJw4uUe~tKeA)!
 
 ## Installation
 
@@ -97,20 +98,13 @@ site_2 = edm.Site(assets=[pvsystem_2, windturbine_2, battery_2],
 
 portfolio = edm.Portfolio(sites=[site_1, site_2])
 
-portfolio.save_json('my_portfolio.json')
+portfolio.to_json()
 ```
 
-For more examples on usage and applications of `energydatamodel` see the documentation page [here](https://docs.energydatamodel.org/en/latest/examples.html).
-
-## Converters
-`energydatamodel` provides converters to and from other popular energy data models and ontologies. Below is a summary of the available converters: 
-
-| Project name   | Links     | Converter to  | Converter from  |
-| :---           | :----       | :----:         | :----:           |
-| `pvlib`        | [code](https://github.com/pvlib/pvlib-python), [docs](https://pvlib-python.readthedocs.io/en/stable/index.html) | ✅ | ✅ |
-| `windpowerlib` | [code](https://github.com/wind-python/windpowerlib), [docs](https://windpowerlib.readthedocs.io/en/stable/) | ✅ | ✅ |
+For more examples on usage and applications of **EnergyDataModel** see the documentation examples page [here](https://docs.energydatamodel.org/en/latest/examples.html).
 
 ## Contributors
+This project uses [allcontributors.org](https://allcontributors.org/) to recognize all contributors, including those that don't push code. 
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -120,3 +114,6 @@ For more examples on usage and applications of `energydatamodel` see the documen
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
+## Licence
+This project uses the [MIT Licence](LICENCE.md).  
