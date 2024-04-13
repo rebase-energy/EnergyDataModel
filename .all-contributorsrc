@@ -1,4 +1,21 @@
 {
   "projectName": "EnergyDataModel",
-  "projectOwner": "rebase-energy"
+  "projectOwner": "rebase-energy",
+  "files": [
+    "README.md"
+  ],
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributorsPerLine": 7,
+  "contributors": [
+    {
+      "login": "sebaheg",
+      "name": "Sebastian Haglund El Gaidi",
+      "avatar_url": "https://avatars.githubusercontent.com/u/26311427?v=4",
+      "profile": "https://github.com/sebaheg",
+      "contributions": [
+        "code"
+      ]
+    }
+  ]
 }
