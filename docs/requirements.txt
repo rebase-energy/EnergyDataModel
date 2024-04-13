@@ -5,5 +5,7 @@ matplotlib
 pandas
 shapely
 geopandas
+nbsphinx
+pandoc
 
 -e .
