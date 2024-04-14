@@ -103,6 +103,16 @@ cd EnergyDataModel
 pip install -e . 
 ```
 
+## Ways to Contribute
+We welcome contributions from anyone interested in this project! Here are some ways to contribute to **EnergyDataModel**:
+
+* Add a new energy system assets and concepts;
+* Propose updates to existing energy assets and concepts; 
+* Create a converter to new data format; or
+* Create a converter to another energy data model.
+
+If you are interested in contributing, then feel free to join our [Community Slack](https://join.slack.com/t/rebase-community/shared_invite/zt-1dtd0tdo6-sXuCEy~zPnvJw4uUe~tKeA) so that we can discuss it. 
+
 ## Contributors
 This project uses [allcontributors.org](https://allcontributors.org/) to recognize all contributors, including those that don't push code. 
 
