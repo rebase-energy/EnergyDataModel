@@ -4,6 +4,7 @@ from shapely.geometry import Point, LineString, Polygon, MultiPolygon
 import pytz
 import json
 import geopandas as gpd
+import pvlib
 
 from energydatamodel import AbstractClass
 
@@ -14,11 +15,14 @@ class GeoLocation(AbstractClass):
     longitude: float
     latitude: float
     altitude: Optional[float] = None
-    tz: Optional[pytz.timezone] = None
+    tz: Optional[Union[str, pytz.timezone]] = None
     name: Optional[str] = None
 
     def __post_init__(self):
         self.point = Point(self.latitude, self.longitude)
+
+        if isinstance(self.tz, str):
+            self.tz = pytz.timezone(self.tz)
 
     @classmethod
     def from_point(cls, point: Point):
@@ -30,6 +34,9 @@ class GeoLocation(AbstractClass):
     @property
     def tuple(self):
         return self.to_tuple()
+    
+    def to_pvlib(self):
+        return pvlib.location.Location(latitude=self.latitude, longitude=self.longitude, altitude=self.altitude, tz=self.tz.zone)
 
 Location = GeoLocation
 

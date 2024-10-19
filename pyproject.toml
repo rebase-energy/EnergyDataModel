@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=64.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "energydatamodel"
+version = "0.0.2"
+description = "Data model for energy modelling."
+authors = [
+    { name = "rebase.energy" }
+]
+dependencies = [
+    "uuid",
+    "pandas",
+    "shapely",
+    "pytz",
+    "ipywidgets",
+    "geopandas"
+]

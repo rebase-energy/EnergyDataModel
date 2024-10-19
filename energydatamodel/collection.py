@@ -10,11 +10,11 @@ from uuid import uuid4
 import ipywidgets as widgets
 from IPython.display import display, HTML
 
-from energydatamodel import AbstractClass, Location, EnergyAsset, EnergySystem
+from energydatamodel import AbstractClass, Location, EnergyAsset, EnergyCollection
 
 
 @dataclass
-class Site(EnergySystem):
+class Site(EnergyCollection):
     assets: List[EnergyAsset] = field(default_factory=list)
     longitude: Optional[float] = None
     latitude: Optional[float] = None
@@ -54,7 +54,7 @@ class Site(EnergySystem):
     
 
 @dataclass(repr=False)
-class MultiSite(EnergySystem):
+class MultiSite(EnergyCollection):
     sites: List[Site] = field(default_factory=list)
     assets: List[EnergyAsset] = field(default_factory=list)
     name: Optional[str] = None
@@ -79,14 +79,14 @@ class MultiSite(EnergySystem):
 
 
 @dataclass(repr=False)
-class EnergyCommunity(EnergySystem):
+class EnergyCommunity(EnergyCollection):
     """
     A Portfolio is like an EnergySystem but is used more for the purpose of trading energy rather than maintaining an energy balance. 
     """
 
 
 @dataclass(repr=False)
-class Portfolio(EnergySystem):
+class Portfolio(EnergyCollection):
     """
     A Portfolio is like an EnergySystem but is used more for the purpose of trading energy rather than maintaining an energy balance. 
     """
@@ -128,7 +128,7 @@ class Portfolio(EnergySystem):
 
 
 @dataclass(repr=False)
-class VirtualPowerPlant(EnergySystem):
+class VirtualPowerPlant(EnergyCollection):
     """
     A VirtualPowerPlant is like an EnergySystem but is used more for the purpose of trading flexibility rather than maintaining an energy balance. 
     """

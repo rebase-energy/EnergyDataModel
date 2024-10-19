@@ -5,6 +5,7 @@ from shapely.geometry import Point
 import pytz
 from uuid import uuid4
 import json
+import pvlib
 
 from energydatamodel import EnergyAsset, GeoPolygon, GeoMultiPolygon
 
@@ -61,13 +62,16 @@ class PVSystem(EnergyAsset):
     surface_tilt: float = None
     albedo: Optional[float] = None
     surface_type: Optional[str] = None
+    module_parameters: Optional[dict] = None
+    inverter_parameters: Optional[dict] = None
+    module_type: str = "glass_polymer"
+    racking_model: str = "open_rack"
 
     def __post_init__(self):
         # If no PVArray list is provided, but capacity, azimuth, and tilt are,
         # create a PVArray and add it to the list.
         if not self.pv_arrays and all([self.capacity, self.surface_azimuth, self.surface_tilt]):
-            self.pv_arrays.append(PVArray(self.capacity, self.surface_azimuth, self.surface_tilt))
-
+            self.pv_arrays.append(PVArray(capacity=self.capacity, surface_azimuth=self.surface_azimuth, surface_tilt=self.surface_tilt))
 
     """
 
@@ -180,6 +184,27 @@ class PVSystem(EnergyAsset):
     pvlib.location.Location
 
     """
+
+    def to_pvlib(self, **kwargs):
+        if self.module_parameters is None:
+            self.module_parameters = {"pdc0": self.capacity}
+        if "pdc0" not in self.module_parameters.keys():
+            self.module_parameters["pdc0"] = self.capacity
+        if self.inverter_parameters is None:
+            self.inverter_parameters = {"pdc0": self.capacity}
+        if "pdc0" not in self.inverter_parameters.keys():
+            self.inverter_parameters["pdc0"] = self.capacity
+        return pvlib.pvsystem.PVSystem(name=self.name,
+                                surface_tilt=self.surface_tilt, 
+                                surface_azimuth=self.surface_azimuth, 
+                                albedo=self.albedo, 
+                                surface_type=self.surface_type,
+                                module_parameters=self.module_parameters,
+                                inverter_parameters=self.inverter_parameters,
+                                module_type=self.module_type,
+                                racking_model=self.racking_model,
+                                **kwargs) 
+
 
 @dataclass(repr=False)
 class SolarPowerArea(EnergyAsset): 

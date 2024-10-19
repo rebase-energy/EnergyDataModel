@@ -7,6 +7,7 @@ import shapely
 from shapely.geometry import mapping, Point, Polygon, LineString
 import pytz
 from uuid import uuid4
+from anytree import Node, RenderTree
 
 import energydatamodel as edm
 from energydatamodel import AbstractClass, Location
@@ -88,12 +89,78 @@ class EnergyAsset(AbstractClass):
         return ax
 
 @dataclass(repr=False, kw_only=True)
-class EnergySystem(AbstractClass):
+class EnergyCollection(AbstractClass):
     """EnergySystem base class."""
 
     name: t.Optional[str] = None
     assets: t.Optional[t.List[EnergyAsset]] = None
 
+    def add_assets(self, assets: t.Union[EnergyAsset, t.List[EnergyAsset]]):
+        if isinstance(assets, list):
+            self.assets.extend(assets)
+        else:
+            self.assets.append(assets)
+
+    def remove_asset(self, asset: EnergyAsset):
+        self.assets.remove(asset)
+
+    def list_assets(self):
+        return self.assets
+    
+    def get_asset_by_name(self, name: str):
+        for asset in self.assets:
+            if asset.name == name:
+                return asset
+        return None
+    
+    def _build_tree(self, obj, parent=None, only_named=True):
+        """
+        Recursively builds an anytree tree structure from any object `obj`.
+        This version inspects all attributes of the object and looks for objects or lists of objects.
+        """
+        # Create a node for the current object
+        node = Node(obj.name, parent=parent, type=type(obj).__name__)
+
+        # Inspect all attributes of the object
+        for attr_name in dir(obj):
+            # Skip special or private attributes (like __init__, __str__)
+            if attr_name.startswith('__'):
+                continue
+            
+            attr_value = getattr(obj, attr_name)
+
+            # If the attribute is a list, iterate over its items
+            if isinstance(attr_value, list):
+                for item in attr_value:
+                    # If the item is an object (class instance), recursively build the tree
+                    if hasattr(item, 'name'):
+                        if only_named:
+                            if item.name:
+                                self._build_tree(item, node, only_named=only_named)
+                        else:
+                            self._build_tree(item, node, only_named=only_named)
+
+            # If the attribute is a single object, recursively build the tree
+            elif hasattr(attr_value, 'name'):
+                if only_named:
+                    if attr_value.name:
+                        self._build_tree(attr_value, node)
+                else:
+                    self._build_tree(attr_value, node)
+
+        return node
+    
+    def draw_tree(self, only_named=True, show_type=False):
+        # Render the tree
+        tree = self._build_tree(self, only_named=only_named)
+
+        for pre, fill, node in RenderTree(tree):
+            if show_type:
+                print(f"{pre}{node.name} ({node.type})")
+            else:
+                print(f"{pre}{node.name}")
+
+  
 @dataclass(kw_only=True)
 class Sensor(AbstractClass):
     name: t.Optional[str] = None
