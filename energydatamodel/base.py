@@ -93,7 +93,8 @@ class EnergyCollection(AbstractClass):
     """EnergySystem base class."""
 
     name: t.Optional[str] = None
-    assets: t.Optional[t.List[EnergyAsset]] = None
+    assets: t.Optional[t.List[EnergyAsset]] = field(default_factory=list)
+    collections: t.Optional[t.List["EnergyCollection"]] = field(default_factory=list)
 
     def add_assets(self, assets: t.Union[EnergyAsset, t.List[EnergyAsset]]):
         if isinstance(assets, list):
@@ -107,6 +108,18 @@ class EnergyCollection(AbstractClass):
     def list_assets(self):
         return self.assets
     
+    def add_collection(self, collection: "EnergyCollection"):
+        if isinstance(collection, list):
+            self.collections.extend(collection)
+        else:
+            self.collections.append(collection)
+
+    def list_collections(self):
+        return self.collections
+    
+    def remove_collection(self, collection: "EnergyCollection"):
+        self.collections.remove(collection)
+    
     def get_asset_by_name(self, name: str):
         for asset in self.assets:
             if asset.name == name:
@@ -119,7 +132,11 @@ class EnergyCollection(AbstractClass):
         This version inspects all attributes of the object and looks for objects or lists of objects.
         """
         # Create a node for the current object
-        node = Node(obj.name, parent=parent, type=type(obj).__name__)
+        class_name = obj.__class__.__name__
+        class_module = obj.__class__.__module__.split(".")[0]
+        module_shorts = {"energydatamodel": "edm", "numpy": "np", "pandas": "pd"}
+
+        node = Node(obj.name, parent=parent, type=f"{module_shorts[class_module]}.{class_name}")
 
         # Inspect all attributes of the object
         for attr_name in dir(obj):
@@ -150,7 +167,7 @@ class EnergyCollection(AbstractClass):
 
         return node
     
-    def draw_tree(self, only_named=True, show_type=False):
+    def draw_tree(self, only_named=True, show_type=False, return_tree=False):
         # Render the tree
         tree = self._build_tree(self, only_named=only_named)
 
@@ -159,6 +176,9 @@ class EnergyCollection(AbstractClass):
                 print(f"{pre}{node.name} ({node.type})")
             else:
                 print(f"{pre}{node.name}")
+        
+        if return_tree: 
+            return tree
 
   
 @dataclass(kw_only=True)

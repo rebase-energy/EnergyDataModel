@@ -10,7 +10,8 @@ setup(
         "shapely",
         "pytz",
         "ipywidgets",
-        "geopandas"
+        "geopandas",
+        "anytree"
     ],
     author='rebase.energy',
     description='Data model for energy modelling.',
