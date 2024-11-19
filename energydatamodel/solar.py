@@ -68,6 +68,8 @@ class PVSystem(EnergyAsset):
     racking_model: str = "open_rack"
 
     def __post_init__(self):
+        super().__post_init__()
+
         # If no PVArray list is provided, but capacity, azimuth, and tilt are,
         # create a PVArray and add it to the list.
         if not self.pv_arrays and all([self.capacity, self.surface_azimuth, self.surface_tilt]):
@@ -186,14 +188,20 @@ class PVSystem(EnergyAsset):
     """
 
     def to_pvlib(self, **kwargs):
+        # TODO This one is a bit tricky. 
+        # When creating pvlib object I want to be able to add missing parameters
+        # But still use the ones that are already set on the edm.PVSystem object. 
         if self.module_parameters is None:
             self.module_parameters = {"pdc0": self.capacity}
+#            self.module_parameters.update({"pdc0": self.capacity})
         if "pdc0" not in self.module_parameters.keys():
             self.module_parameters["pdc0"] = self.capacity
+
         if self.inverter_parameters is None:
             self.inverter_parameters = {"pdc0": self.capacity}
         if "pdc0" not in self.inverter_parameters.keys():
             self.inverter_parameters["pdc0"] = self.capacity
+
         return pvlib.pvsystem.PVSystem(name=self.name,
                                 surface_tilt=self.surface_tilt, 
                                 surface_azimuth=self.surface_azimuth, 

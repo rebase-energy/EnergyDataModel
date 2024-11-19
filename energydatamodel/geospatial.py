@@ -14,8 +14,8 @@ class GeoLocation(AbstractClass):
 
     longitude: float
     latitude: float
+    tz: Union[str, pytz.timezone] = "UTC"
     altitude: Optional[float] = None
-    tz: Optional[Union[str, pytz.timezone]] = None
     name: Optional[str] = None
 
     def __post_init__(self):
@@ -36,7 +36,7 @@ class GeoLocation(AbstractClass):
         return self.to_tuple()
     
     def to_pvlib(self):
-        return pvlib.location.Location(latitude=self.latitude, longitude=self.longitude, altitude=self.altitude, tz=self.tz.zone)
+        return pvlib.location.Location(latitude=self.latitude, longitude=self.longitude, altitude=self.altitude, tz=self.tz)
 
 Location = GeoLocation
 

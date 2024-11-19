@@ -11,7 +11,8 @@ setup(
         "pytz",
         "ipywidgets",
         "geopandas",
-        "anytree"
+        "anytree",
+        "pvlib"
     ],
     author='rebase.energy',
     description='Data model for energy modelling.',

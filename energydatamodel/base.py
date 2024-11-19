@@ -69,6 +69,9 @@ class EnergyAsset(AbstractClass):
             if self.tz is not None: 
                 self.location.tz = self.tz
 
+    def get_location(self):
+        return self.location
+    
     def plot_timeseries(self, 
                         start_date: t.Optional[t.Union[str, pd.DatetimeIndex]] = None, 
                         end_date: t.Optional[t.Union[str, pd.DatetimeIndex]] = None) -> plt.Axes: 
