@@ -26,7 +26,7 @@
 &ensp;|&ensp;
 **🚀 [Try out now in Colab](https://colab.research.google.com/github/rebase-energy/EnergyDataModel/blob/main/energydatamodel/examples/example-1-to-json.ipynb)**
 &ensp;|&ensp;
-**👥 [Join Community Slack](https://join.slack.com/t/rebase-community/shared_invite/zt-1dtd0tdo6-sXuCEy~zPnvJw4uUe~tKeA)**
+**👋 [Join Slack Community](https://dub.sh/yTqMriJ)**
 
 ## Modules and Data Classes
 **EnergyDataModel** leverages [Python's Data Classes](https://docs.python.org/3/library/dataclasses.html) to represent energy assets as Python objects. The table below gives a summary of the available modules and data classes. 
@@ -54,7 +54,7 @@ Our philosophy is aligned on usefulness and practicality over maximizing executi
 
 Making code explicit, readable and intuitive counts. 
 
-If you are interested in joining our mission to build open-source tools that improve productiveness and workflow of energy modellers worldwide - then [join our Slack](https://join.slack.com/t/rebase-community/shared_invite/zt-1dtd0tdo6-sXuCEy~zPnvJw4uUe~tKeA)!
+If you are interested in joining our mission to build open-source tools that improve productiveness and workflow of energy modellers worldwide - then [join our Slack](https://dub.sh/yTqMriJ)!
 
 ## Basic usage
 Create an energy system made up of two sites with co-located solar, wind and batteries and save as a .json-file. 
@@ -111,7 +111,7 @@ We welcome contributions from anyone interested in this project! Here are some w
 * Create a converter to new data format; or
 * Create a converter to another energy data model.
 
-If you are interested in contributing, then feel free to join our [Community Slack](https://join.slack.com/t/rebase-community/shared_invite/zt-1dtd0tdo6-sXuCEy~zPnvJw4uUe~tKeA) so that we can discuss it. 
+If you are interested in contributing, then feel free to join our [Slack Community](https://dub.sh/yTqMriJ) so that we can discuss it. 
 
 ## Contributors
 This project uses [allcontributors.org](https://allcontributors.org/) to recognize all contributors, including those that don't push code. 
