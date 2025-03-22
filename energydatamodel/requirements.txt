@@ -1,0 +1,7 @@
+pandas
+shapely
+pytz
+ipywidgets
+geopandas
+anytree
+pvlib
