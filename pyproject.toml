@@ -4,16 +4,23 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "energydatamodel"
-version = "0.0.2"
-description = "Data model for energy modelling."
 authors = [
     { name = "rebase.energy" }
 ]
+version = "0.0.2"
+description = "Data model for energy modelling."
+readme = "README.md"
+requires-python = ">=3.11"
 dependencies = [
-    "uuid",
-    "pandas",
-    "shapely",
-    "pytz",
-    "ipywidgets",
-    "geopandas"
+    "anytree>=2.12.1",
+    "geopandas>=1.0.1",
+    "ipywidgets>=8.1.5",
+    "matplotlib>=3.10.1",
+    "pandas>=2.2.3",
+    "pvlib>=0.12.0",
+    "pytz>=2025.1",
+    "shapely>=2.0.7",
+    "sphinx==7.2.6",
+    "sphinx-autodoc-typehints>=2.0.1",
+    "sphinx-rtd-theme>=3.0.2",
 ]
