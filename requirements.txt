@@ -5,3 +5,7 @@ matplotlib
 pandas
 shapely
 geopandas
+pytz
+ipywidgets
+anytree
+pvlib
