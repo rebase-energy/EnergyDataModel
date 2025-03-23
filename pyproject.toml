@@ -4,12 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "energydatamodel"
+version = "0.0.2"
 authors = [
     { name = "rebase.energy" }
 ]
-version = "0.0.2"
 description = "Data model for energy modelling."
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.11"
 dependencies = [
     "anytree>=2.12.1",
