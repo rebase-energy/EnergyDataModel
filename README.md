@@ -98,6 +98,8 @@ portfolio.to_json()
 For more examples on usage and applications of **EnergyDataModel** see the documentation examples page [here](https://docs.energydatamodel.org/en/latest/examples.html).
 
 ## Installation
+We recommend installing using a virtual environment like [venv](https://docs.python.org/3/library/venv.html), [poetry](https://python-poetry.org/) or [uv](https://docs.astral.sh/uv/). 
+
 Install the **stable** release: 
 ```bash
 pip install energydatamodel

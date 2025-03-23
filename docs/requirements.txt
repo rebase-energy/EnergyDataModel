@@ -1,11 +1,1 @@
-Sphinx==7.2.6
-sphinx_rtd_theme
-sphinx_autodoc_typehints
-matplotlib
-pandas
-shapely
-geopandas
-nbsphinx
-pandoc
-
--e .
+energydatamodel[dev] @ git+https://github.com/rebase-energy/EnergyDataModel.git@main

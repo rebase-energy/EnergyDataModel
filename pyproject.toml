@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "energydatamodel"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
     { name = "rebase.energy" }
 ]
@@ -14,13 +14,20 @@ license = { text = "MIT" }
 requires-python = ">=3.11"
 dependencies = [
     "anytree>=2.12.1",
+    "build>=1.2.2.post1",
     "geopandas>=1.0.1",
     "matplotlib>=3.10.1",
     "pandas==2.2.2",
     "pvlib>=0.12.0",
     "pytz>=2025.1",
     "shapely>=2.0.7",
+    "twine>=6.1.0",
 ]
+
+[project.urls]
+homepage = "https://energydatamodel.org"
+repository = "https://github.com/rebase-energy/EnergyDataModel"
+documentation = "https://docs.energydatamodel.org/en/latest"
 
 [project.optional-dependencies]
 dev = [
