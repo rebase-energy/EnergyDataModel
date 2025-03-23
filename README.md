@@ -105,14 +105,14 @@ pip install energydatamodel
 
 Install the **latest** release: 
 ```bash
-pip install git+https://github.com/rebase-energy/EnergyDataModel
+pip install git+https://github.com/rebase-energy/EnergyDataModel.git
 ```
 
 Install in editable mode for **development**: 
 ```bash
 git clone https://github.com/rebase-energy/EnergyDataModel.git
 cd EnergyDataModel
-pip install -e . 
+pip install -e .[dev] 
 ```
 
 ## Ways to Contribute
