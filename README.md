@@ -36,7 +36,7 @@
 &ensp;|&ensp;
 **📖 [Documentation](https://docs.energydatamodel.org/en/latest/)**
 &ensp;|&ensp;
-**🚀 [Try out now in Colab](https://colab.research.google.com/github/rebase-energy/EnergyDataModel/blob/main/energydatamodel/examples/example-1-to-json.ipynb)**
+**🚀 [Try out now in Colab](https://colab.research.google.com/github/rebase-energy/EnergyDataModel/blob/main/energydatamodel/examples/example-1-to-tree-json.ipynb)**
 &ensp;|&ensp;
 **👋 [Join Slack Community](https://dub.sh/yTqMriJ)**
 
