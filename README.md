@@ -1,15 +1,27 @@
 <div align="center">
-    <img width="300" src="https://github.com/rebase-energy/EnergyDataModel/blob/main/assets/energydatamodel-logo.png?raw=true" alt="EnergyDataModel"/>
+    <img width="300" src="https://github.com/rebase-energy/EnergyDataModel/blob/main/assets/logo-energydatamodel.png?raw=true" alt="EnergyDataModel"/>
 <h2 style="margin-top: 0px;">
     🔋 Represent energy systems as Python data classes for improved modularity and readability
 </h2>
 </div>
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![PyPI version](https://badge.fury.io/py/energydatamodel.svg)](https://badge.fury.io/py/energydatamodel) 
-[![Join us on Slack](https://img.shields.io/badge/Join%20us%20on%20Slack-%2362BEAF?style=flat&logo=slack&logoColor=white)](https://dub.sh/yTqMriJ) 
-[![All Contributors](https://img.shields.io/github/all-contributors/rebase-energy/EnergyDataModel?color=ee8449&style=flat-square)](#contributors)
-[![GitHub Repo stars](https://img.shields.io/github/stars/rebase-energy/EnergyDataModel?style=social)](https://github.com/rebase-energy/EnergyDataModel)
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT">
+    <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green.svg">
+  </a>
+  <a href="https://pypi.org/project/energydatamodel/">
+    <img alt="PyPI version" src="https://img.shields.io/pypi/v/energydatamodel.svg?color=blue">
+  </a>
+  <a href="https://dub.sh/yTqMriJ">
+    <img alt="Join us on Slack" src="https://img.shields.io/badge/Join%20us%20on%20Slack-%234A154B?style=flat&logo=slack&logoColor=white">
+  </a>
+  <a href="#contributors">
+    <img alt="All Contributors" src="https://img.shields.io/github/all-contributors/rebase-energy/EnergyDataModel?color=2b2292&style=flat-square">
+  </a>
+  <a href="https://github.com/rebase-energy/EnergyDataModel">
+    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/rebase-energy/EnergyDataModel?style=social">
+  </a>
+</p>
 
 **EnergyDataModel** provides an open-source, Python-based data model that enables energy data scientists and modellers to write more modular and readable code. **EnergyDataModel** lets you: 
 
