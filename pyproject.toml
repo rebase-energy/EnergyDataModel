@@ -15,16 +15,13 @@ dependencies = [
     "anytree>=2.12.1",
     "geopandas>=1.0.1",
     "matplotlib>=3.10.1",
-    "pandas>=2.2.3",
+    "pandas==2.2.2",
     "pvlib>=0.12.0",
     "pytz>=2025.1",
     "shapely>=2.0.7",
 ]
 
 [project.optional-dependencies]
-colab = [
-    "pandas==2.2.2",
-]
 dev = [
     "ipykernel>=6.29.5",
     "ipywidgets>=8.1.5",
