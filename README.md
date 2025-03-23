@@ -69,7 +69,7 @@ Making code explicit, readable and intuitive counts.
 If you are interested in joining our mission to build open-source tools that improve productiveness and workflow of energy modellers worldwide - then [join our Slack](https://dub.sh/yTqMriJ)!
 
 ## Basic usage
-Create an energy system made up of two sites with co-located solar, wind and batteries and save as a .json-file. 
+Create an energy system made up of two sites with co-located solar, wind and batteries and save as a JSON-file. 
 
 ```python
 import energydatamodel as edm
@@ -123,7 +123,7 @@ We welcome contributions from anyone interested in this project! Here are some w
 * Create a converter to new data format; or
 * Create a converter to another energy data model.
 
-If you are interested in contributing, then feel free to join our [Slack Community](https://dub.sh/yTqMriJ) so that we can discuss it. 
+If you are interested in contributing, then feel free to join our [Slack Community](https://dub.sh/yTqMriJ) so that we can discuss it. 👋
 
 ## Contributors
 This project uses [allcontributors.org](https://allcontributors.org/) to recognize all contributors, including those that don't push code. 
