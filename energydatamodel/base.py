@@ -170,7 +170,7 @@ class EnergyCollection(AbstractClass):
 
         return node
     
-    def draw_tree(self, only_named=True, show_type=False, return_tree=False):
+    def to_tree(self, only_named=True, show_type=False, return_tree=False):
         # Render the tree
         tree = self._build_tree(self, only_named=only_named)
 
