@@ -1,0 +1,10 @@
+{% extends "!layout.html" %}
+
+{% block extrahead %}
+  {{ super() }}
+  <!-- Plausible Analytics -->
+  <script defer data-domain="rebase.energy" src="https://plausible.io/js/script.outbound-links.tagged-events.js"></script>
+  <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
+  <script defer data-domain="docs.energydatamodel.org" src="https://plausible.io/js/script.outbound-links.tagged-events.js"></script>
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="c4d9b81a-407a-4ca8-98ea-e602e33e5a2b"></script>
+  {% endblock %}
