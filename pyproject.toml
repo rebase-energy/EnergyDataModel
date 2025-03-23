@@ -25,8 +25,6 @@ dependencies = [
 colab = [
     "pandas==2.2.2",
 ]
-
-[project.optional-dependencies]
 dev = [
     "ipykernel>=6.29.5",
     "ipywidgets>=8.1.5",
