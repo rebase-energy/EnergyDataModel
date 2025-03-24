@@ -1,8 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Optional, Union
 import pandas as pd
-import ipywidgets as widgets
-
 
 from energydatamodel import EnergyAsset, GeoPolygon
 
@@ -17,6 +15,7 @@ class WindTurbine(EnergyAsset):
     power_coefficient_curve: Optional[Union[pd.DataFrame, dict]] = None
 
     def create_table_representation(self):
+        import ipywidgets as widgets
         # Create and return widgets to represent the WindTurbine's data
         name_label = widgets.Label('Name: ' + self.name)
         capacity_label = widgets.Label('Capacity: ' + str(self.capacity))

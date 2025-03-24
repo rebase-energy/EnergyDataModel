@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 from shapely.geometry import Point
 import pytz
 from uuid import uuid4
-import ipywidgets as widgets
-from IPython.display import display, HTML
 
 from energydatamodel import AbstractClass, Location, EnergyAsset, EnergyCollection
 
