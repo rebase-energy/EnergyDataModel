@@ -149,3 +149,6 @@ This project uses [allcontributors.org](https://allcontributors.org/) to recogni
 
 ## Licence
 This project uses the [MIT Licence](LICENCE.md).  
+
+## Acknowledgement
+The authors of this project would like to thank the Swedish Energy Agency for their financial support under the E2B2 program (project number P2022-00903)
