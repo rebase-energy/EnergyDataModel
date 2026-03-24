@@ -90,35 +90,26 @@ class Portfolio(EnergyCollection):
     """
 
     def plot_timeseries(self, start_date: t.Optional[str] = None, end_date: t.Optional[str] = None, subplots: bool = False) -> Union[t.Tuple[plt.Figure, plt.Axes], t.Tuple[plt.Figure, np.ndarray]]:
-        # Convert start_date and end_date to datetime if they are not None
-        if start_date is not None:
-            start_date = pd.to_datetime(start_date)
-        if end_date is not None:
-            end_date = pd.to_datetime(end_date)
+        assets_with_data = [a for a in self.assets if a.timeseries is not None]
+        if not assets_with_data:
+            raise ValueError("No assets with timeseries data in this portfolio.")
 
-        # Create a single plot or subplots based on the subplots parameter
         if subplots:
-            fig, axes = plt.subplots(len(self.assets), 1, sharex=True, figsize=(10, len(self.assets) * 3))
-            for i, asset in enumerate(self.assets):
-                column = asset.timeseries.column_name
-                df = asset.timeseries.df
-                # Slice the dataframe for the date range
-                df_filtered = df.loc[start_date:end_date, column]
-                if isinstance(axes, np.ndarray):
-                    ax = axes[i]
-                else:
-                    ax = axes
-                df_filtered.plot(ax=ax)
+            fig, axes = plt.subplots(len(assets_with_data), 1, sharex=True, figsize=(10, len(assets_with_data) * 3))
+            for i, asset in enumerate(assets_with_data):
+                df = asset.timeseries.to_pandas().loc[start_date:end_date]
+                ax = axes[i] if isinstance(axes, np.ndarray) else axes
+                df.plot(ax=ax)
+                ax.set_title(asset.name or f"Asset {i}")
             plt.tight_layout()
             return fig, axes
         else:
             fig, ax = plt.subplots()
-            for asset in self.assets:
-                column = asset.timeseries.column_name
-                df = asset.timeseries.df
-                # Slice the dataframe for the date range
-                df_filtered = df.loc[start_date:end_date, column]
-                df_filtered.plot(ax=ax)
+            for asset in assets_with_data:
+                df = asset.timeseries.to_pandas().loc[start_date:end_date]
+                # prefix column names with asset name to avoid collisions
+                df.columns = [f"{asset.name}.{col}" for col in df.columns]
+                df.plot(ax=ax)
             return fig, ax
 
 
