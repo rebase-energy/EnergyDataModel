@@ -25,7 +25,7 @@ class House(edm.EnergyAsset):
             self.assets.append(assets)
 
     def has_demand(self):
-        return isinstance(self.timeseries, edm.TimeSeries)
+        return self.timeseries is not None
 
     def has_pvsystem(self):
         return any(isinstance(item, edm.PVSystem) for item in self.assets)

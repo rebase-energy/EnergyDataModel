@@ -5,10 +5,18 @@ from shapely.geometry import Point
 import pytz
 from uuid import uuid4
 
+from timedatamodel import (
+    TimeSeries,
+    TimeSeriesTable,
+    DataType,
+    DataShape,
+    Frequency,
+    GeoLocation as TDMGeoLocation,
+)
+
 from .abstract import AbstractClass
 from .geospatial import GeoLocation, Location, LineString, GeoPolygon, GeoMultiPolygon
-from .base import EnergyAsset, TimeSeries, Sensor, EnergyCollection
-from .timeseries import ElectricityDemand, ElectricityConsumption, ElectricityAreaDemand, ElectricityAreaConsumption, ElectricitySupply, ElectricityProduction, ElectricityAreaSupply, ElectricityAreaProduction, HeatingDemand, HeatingConsumption, HeatingAreaDemand
+from .base import EnergyAsset, Sensor, EnergyCollection
 from .building import House, Building
 from .solar import FixedMount, SingleAxisTrackerMount, PVArray, PVSystem, SolarPowerArea
 from .wind import WindTurbine, WindFarm, WindPowerArea
@@ -18,4 +26,4 @@ from .hydro import Reservoir, HydroTurbine, HydroPowerPlant
 from .powergrid import Carrier, Bus, Transformer, Link, SubNetwork, Network
 from .collection import Site, EnergyCommunity, Portfolio
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
