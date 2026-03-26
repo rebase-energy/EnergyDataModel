@@ -89,15 +89,31 @@ class Portfolio(EnergyCollection):
     A Portfolio is like an EnergySystem but is used more for the purpose of trading energy rather than maintaining an energy balance. 
     """
 
+    def _asset_timeseries_to_pandas(self, asset, start_date=None, end_date=None):
+        """Concatenate all timeseries entries of an asset into one DataFrame."""
+        frames = []
+        for ts in asset.timeseries:
+            df = ts.to_pandas()
+            if isinstance(df, pd.Series):
+                df = df.to_frame()
+            if ts.name:
+                if len(df.columns) == 1:
+                    df.columns = [ts.name]
+                else:
+                    df.columns = [f"{ts.name}.{c}" for c in df.columns]
+            frames.append(df)
+        combined = pd.concat(frames, axis=1)
+        return combined.loc[start_date:end_date]
+
     def plot_timeseries(self, start_date: t.Optional[str] = None, end_date: t.Optional[str] = None, subplots: bool = False) -> Union[t.Tuple[plt.Figure, plt.Axes], t.Tuple[plt.Figure, np.ndarray]]:
-        assets_with_data = [a for a in self.assets if a.timeseries is not None]
+        assets_with_data = [a for a in self.assets if a.timeseries]
         if not assets_with_data:
             raise ValueError("No assets with timeseries data in this portfolio.")
 
         if subplots:
             fig, axes = plt.subplots(len(assets_with_data), 1, sharex=True, figsize=(10, len(assets_with_data) * 3))
             for i, asset in enumerate(assets_with_data):
-                df = asset.timeseries.to_pandas().loc[start_date:end_date]
+                df = self._asset_timeseries_to_pandas(asset, start_date, end_date)
                 ax = axes[i] if isinstance(axes, np.ndarray) else axes
                 df.plot(ax=ax)
                 ax.set_title(asset.name or f"Asset {i}")
@@ -106,8 +122,7 @@ class Portfolio(EnergyCollection):
         else:
             fig, ax = plt.subplots()
             for asset in assets_with_data:
-                df = asset.timeseries.to_pandas().loc[start_date:end_date]
-                # prefix column names with asset name to avoid collisions
+                df = self._asset_timeseries_to_pandas(asset, start_date, end_date)
                 df.columns = [f"{asset.name}.{col}" for col in df.columns]
                 df.plot(ax=ax)
             return fig, ax

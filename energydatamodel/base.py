@@ -8,7 +8,7 @@ from shapely.geometry import mapping, Point, Polygon, LineString
 import pytz
 from uuid import uuid4
 from anytree import Node, RenderTree
-from timedatamodel import TimeSeriesTable
+from timedatamodel import TimeSeries, TimeSeriesTable
 
 import energydatamodel as edm
 from energydatamodel import AbstractClass, Location
@@ -18,14 +18,10 @@ from energydatamodel import AbstractClass, Location
 class EnergyAsset(AbstractClass):
     """Base class for all energy assets.
 
-    The ``timeseries`` field holds a :class:`timedatamodel.TimeSeriesTable` —
-    a Polars-backed multivariate container where each column is one signal
-    (e.g. ``ActivePower``, ``WindSpeed``) and per-column metadata (unit,
-    data_type, location, labels) is preserved alongside the data.
-
-    Use :meth:`timeseries.select_column` to extract a single signal as a
-    :class:`timedatamodel.TimeSeries`, or :meth:`timeseries.to_pandas` to
-    convert the whole table to a pandas DataFrame.
+    The ``timeseries`` field holds an optional list of
+    :class:`timedatamodel.TimeSeries` and/or :class:`timedatamodel.TimeSeriesTable`
+    objects.  Each entry is either a univariate ``TimeSeries`` (single signal) or
+    a multivariate ``TimeSeriesTable`` (multiple co-indexed signals).
     """
 
     name: t.Optional[str] = None
@@ -34,7 +30,7 @@ class EnergyAsset(AbstractClass):
     longitude: t.Optional[float] = None
     altitude: t.Optional[float] = None
     tz: t.Optional[pytz.timezone] = None
-    timeseries: t.Optional[TimeSeriesTable] = None
+    timeseries: t.Optional[t.List[t.Union[TimeSeries, TimeSeriesTable]]] = None
 
     def __post_init__(self):
         if self.location is None:
@@ -52,7 +48,11 @@ class EnergyAsset(AbstractClass):
                         columns: t.Optional[t.List[str]] = None,
                         start_date: t.Optional[str] = None,
                         end_date: t.Optional[str] = None) -> plt.Axes:
-        """Plot one or more signals from the asset's TimeSeriesTable.
+        """Plot signals from the asset's timeseries list.
+
+        Each entry in ``self.timeseries`` is converted to a pandas DataFrame,
+        column names are prefixed with the entry's name (if set) to avoid
+        collisions, and the results are concatenated before plotting.
 
         Args:
             columns: Signal names to plot. Defaults to all columns.
@@ -62,18 +62,30 @@ class EnergyAsset(AbstractClass):
         Returns:
             The Matplotlib Axes object of the plot.
         """
-        if self.timeseries is None:
+        if not self.timeseries:
             raise ValueError("No timeseries data attached to this asset.")
 
-        df = self.timeseries.to_pandas()
+        frames = []
+        for ts in self.timeseries:
+            df = ts.to_pandas()
+            if isinstance(df, pd.Series):
+                df = df.to_frame()
+            if ts.name:
+                if len(df.columns) == 1:
+                    df.columns = [ts.name]
+                else:
+                    df.columns = [f"{ts.name}.{c}" for c in df.columns]
+            frames.append(df)
+
+        combined = pd.concat(frames, axis=1)
 
         if columns is not None:
-            df = df[columns]
+            combined = combined[columns]
 
         if start_date is not None or end_date is not None:
-            df = df.loc[start_date:end_date]
+            combined = combined.loc[start_date:end_date]
 
-        ax = df.plot()
+        ax = combined.plot()
         ax.set_ylabel("Value")
         ax.set_title(self.name or self.__class__.__name__)
 
@@ -136,6 +148,12 @@ class EnergyCollection(AbstractClass):
                 continue
             
             attr_value = getattr(obj, attr_name)
+
+            # Skip timeseries data containers
+            if isinstance(attr_value, (TimeSeries, TimeSeriesTable)):
+                continue
+            if isinstance(attr_value, list) and attr_value and isinstance(attr_value[0], (TimeSeries, TimeSeriesTable)):
+                continue
 
             # If the attribute is a list, iterate over its items
             if isinstance(attr_value, list):
