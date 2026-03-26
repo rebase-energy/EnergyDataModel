@@ -98,6 +98,7 @@ class EnergyCollection(AbstractClass):
     name: t.Optional[str] = None
     assets: t.Optional[t.List[EnergyAsset]] = field(default_factory=list)
     collections: t.Optional[t.List["EnergyCollection"]] = field(default_factory=list)
+    timeseries: t.Optional[t.List[t.Union[TimeSeries, TimeSeriesTable]]] = None
 
     def add_assets(self, assets: t.Union[EnergyAsset, t.List[EnergyAsset]]):
         if isinstance(assets, list):
@@ -129,6 +130,53 @@ class EnergyCollection(AbstractClass):
                 return asset
         return None
     
+    def plot_timeseries(self,
+                        columns: t.Optional[t.List[str]] = None,
+                        start_date: t.Optional[str] = None,
+                        end_date: t.Optional[str] = None) -> plt.Axes:
+        """Plot signals from the collection's timeseries list.
+
+        Each entry in ``self.timeseries`` is converted to a pandas DataFrame,
+        column names are prefixed with the entry's name (if set) to avoid
+        collisions, and the results are concatenated before plotting.
+
+        Args:
+            columns: Signal names to plot. Defaults to all columns.
+            start_date: ISO 8601 start date string for slicing (inclusive).
+            end_date: ISO 8601 end date string for slicing (inclusive).
+
+        Returns:
+            The Matplotlib Axes object of the plot.
+        """
+        if not self.timeseries:
+            raise ValueError("No timeseries data attached to this collection.")
+
+        frames = []
+        for ts in self.timeseries:
+            df = ts.to_pandas()
+            if isinstance(df, pd.Series):
+                df = df.to_frame()
+            if ts.name:
+                if len(df.columns) == 1:
+                    df.columns = [ts.name]
+                else:
+                    df.columns = [f"{ts.name}.{c}" for c in df.columns]
+            frames.append(df)
+
+        combined = pd.concat(frames, axis=1)
+
+        if columns is not None:
+            combined = combined[columns]
+
+        if start_date is not None or end_date is not None:
+            combined = combined.loc[start_date:end_date]
+
+        ax = combined.plot()
+        ax.set_ylabel("Value")
+        ax.set_title(self.name or self.__class__.__name__)
+
+        return ax
+
     def _build_tree(self, obj, parent=None, only_named=True):
         """
         Recursively builds an anytree tree structure from any object `obj`.
