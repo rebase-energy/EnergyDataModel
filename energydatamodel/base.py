@@ -8,7 +8,7 @@ from shapely.geometry import mapping, Point, Polygon, LineString
 import pytz
 from uuid import uuid4
 from anytree import Node, RenderTree
-from timedatamodel import TimeSeries, TimeSeriesTable
+from energydatamodel.timeseries import TimeSeries, TimeSeriesTable
 
 import energydatamodel as edm
 from energydatamodel import AbstractClass, Location

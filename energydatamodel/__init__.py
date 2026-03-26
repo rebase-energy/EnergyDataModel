@@ -6,13 +6,13 @@ import pytz
 from uuid import uuid4
 
 from timedatamodel import (
-    TimeSeries,
-    TimeSeriesTable,
     DataType,
     DataShape,
     Frequency,
     GeoLocation as TDMGeoLocation,
 )
+
+from .timeseries import TimeSeries, TimeSeriesTable
 
 from .abstract import AbstractClass
 from .geospatial import GeoLocation, Location, LineString, GeoPolygon, GeoMultiPolygon
