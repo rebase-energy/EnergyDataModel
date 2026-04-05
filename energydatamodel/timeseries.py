@@ -10,3 +10,38 @@ class TimeSeries(_BaseTimeSeries):
 class TimeSeriesTable(_BaseTimeSeriesTable):
     """EnergyDataModel TimeSeriesTable — inherits from timedatamodel.TimeSeriesTable."""
     pass
+
+
+# Electricity time series types
+class ElectricityDemand(TimeSeries):
+    pass
+
+class ElectricityConsumption(TimeSeries):
+    pass
+
+class ElectricityAreaDemand(TimeSeries):
+    pass
+
+class ElectricityAreaConsumption(TimeSeries):
+    pass
+
+class ElectricitySupply(TimeSeries):
+    pass
+
+class ElectricityProduction(TimeSeries):
+    pass
+
+class ElectricityAreaSupply(TimeSeries):
+    pass
+
+class ElectricityAreaProduction(TimeSeries):
+    pass
+
+class HeatingDemand(TimeSeries):
+    pass
+
+class HeatingConsumption(TimeSeries):
+    pass
+
+class HeatingAreaDemand(TimeSeries):
+    pass
