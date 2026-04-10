@@ -1,5 +1,6 @@
 from timedatamodel import TimeSeries as _BaseTimeSeries
 from timedatamodel import TimeSeriesTable as _BaseTimeSeriesTable
+from timedatamodel import TimeSeriesDescriptor
 
 
 class TimeSeries(_BaseTimeSeries):

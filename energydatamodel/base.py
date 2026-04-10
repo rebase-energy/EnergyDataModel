@@ -1,6 +1,7 @@
 import dataclasses
 from dataclasses import dataclass, field, fields
 import typing as t
+from typing import ClassVar
 import pandas as pd
 import matplotlib.pyplot as plt
 import shapely
@@ -8,7 +9,7 @@ from shapely.geometry import mapping, Point, Polygon, LineString
 import pytz
 from uuid import uuid4
 from anytree import Node, RenderTree
-from energydatamodel.timeseries import TimeSeries, TimeSeriesTable
+from energydatamodel.timeseries import TimeSeries, TimeSeriesTable, TimeSeriesDescriptor
 
 import energydatamodel as edm
 from energydatamodel import AbstractClass, Location
@@ -30,7 +31,7 @@ class EnergyAsset(AbstractClass):
     longitude: t.Optional[float] = None
     altitude: t.Optional[float] = None
     tz: t.Optional[pytz.timezone] = None
-    timeseries: t.Optional[t.List[t.Union[TimeSeries, TimeSeriesTable]]] = None
+    timeseries: t.Optional[t.List[t.Union[TimeSeriesDescriptor, TimeSeries, TimeSeriesTable]]] = None
 
     def __post_init__(self):
         if self.location is None:
@@ -43,6 +44,45 @@ class EnergyAsset(AbstractClass):
 
     def get_location(self):
         return self.location
+
+    # Fields excluded from to_properties() — stored as top-level DB columns
+    _BASE_FIELDS: ClassVar[frozenset] = frozenset({
+        "name", "latitude", "longitude", "altitude", "timezone", "tz",
+        "timeseries", "location", "_id",
+    })
+
+    def children(self) -> list:
+        """Return child objects for tree walking. Override in subclasses with children."""
+        return []
+
+    def add_child(self, obj) -> None:
+        """Attach a child object. Override in subclasses with children."""
+        raise TypeError(
+            f"{type(self).__name__} does not support add_child(). "
+            f"Override add_child() to enable tree reconstruction."
+        )
+
+    # Fields that hold child objects — excluded from to_properties()
+    _CHILDREN_FIELDS: ClassVar[frozenset] = frozenset()
+
+    def to_properties(self) -> dict:
+        """Return domain-specific fields as a dict (excludes base and children fields).
+
+        Base fields (name, lat, lon, alt, tz, timeseries, location, _id) are
+        stored as top-level columns in the database. Children fields (e.g.,
+        wind_turbines, pv_arrays) are stored as separate node rows.
+        This method returns only the scalar domain-specific properties
+        (e.g., capacity, hub_height).
+        """
+        exclude = self._BASE_FIELDS | self._CHILDREN_FIELDS
+        props = {}
+        for f in dataclasses.fields(self):
+            if f.name in exclude:
+                continue
+            value = getattr(self, f.name)
+            if value is not None:
+                props[f.name] = value
+        return props
 
     def plot_timeseries(self,
                         columns: t.Optional[t.List[str]] = None,
@@ -98,7 +138,22 @@ class EnergyCollection(AbstractClass):
     name: t.Optional[str] = None
     assets: t.Optional[t.List[EnergyAsset]] = field(default_factory=list)
     collections: t.Optional[t.List["EnergyCollection"]] = field(default_factory=list)
-    timeseries: t.Optional[t.List[t.Union[TimeSeries, TimeSeriesTable]]] = None
+    timeseries: t.Optional[t.List[t.Union[TimeSeriesDescriptor, TimeSeries, TimeSeriesTable]]] = None
+
+    _BASE_FIELDS: ClassVar[frozenset] = EnergyAsset._BASE_FIELDS | frozenset({"assets", "collections"})
+    _CHILDREN_FIELDS: ClassVar[frozenset] = frozenset()
+
+    def to_properties(self) -> dict:
+        """Return domain-specific fields as a dict (excludes base and children fields)."""
+        exclude = self._BASE_FIELDS | self._CHILDREN_FIELDS
+        props = {}
+        for f in dataclasses.fields(self):
+            if f.name in exclude:
+                continue
+            value = getattr(self, f.name)
+            if value is not None:
+                props[f.name] = value
+        return props
 
     def add_assets(self, assets: t.Union[EnergyAsset, t.List[EnergyAsset]]):
         if isinstance(assets, list):
@@ -111,7 +166,7 @@ class EnergyCollection(AbstractClass):
 
     def list_assets(self):
         return self.assets
-    
+
     def add_collection(self, collection: "EnergyCollection"):
         if isinstance(collection, list):
             self.collections.extend(collection)
@@ -120,9 +175,26 @@ class EnergyCollection(AbstractClass):
 
     def list_collections(self):
         return self.collections
-    
+
     def remove_collection(self, collection: "EnergyCollection"):
         self.collections.remove(collection)
+
+    def children(self) -> list:
+        """Return all child objects (collections + assets)."""
+        return (self.collections or []) + (self.assets or [])
+
+    def add_child(self, obj) -> None:
+        """Attach a child — collections go to .collections, assets to .assets."""
+        if isinstance(obj, EnergyCollection):
+            if self.collections is None:
+                self.collections = []
+            self.collections.append(obj)
+        elif isinstance(obj, EnergyAsset):
+            if self.assets is None:
+                self.assets = []
+            self.assets.append(obj)
+        else:
+            raise TypeError(f"Cannot add {type(obj).__name__} as child of {type(self).__name__}")
     
     def get_asset_by_name(self, name: str):
         for asset in self.assets:

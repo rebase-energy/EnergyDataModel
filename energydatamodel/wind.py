@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Union
+from typing import ClassVar, List, Optional, Union
 import pandas as pd
 
 from energydatamodel import EnergyAsset, GeoPolygon
@@ -23,13 +23,26 @@ class WindTurbine(EnergyAsset):
         return widgets.VBox([name_label, capacity_label])
 
 @dataclass(repr=False)
-class WindFarm(EnergyAsset): 
+class WindFarm(EnergyAsset):
     wind_turbines: list[WindTurbine] = None
     capacity: Union[float, pd.DataFrame] = None
     farm_efficiency: Optional[pd.DataFrame] = None
 
+    _CHILDREN_FIELDS: ClassVar[frozenset] = frozenset({"wind_turbines"})
+
     def __post_init__(self):
         super().__post_init__()
+
+    def children(self) -> list:
+        return self.wind_turbines or []
+
+    def add_child(self, obj) -> None:
+        if isinstance(obj, WindTurbine):
+            if self.wind_turbines is None:
+                self.wind_turbines = []
+            self.wind_turbines.append(obj)
+        else:
+            raise TypeError(f"WindFarm only accepts WindTurbine children, got {type(obj).__name__}")
 
 @dataclass
 class WindPowerArea:
