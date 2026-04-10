@@ -75,6 +75,17 @@ class MultiSite(EnergyCollection):
     def remove_asset(self, asset: EnergyAsset):
         self.assets.remove(asset)
 
+    def children(self) -> list:
+        return (self.sites or []) + (self.assets or [])
+
+    def add_child(self, obj) -> None:
+        if isinstance(obj, Site):
+            self.sites.append(obj)
+        elif isinstance(obj, EnergyAsset):
+            self.assets.append(obj)
+        else:
+            raise TypeError(f"MultiSite only accepts Site or EnergyAsset children, got {type(obj).__name__}")
+
 
 @dataclass(repr=False)
 class EnergyCommunity(EnergyCollection):

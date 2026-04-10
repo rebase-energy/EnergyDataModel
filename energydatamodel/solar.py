@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Optional, Union
+from typing import ClassVar, List, Optional, Union
 import pandas as pd
 from shapely.geometry import Point
 import pytz
@@ -57,6 +57,7 @@ class PVSystem(EnergyAsset):
     """
 
     pv_arrays: List[PVArray] = field(default_factory=list)
+    _CHILDREN_FIELDS: ClassVar[frozenset] = frozenset({"pv_arrays"})
     capacity: float = None
     surface_azimuth: float = None
     surface_tilt: float = None
@@ -186,6 +187,15 @@ class PVSystem(EnergyAsset):
     pvlib.location.Location
 
     """
+
+    def children(self) -> list:
+        return self.pv_arrays or []
+
+    def add_child(self, obj) -> None:
+        if isinstance(obj, PVArray):
+            self.pv_arrays.append(obj)
+        else:
+            raise TypeError(f"PVSystem only accepts PVArray children, got {type(obj).__name__}")
 
     def to_pvlib(self, **kwargs):
         # TODO This one is a bit tricky. 

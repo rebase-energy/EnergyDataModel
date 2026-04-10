@@ -12,7 +12,7 @@ from timedatamodel import (
     GeoLocation as TDMGeoLocation,
 )
 
-from .timeseries import TimeSeries, TimeSeriesTable
+from .timeseries import TimeSeries, TimeSeriesTable, TimeSeriesDescriptor
 
 from .abstract import AbstractClass
 from .geospatial import GeoLocation, Location, LineString, GeoPolygon, GeoMultiPolygon
