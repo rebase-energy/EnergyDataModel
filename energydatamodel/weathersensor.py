@@ -1,33 +1,32 @@
-from dataclasses import dataclass, field
-from typing import List, Optional, Union
-import pandas as pd
-from shapely.geometry import Point
-import pytz
-from uuid import uuid4
+"""Weather sensors — concrete :class:`Sensor` subclasses observing
+environmental variables."""
 
-from energydatamodel import Sensor
+from dataclasses import dataclass
+from typing import Optional
+
+from energydatamodel.bases import Sensor
 
 
-@dataclass
+@dataclass(repr=False, kw_only=True)
 class TemperatureSensor(Sensor):
     height: Optional[float] = None
 
 
-@dataclass
+@dataclass(repr=False, kw_only=True)
 class WindSpeedSensor(Sensor):
     height: Optional[float] = None
 
 
-@dataclass
+@dataclass(repr=False, kw_only=True)
 class RadiationSensor(Sensor):
     height: Optional[float] = None
 
 
-@dataclass
+@dataclass(repr=False, kw_only=True)
 class RainSensor(Sensor):
     height: Optional[float] = None
 
 
-@dataclass
+@dataclass(repr=False, kw_only=True)
 class HumiditySensor(Sensor):
     height: Optional[float] = None

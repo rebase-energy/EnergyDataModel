@@ -1,40 +1,45 @@
-from dataclasses import dataclass, field
-import typing as t
+"""Building and House — Assets that also contain other Assets via inherited members."""
 
-import energydatamodel as edm
-from energydatamodel import EnergyAsset
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Optional
 
 
-@dataclass(repr=False)
-class Building(edm.EnergyAsset):
-    name: t.Optional[str] = None
-    type: t.Optional[str] = None
-    assets: t.List[EnergyAsset] = field(default_factory=list)
+from energydatamodel.bases import Asset
 
-    
-@dataclass(repr=False)
-class House(edm.EnergyAsset):
-    name: t.Optional[str] = None
-    type: t.Optional[str] = None
-    assets: t.List[EnergyAsset] = field(default_factory=list)
-    
-    def add_assets(self, assets: t.Union[EnergyAsset, t.List[EnergyAsset]]):
-        if isinstance(assets, list):
-            self.assets.extend(assets)
-        else:
-            self.assets.append(assets)
 
-    def has_demand(self):
-        return self.timeseries is not None
+@dataclass(repr=False, kw_only=True)
+class Building(Asset):
+    """A building. An :class:`Asset` (location, capacity-like fields) that also
+    contains child Entities via the inherited ``members`` list."""
 
-    def has_pvsystem(self):
-        return any(isinstance(item, edm.PVSystem) for item in self.assets)
+    type: Optional[str] = None
 
-    def has_battery(self):
-        return any(isinstance(item, edm.Battery) for item in self.assets)
-    
-    def get_pvsystems(self):
-        return [instance for instance in self.assets if isinstance(instance, edm.PVSystem)]
 
-    def get_batteries(self):
-        return [instance for instance in self.assets if isinstance(instance, edm.Battery)]
+@dataclass(repr=False, kw_only=True)
+class House(Asset):
+    """A house. Same structure as :class:`Building` with a few convenience
+    accessors."""
+
+    type: Optional[str] = None
+
+    # ----- convenience queries -------------------------------------------------
+    def has_demand(self) -> bool:
+        return bool(self.timeseries)
+
+    def has_pvsystem(self) -> bool:
+        from energydatamodel.solar import PVSystem
+        return any(isinstance(m, PVSystem) for m in self.members)
+
+    def has_battery(self) -> bool:
+        from energydatamodel.battery import Battery
+        return any(isinstance(m, Battery) for m in self.members)
+
+    def get_pvsystems(self) -> list:
+        from energydatamodel.solar import PVSystem
+        return [m for m in self.members if isinstance(m, PVSystem)]
+
+    def get_batteries(self) -> list:
+        from energydatamodel.battery import Battery
+        return [m for m in self.members if isinstance(m, Battery)]

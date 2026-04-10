@@ -1,14 +1,16 @@
+"""Battery asset."""
+
 from dataclasses import dataclass
-import typing as t
+from typing import Optional
 
-import energydatamodel as edm
+from energydatamodel.bases import Asset
 
 
-@dataclass(repr=False)
-class Battery(edm.EnergyAsset):
-    storage_capacity: t.Optional[float] = None
-    min_soc: t.Optional[float] = None
-    max_charge: t.Optional[float] = None
-    max_discharge: t.Optional[float] = None
-    charge_efficiency: t.Optional[float] = None
-    discharge_efficiency: t.Optional[float] = None
+@dataclass(repr=False, kw_only=True)
+class Battery(Asset):
+    storage_capacity: Optional[float] = None
+    min_soc: Optional[float] = None
+    max_charge: Optional[float] = None
+    max_discharge: Optional[float] = None
+    charge_efficiency: Optional[float] = None
+    discharge_efficiency: Optional[float] = None

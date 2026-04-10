@@ -18,8 +18,6 @@ EnergyDataModel lets you:
 
 - 🏗️ **Relationships** - Structure your energy assets in graphs and hierarchies representing energy systems that can be serialized to files (e.g. .csv, .json, and .geojson files);
 
-- 👀 **Visualization** - Visualise energy systems maps, graphs, flows and structure using built-in plotting functions;
-
 - 🤓 **Readability** - Write more explicit Python code through human-readable expressions and built-in convenience methods;
 
 - 🧩 **Interoperability** - Convert data format to other energy-relevant data models and ontologies; and

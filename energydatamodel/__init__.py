@@ -1,29 +1,121 @@
-from dataclasses import dataclass, field
-from typing import List, Optional, Union
-import pandas as pd
-from shapely.geometry import Point
-import pytz
-from uuid import uuid4
+"""energydatamodel — unified Entity/Node/Edge hierarchy for energy assets & structures."""
 
 from timedatamodel import (
-    DataType,
     DataShape,
+    DataType,
     Frequency,
-    GeoLocation as TDMGeoLocation,
+    TimeSeries,
+    TimeSeriesDescriptor,
+    TimeSeriesType,
+)
+from timedatamodel import GeoLocation as TDMGeoLocation
+
+# Core
+from .entity import Entity
+from .node import Node
+from .edge import Edge
+from .reference import Reference, UnresolvedReferenceError
+from .bases import Asset, GridNode, Sensor
+
+# Geospatial
+from .geospatial import (
+    GeoLocation,
+    GeoMultiPolygon,
+    GeoPolygon,
+    Location,
 )
 
-from .timeseries import TimeSeries, TimeSeriesTable
-
-from .abstract import AbstractClass
-from .geospatial import GeoLocation, Location, LineString, GeoPolygon, GeoMultiPolygon
-from .base import EnergyAsset, Sensor, EnergyCollection
-from .building import House, Building
-from .solar import FixedMount, SingleAxisTrackerMount, PVArray, PVSystem, SolarPowerArea
-from .wind import WindTurbine, WindFarm, WindPowerArea
+# Physical assets
 from .battery import Battery
+from .building import Building, House
 from .heatpump import HeatPump
-from .hydro import Reservoir, HydroTurbine, HydroPowerPlant
-from .powergrid import Carrier, Bus, Transformer, Link, SubNetwork, Network
-from .collection import Site, EnergyCommunity, Portfolio
+from .hydro import HydroPowerPlant, HydroTurbine, Reservoir
+from .solar import (
+    FixedMount,
+    PVArray,
+    PVSystem,
+    SingleAxisTrackerMount,
+    SolarPowerArea,
+)
+from .weathersensor import (
+    HumiditySensor,
+    RadiationSensor,
+    RainSensor,
+    TemperatureSensor,
+    WindSpeedSensor,
+)
+from .wind import WindFarm, WindPowerArea, WindTurbine
 
-__version__ = '0.0.3'
+# Powergrid
+from .powergrid import (
+    Carrier,
+    DeliveryPoint,
+    Interconnection,
+    JunctionPoint,
+    Line,
+    Link,
+    Meter,
+    Network,
+    Pipe,
+    SubNetwork,
+    Transformer,
+)
+
+# Area
+from .area import (
+    Area,
+    BiddingZone,
+    ControlArea,
+    Country,
+    SynchronousArea,
+    WeatherCell,
+)
+
+# Containers (Collection marker + subclasses)
+from .containers import (
+    Collection,
+    EnergyCommunity,
+    MultiSite,
+    Portfolio,
+    Region,
+    Site,
+    VirtualPowerPlant,
+)
+
+# Vocabulary
+from .constructors import (
+    cross_border_flow,
+    electricity_demand,
+    electricity_demand_area,
+    electricity_supply,
+    electricity_supply_area,
+    gas_demand,
+    gas_supply,
+    grid_frequency,
+    heating_demand,
+    spot_price,
+    temperature,
+)
+from .quantities import Kind, Quantity, Scope, build_metric
+
+# JSON IO
+from .json_io import (
+    entity_from_json,
+    entity_to_json,
+    from_json_str,
+    register_builtin_entities,
+    register_entity,
+    register_value_type,
+    to_json_str,
+)
+
+# Auto-register every Entity subclass imported above for JSON dispatch.
+register_builtin_entities()
+
+# Register non-Entity value dataclasses for JSON dispatch.
+for _cls in (GeoLocation, GeoMultiPolygon, Carrier):
+    register_value_type(_cls)
+del _cls
+
+
+__version__ = "0.1.0"

@@ -11,18 +11,14 @@ authors = [
 description = "Data model for energy modelling."
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
-    "anytree>=2.12.1",
-    "build>=1.2.2.post1",
     "geopandas>=1.0.1",
-    "matplotlib>=3.10.1",
-    "pandas==2.2.2",
+    "pandas>=2.2.2",
     "pvlib>=0.12.0",
     "pytz>=2025.1",
     "shapely>=2.0.7",
-    "timedatamodel>=0.1.8",
-    "twine>=6.1.0",
+    "timedatamodel>=0.2.1",
 ]
 
 [project.urls]
@@ -31,13 +27,23 @@ repository = "https://github.com/rebase-energy/EnergyDataModel"
 documentation = "https://docs.energydatamodel.org/en/latest"
 
 [project.optional-dependencies]
-dev = [
-    "ipykernel>=6.29.5",
-    "ipywidgets>=8.1.5",
+docs = [
     "sphinx==7.2.6",
     "sphinx-autodoc-typehints>=2.0.1",
-    "sphinx-rtd-theme>=3.0.2",    
+    "sphinx-rtd-theme>=3.0.2",
 ]
 
 [tool.setuptools]
 packages = ["energydatamodel"]
+
+[tool.uv.sources]
+timedatamodel = { path = "../TimeDataModel", editable = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.5",
+    "jupyter>=1.1.1",
+    "nbconvert>=7.16.0",
+]

@@ -1,7 +1,18 @@
-📈 Time series classes
+Energy vocabulary
 =======================
 
-.. automodule:: energydatamodel.timeseries
+Constructors
+------------
+
+.. automodule:: energydatamodel.constructors
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Quantities
+----------
+
+.. automodule:: energydatamodel.quantities
    :members:
    :undoc-members:
    :show-inheritance:

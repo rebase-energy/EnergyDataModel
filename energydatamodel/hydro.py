@@ -1,50 +1,41 @@
-from dataclasses import dataclass, field
-from typing import List, Optional, Union
+"""Hydro assets."""
+
+from dataclasses import dataclass
+from typing import Optional, Union
+
 import pandas as pd
-from shapely.geometry import Point
-import pytz
-from uuid import uuid4
+
+from energydatamodel.bases import Asset
 
 
+@dataclass(repr=False, kw_only=True)
+class Reservoir(Asset):
+    """Reservoir used in a hydroelectric power plant for storing water."""
 
-@dataclass
-class Reservoir:
-    """
-    Models a reservoir used in a hydroelectric power plant for storing water.
-
-    """
-    capacity: float  #: The total water capacity of the reservoir in cubic meters.
-    surface_area: float  #: The surface area of the reservoir in square kilometers.
-    average_depth: float  #: The average depth of the reservoir in meters.
-    location: str  #: The geographical location of the reservoir.
+    capacity: Optional[float] = None  #: Water capacity in cubic meters.
+    surface_area: Optional[float] = None  #: Surface area in square kilometers.
+    average_depth: Optional[float] = None  #: Average depth in meters.
 
 
-@dataclass(kw_only=True)
-class HydroTurbine:
-    """
-    Represents an individual hydro turbine in a hydroelectric power plant.
+@dataclass(repr=False, kw_only=True)
+class HydroTurbine(Asset):
+    """Individual hydro turbine in a hydroelectric plant."""
 
-    Attributes:
-        turbine_type (str): The type of the hydro turbine (e.g. Francis, Kaplan).
-        capacity (float): The maximum power output capacity of the turbine in megawatts (MW).
-        efficiency (float): The efficiency of the turbine as a percentage.
-        operational_since (Optional[int]): The year when the turbine became operational. Defaults to None.
-    """
-    turbine_type: str
-    capacity: float
-    efficiency: float
+    turbine_type: Optional[str] = None  #: e.g. Francis, Kaplan.
+    capacity: Optional[float] = None  #: Max power output in MW.
+    efficiency: Optional[float] = None  #: Efficiency percentage.
     operational_since: Optional[int] = None
 
 
+@dataclass(repr=False, kw_only=True)
+class HydroPowerPlant(Asset):
+    """Hydro power plant."""
 
-@dataclass
-class HydroPowerPlant:
-    capacity: float  # in megawatts (MW)
-    location: str  # Geographical location
-    river: str  # Name of the river or water body
-    annual_output: float  # Annual energy output in MWh
-    turbine_type: str  # Type of turbine used (e.g., Francis, Kaplan)
-    reservoir_capacity: Optional[float] = None  # Capacity of the reservoir in cubic meters, if applicable
-    operational_since: Optional[int] = None  # Year when the plant became operational
-    environmental_impact: Optional[str] = None  # Description of any environmental impacts
-    maintenance_schedule: Optional[Union[pd.DataFrame, dict]] = None  # Maintenance schedule data, if available
+    capacity: Optional[float] = None  #: in MW.
+    river: Optional[str] = None
+    annual_output: Optional[float] = None  #: annual energy output in MWh.
+    turbine_type: Optional[str] = None
+    reservoir_capacity: Optional[float] = None
+    operational_since: Optional[int] = None
+    environmental_impact: Optional[str] = None
+    maintenance_schedule: Optional[Union[pd.DataFrame, dict]] = None

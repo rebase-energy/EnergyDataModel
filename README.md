@@ -27,7 +27,6 @@
 
 * 🧱 **Modularity** - Represent energy assets, energy systems and other relevant concepts as object-oriented building blocks;
 * 🏗️ **Relationships** - Structure your energy assets in graphs and hierarchies representing energy systems that can be serialized to files (e.g. .csv, .json, and .geojson files);
-* 👀 **Visualization** - Visualise energy systems maps, graphs, flows and structure using built-in plotting functions;
 * 🤓 **Readability** - Write more explicit Python code through human-readable expressions and built-in convenience methods; 
 * 🧩 **Interoperability** - Convert data format to other energy-relevant data models and ontologies; and 
 * 💬 **Communicate** - Communicate effectively in teams with a common energy system data vocabulary. 
@@ -40,19 +39,51 @@
 &ensp;|&ensp;
 **👋 [Join Slack Community](https://dub.sh/yTqMriJ)**
 
-## Modules and Data Classes
-**EnergyDataModel** leverages [Python's Data Classes](https://docs.python.org/3/library/dataclasses.html) to represent energy assets as Python objects. The table below gives a summary of the available modules and data classes. 
+## Class hierarchy
 
-| Module         | Data Classes     |
-| :----          | :----            |
-| 🗺️&nbsp;`geospatial` | [`GeoLocation`](https://docs.energydatamodel.org/en/latest/energydatamodel/geospatial.html#energydatamodel.geospatial.GeoLocation), [`GeoLine`](https://docs.energydatamodel.org/en/latest/energydatamodel/geospatial.html#energydatamodel.geospatial.GeoLine), [`GeoPolygon`](https://docs.energydatamodel.org/en/latest/energydatamodel/geospatial.html#energydatamodel.geospatial.GeoPolygon), [`GeoMultiPolygon`](https://docs.energydatamodel.org/en/latest/energydatamodel/geospatial.html#energydatamodel.geospatial.GeoMultiPolygon), [`GeoGraph`](https://docs.energydatamodel.org/en/latest/energydatamodel/geospatial.html#energydatamodel.geospatial.GeoGraph) | 
-| 📈&nbsp;`timeseries` | [`ElectricityDemand`](https://docs.energydatamodel.org/en/latest/energydatamodel/timeseries.html#energydatamodel.timeseries.ElectricityDemand), [`ElectricitySupply`](https://docs.energydatamodel.org/en/latest/energydatamodel/timeseries.html#energydatamodel.timeseries.ElectricityDemand), [`HeatingDemand`](https://docs.energydatamodel.org/en/latest/energydatamodel/timeseries.html#energydatamodel.timeseries.HeatingDemand), [`HeatingSupply`](https://docs.energydatamodel.org/en/latest/energydatamodel/timeseries.html#energydatamodel.timeseries.HeatingSupply), [`ElectricityPrice`](https://docs.energydatamodel.org/en/latest/energydatamodel/timeseries.html#energydatamodel.timeseries.ElectricityPrice), [`CarbonIntensity`](https://docs.energydatamodel.org/en/latest/energydatamodel/timeseries.html#energydatamodel.timeseries.CarbonIntensity), | 
-| ☀️&nbsp;`solar` | [`FixedMount`](https://docs.energydatamodel.org/en/latest/energydatamodel/solar.html#energydatamodel.solar.FixedMount), [`SingleAxisTrackerMount`](https://docs.energydatamodel.org/en/latest/energydatamodel/solar.html#energydatamodel.solar.SingleAxisTrackerMount), [`PVArray`](https://docs.energydatamodel.org/en/latest/energydatamodel/solar.html#energydatamodel.solar.PVArray), [`PVSystem`](https://docs.energydatamodel.org/en/latest/energydatamodel/solar.html#energydatamodel.solar.PVSystem), [`SolarPowerArea`](https://docs.energydatamodel.org/en/latest/energydatamodel/solar.html#energydatamodel.solar.SolarPowerArea) | 
-| 🌬️&nbsp;`wind` | [`WindTurbine`](https://docs.energydatamodel.org/en/latest/energydatamodel/wind.html#energydatamodel.wind.WindTurbine), [`WindFarm`](https://docs.energydatamodel.org/en/latest/energydatamodel/wind.html#energydatamodel.wind.WindFarm), [`WindPowerArea`](https://docs.energydatamodel.org/en/latest/energydatamodel/wind.html#energydatamodel.wind.WindPowerArea) |
-| 🔋&nbsp;`battery` | [`Battery`](https://docs.energydatamodel.org/en/latest/energydatamodel/battery.html#energydatamodel.battery.Battery) | 
-| 💦&nbsp;`hydro` | [`Reservoir`](https://docs.energydatamodel.org/en/latest/energydatamodel/hydro.html#energydatamodel.hydro.Reservoir), [`HydroTurbine`](https://docs.energydatamodel.org/en/latest/energydatamodel/hydro.html#energydatamodel.hydro.HydroTurbine), [`HydroPowerPlant`](https://docs.energydatamodel.org/en/latest/energydatamodel/hydro.html#energydatamodel.hydro.HydroPowerPlant) |
-| ♻️&nbsp;`heatpump` | [`HeatPump`](https://docs.energydatamodel.org/en/latest/energydatamodel/heatpump.html#energydatamodel.heatpump.HeatPump) |
-| ⚡&nbsp;`powergrid` | [`Carrier`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Carrier), [`Bus`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Bus), [`Line`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Line), [`Transformer`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Transformer), [`Link`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Link), [`SubNetwork`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.SubNetwork), [`Network`](https://docs.energydatamodel.org/en/latest/energydatamodel/powergrid.html#energydatamodel.powergrid.Network), |
+Everything in EnergyDataModel inherits from a single root, `Entity`, which carries identity (`name`, `_id`), attached time-series descriptors, and an optional [shapely](https://shapely.readthedocs.io/) geometry. Two sibling subtrees specialize it:
+
+* **`Node`** — anything that exists as a thing (assets, areas, sensors, grid nodes, collections). Adds `members` and `tz`.
+* **`Edge`** — relationships between two nodes (lines, transformers, interconnectors). Adds `from_entity`, `to_entity`, `directed`.
+
+```
+Entity  (name, _id, timeseries, geometry)
+├── Node  (+ members, tz)
+│   ├── Asset                — physical energy equipment
+│   │   WindTurbine, WindFarm, WindPowerArea, PVArray, PVSystem,
+│   │   SolarPowerArea, Battery, HeatPump, HydroPowerPlant,
+│   │   HydroTurbine, Reservoir, Building, House
+│   ├── GridNode             — topological grid points (carrier)
+│   │   JunctionPoint, Meter, DeliveryPoint
+│   ├── Sensor               — measurement instruments
+│   │   TemperatureSensor, WindSpeedSensor, RadiationSensor,
+│   │   RainSensor, HumiditySensor
+│   ├── Area                 — administrative / market regions
+│   │   BiddingZone, Country, ControlArea, WeatherCell,
+│   │   SynchronousArea (+ nominal_frequency)
+│   └── Collection           — grouping / container marker
+│       Portfolio, Site, MultiSite, Region,
+│       EnergyCommunity, VirtualPowerPlant, SubNetwork, Network
+└── Edge  (+ from_entity, to_entity, directed)
+    Line, Link, Transformer, Pipe, Interconnection
+```
+
+| Module         | Data Classes |
+| :----          | :----        |
+| 🧱&nbsp;`entity` / `node` / `edge` | `Entity`, `Node`, `Edge` |
+| 🏷️&nbsp;`bases` | `Asset`, `GridNode`, `Sensor` |
+| 🗺️&nbsp;`geospatial` | `GeoLocation`, `GeoPolygon`, `GeoMultiPolygon` |
+| ☀️&nbsp;`solar` | `FixedMount`, `SingleAxisTrackerMount`, `PVArray`, `PVSystem`, `SolarPowerArea` |
+| 🌬️&nbsp;`wind` | `WindTurbine`, `WindFarm`, `WindPowerArea` |
+| 🔋&nbsp;`battery` | `Battery` |
+| 💦&nbsp;`hydro` | `Reservoir`, `HydroTurbine`, `HydroPowerPlant` |
+| ♻️&nbsp;`heatpump` | `HeatPump` |
+| 🏠&nbsp;`building` | `Building`, `House` |
+| 🌡️&nbsp;`weathersensor` | `TemperatureSensor`, `WindSpeedSensor`, `RadiationSensor`, `RainSensor`, `HumiditySensor` |
+| ⚡&nbsp;`powergrid` | `Carrier`, `JunctionPoint`, `Meter`, `DeliveryPoint`, `Line`, `Link`, `Transformer`, `Pipe`, `Interconnection`, `SubNetwork`, `Network` |
+| 🗺️&nbsp;`area` | `Area`, `BiddingZone`, `Country`, `ControlArea`, `WeatherCell`, `SynchronousArea` |
+| 📦&nbsp;`containers` | `Collection`, `Portfolio`, `Site`, `MultiSite`, `Region`, `EnergyCommunity`, `VirtualPowerPlant` |
+| 📈&nbsp;`constructors` | `electricity_supply`, `electricity_demand`, `electricity_supply_area`, `electricity_demand_area`, `spot_price`, `cross_border_flow`, `grid_frequency`, `temperature`, `gas_supply`, `gas_demand`, `heating_demand` |
 
 Explore the data model visually [here](https://zoomhub.net/Zxa5x). \
 Read the full documentation [here](https://docs.energydatamodel.org/en/latest/).
@@ -69,30 +100,49 @@ Making code explicit, readable and intuitive counts.
 If you are interested in joining our mission to build open-source tools that improve productiveness and workflow of energy modellers worldwide - then [join our Slack](https://dub.sh/yTqMriJ)!
 
 ## Basic usage
-Create an energy system made up of two sites with co-located solar, wind and batteries and save as a JSON-file. 
+Create an energy system made up of two sites with co-located solar, wind and batteries and save as a JSON-file.
+
+```python
+import energydatamodel as edm
+from shapely.geometry import Point
+
+pvsystem_1 = edm.PVSystem(name="PV-1", capacity=2400, surface_azimuth=180, surface_tilt=25)
+windturbine_1 = edm.WindTurbine(name="WT-1", capacity=3200, hub_height=120, rotor_diameter=100)
+battery_1 = edm.Battery(name="B-1", storage_capacity=1000, min_soc=150, max_charge=500, max_discharge=500)
+
+site_1 = edm.Site(name="Site-1",
+                  geometry=Point(64, 46),  # (lon, lat)
+                  members=[pvsystem_1, windturbine_1, battery_1])
+
+pvsystem_2 = edm.PVSystem(name="PV-2", capacity=2400, surface_azimuth=180, surface_tilt=25)
+windturbine_2 = edm.WindTurbine(name="WT-2", capacity=3200, hub_height=120, rotor_diameter=100)
+battery_2 = edm.Battery(name="B-2", storage_capacity=1000, min_soc=150, max_charge=500, max_discharge=500)
+
+site_2 = edm.Site(name="Site-2",
+                  geometry=Point(58, 51),
+                  members=[pvsystem_2, windturbine_2, battery_2])
+
+portfolio = edm.Portfolio(name="My Portfolio", members=[site_1, site_2])
+
+portfolio.to_json()
+```
+
+### Modeling a synchronous area with grid frequency
 
 ```python
 import energydatamodel as edm
 
-pvsystem_1 = edm.PVSystem(capacity=2400, surface_azimuth=180, surface_tilt=25)
-windturbine_1 = edm.WindTurbine(capacity=3200, hub_height=120, rotor_diameter=100)
-battery_1 = edm.Battery(storage_capacity=1000, min_soc=150, max_charge=500, max_discharge=500)
-
-site_1 = edm.Site(assets=[pvsystem_1, windturbine_1, battery_1],
-                  latitude=46, 
-                  longitude=64)
-
-pvsystem_2 = edm.PVSystem(capacity=2400, surface_azimuth=180, surface_tilt=25)
-windturbine_2 = edm.WindTurbine(capacity=3200, hub_height=120, rotor_diameter=100)
-battery_2 = edm.Battery(storage_capacity=1000, min_soc=150, max_charge=500, max_discharge=500)
-
-site_2 = edm.Site(assets=[pvsystem_2, windturbine_2, battery_2],
-                  latitude=51, 
-                  longitude=58)
-
-portfolio = edm.Portfolio(sites=[site_1, site_2])
-
-portfolio.to_json()
+nsa = edm.SynchronousArea(
+    name="NSA",
+    nominal_frequency=50.0,
+    members=[
+        edm.BiddingZone(name="SE-SE1"),
+        edm.BiddingZone(name="SE-SE2"),
+        edm.BiddingZone(name="NO1"),
+        edm.BiddingZone(name="FI"),
+    ],
+    timeseries=[edm.grid_frequency()],
+)
 ```
 
 For more examples on usage and applications of **EnergyDataModel** see the documentation examples page [here](https://docs.energydatamodel.org/en/latest/examples.html).
