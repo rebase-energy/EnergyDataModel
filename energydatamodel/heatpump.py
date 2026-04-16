@@ -1,16 +1,15 @@
+"""Heat pump asset."""
+
 from dataclasses import dataclass
-from typing import Optional, Union
-import pandas as pd
+from typing import Optional
 
-import energydatamodel as edm
+from energydatamodel.bases import Asset
 
-@dataclass
-class HeatPump(edm.EnergyAsset):
-    """
-    Represents a heat pump in an energy system.
-    """
 
-    capacity: float  #: The heating or cooling capacity of the heat pump in kilowatts (kW).
-    cop: float  #: Coefficient of Performance - the ratio of heating or cooling provided to electrical energy consumed.
-    energy_source: str  #: The primary energy source used, e.g., 'electricity', 'geothermal'.
+@dataclass(repr=False, kw_only=True)
+class HeatPump(Asset):
+    """A heat pump in an energy system."""
 
+    capacity: Optional[float] = None  #: heating/cooling capacity in kW.
+    cop: Optional[float] = None  #: coefficient of performance.
+    energy_source: Optional[str] = None  #: e.g. 'electricity', 'geothermal'.

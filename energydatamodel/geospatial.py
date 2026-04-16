@@ -1,26 +1,39 @@
-from dataclasses import dataclass
-from typing import Optional, List, Union
-from shapely.geometry import Point, LineString, Polygon, MultiPolygon
-import pytz
+"""Geospatial helper types.
+
+These are value types (not :class:`Entity` subclasses) — they carry
+coordinates and geometry only, and can be used as inputs that get converted
+into shapely geometries on Entity. Shapely is the underlying truth for all
+geometry storage on Entity.
+"""
+
+from __future__ import annotations
+
 import json
+from dataclasses import dataclass
+from typing import Optional, Union
+
 import geopandas as gpd
 import pvlib
+import pytz
+from shapely.geometry import MultiPolygon, Point, Polygon
 
-from energydatamodel import AbstractClass
 
 @dataclass(repr=False)
-class GeoLocation(AbstractClass):
-    """This is the docstring for Location."""
+class GeoLocation:
+    """Point location with a timezone and optional altitude.
+
+    Convenience input value type. Convert to a shapely ``Point`` via
+    :meth:`to_point` when populating an Entity's ``geometry`` field.
+    """
 
     longitude: float
     latitude: float
-    tz: Union[str, pytz.timezone] = "UTC"
+    tz: Union[str, pytz.BaseTzInfo] = "UTC"
     altitude: Optional[float] = None
     name: Optional[str] = None
 
     def __post_init__(self):
-        self.point = Point(self.latitude, self.longitude)
-
+        self.point = Point(self.longitude, self.latitude)
         if isinstance(self.tz, str):
             self.tz = pytz.timezone(self.tz)
 
@@ -34,26 +47,37 @@ class GeoLocation(AbstractClass):
     @property
     def tuple(self):
         return self.to_tuple()
-    
+
+    def to_point(self) -> Point:
+        """Return a shapely ``Point`` using ``(longitude, latitude)`` ordering.
+
+        Use this to populate an Entity's ``geometry`` field from a
+        ``GeoLocation`` input.
+        """
+        return Point(self.longitude, self.latitude)
+
     def to_pvlib(self):
-        return pvlib.location.Location(latitude=self.latitude, longitude=self.longitude, altitude=self.altitude, tz=self.tz)
+        return pvlib.location.Location(
+            latitude=self.latitude,
+            longitude=self.longitude,
+            altitude=self.altitude,
+            tz=self.tz,
+        )
+
 
 Location = GeoLocation
 
-@dataclass
-class GeoLine(AbstractClass, LineString):
-    """This is the docstring for LineString."""
+
+# GeoPolygon is just Shapely's Polygon — the historical ``@dataclass`` override
+# didn't work cleanly on top of Shapely's C-ext type. Kept as a named alias so
+# downstream type hints remain stable.
+GeoPolygon = Polygon
+
 
 @dataclass
-class GeoPolygon(AbstractClass, Polygon):
-    """This is the docstring for Polygon."""
+class GeoMultiPolygon:
+    """MultiPolygon wrapper (composition rather than inheritance)."""
 
-    name: Optional[str] = None
-
-#TODO I think it would be nicer if GeoMultiPolygon was a subclass of MultiPolygon instead of composition. 
-@dataclass
-class GeoMultiPolygon(AbstractClass):
-    """This is the docstring for Polygon."""
     multipolygon: MultiPolygon = None
     name: Optional[str] = None
 
@@ -68,9 +92,3 @@ class GeoMultiPolygon(AbstractClass):
     @property
     def geojson(self):
         return self.to_geojson()
-
-@dataclass
-class GeoGraph(AbstractClass):
-    """This is the docstring for GeoGraph."""
-
-    name: Optional[str] = None
