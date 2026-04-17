@@ -36,9 +36,6 @@ docs = [
 [tool.setuptools]
 packages = ["energydatamodel"]
 
-[tool.uv.sources]
-timedatamodel = { path = "../TimeDataModel", editable = true }
-
 [dependency-groups]
 dev = [
     "pytest>=9.0.3",
