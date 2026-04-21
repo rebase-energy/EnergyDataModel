@@ -167,7 +167,7 @@ class TestAddChild:
 
     def test_windturbine_accepts_any_element(self):
         # In the new flat ontology, every Node supports add_child by default.
-        # WindTurbine doesn't override it, so it accepts any Entity member.
+        # WindTurbine doesn't override it, so it accepts any Element member.
         t = edm.WindTurbine(name="T01", capacity=3.5)
         t2 = edm.WindTurbine(name="T02", capacity=3.5)
         t.add_child(t2)

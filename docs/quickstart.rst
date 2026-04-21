@@ -2,30 +2,48 @@
 Quickstart Guide
 ===================
 
-This quickstart guide will help you get started with the EnergyDataModel library, covering the basic installation process and a simple usage example.
+This quickstart guide walks you through installing EnergyDataModel and
+assembling a small energy-system tree end-to-end.
 
 Installation
 ------------
 
-EnergyDataModel can be easily installed using pip:
+EnergyDataModel can be installed from PyPI:
 
 .. code-block:: bash
 
    pip install energydatamodel
 
-Ensure you have Python 3.6 or later installed on your system.
+Python 3.12 or later is required.
 
-Basic Usage
+Basic usage
 -----------
 
-After installing the library, you can start using it to model and analyze energy data:
+Every structural class inherits from a single ``Element`` root. Nodes
+(``WindTurbine``, ``Battery``, ...), edges (``Interconnection``, ``Line``),
+and collections (``Site``, ``Portfolio``) all compose into a tree you can
+serialize to JSON and reload losslessly.
 
 .. code-block:: python
 
-   from energydatamodel import Location, Meter
+   import energydatamodel as edm
+   from shapely.geometry import Point
 
-   # Example usage
-   my_location = Location(latitude=50.0, longitude=-0.1257)
-   print(my_location)
+   pvsystem = edm.PVSystem(name="PV-1", capacity=2400, surface_azimuth=180, surface_tilt=25)
+   windturbine = edm.WindTurbine(name="WT-1", capacity=3200, hub_height=120, rotor_diameter=100)
+   battery = edm.Battery(name="B-1", storage_capacity=1000, max_charge=500, max_discharge=500)
 
-Further steps and more complex examples can be found in the 'Examples' section.
+   site = edm.Site(
+       name="Site-1",
+       geometry=Point(12.8, 55.5),  # (lon, lat)
+       members=[pvsystem, windturbine, battery],
+   )
+
+   portfolio = edm.Portfolio(name="My Portfolio", members=[site])
+
+   js = portfolio.to_json()
+   restored = edm.Portfolio.from_json(js)
+
+See the :doc:`examples` page and the ``examples/quickstart.ipynb`` notebook
+for a full walkthrough including time-series descriptors, areas, edges,
+cross-tree references, and geometry round-trip.

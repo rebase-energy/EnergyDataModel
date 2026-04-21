@@ -1,10 +1,10 @@
 Core hierarchy
 =======================
 
-Entity
-------
+Element
+-------
 
-.. automodule:: energydatamodel.entity
+.. automodule:: energydatamodel.element
    :members:
    :undoc-members:
    :show-inheritance:
@@ -25,8 +25,21 @@ Edge
    :undoc-members:
    :show-inheritance:
 
-Bases (Asset, GridNode, Sensor)
--------------------------------
+Collection
+----------
+
+.. automodule:: energydatamodel.containers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Asset, NodeAsset, GridNode, Sensor
+----------------------------------
+
+.. automodule:: energydatamodel.asset
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 .. automodule:: energydatamodel.bases
    :members:

@@ -1,39 +1,39 @@
 """Node — the "vertex" subtree of EDM.
 
-A Node is anything that exists as a thing in the model: a physical asset,
-a grid topology node, a sensor, an administrative area, or a container that
-groups other nodes. Adds two fields to :class:`Entity`:
+A Node is anything that exists as a graph vertex in the model: a piece of
+equipment, an administrative area, a grid topology point, or a sensor. Adds
+two fields to :class:`Element`:
 
-* ``members`` — child entities (used by Site, Portfolio, WindFarm, etc.)
+* ``members`` — child elements (used by WindFarm, Network, etc.)
 * ``tz`` — local timezone, where meaningful
 
-Edges between nodes live in the sibling :class:`Edge` subtree, not
-under ``Node``. This split keeps ``members`` and ``tz`` off the Edge
-type where they don't apply.
+Equipment-shaped vertices (WindTurbine, Battery, Sensor, GridNode, ...) mix
+:class:`Asset` via :class:`NodeAsset` in :mod:`energydatamodel.bases`.
+Edges between nodes live in the sibling :class:`Edge` subtree. Logical
+groupings (Portfolio, Site, ...) live in :class:`Collection`, which is a
+sibling of Node under :class:`Element` — not a subclass of Node.
 """
 
 from __future__ import annotations
 
+import datetime
 from dataclasses import dataclass, field
 from typing import ClassVar, List, Optional
 
-import pytz
-
-from energydatamodel.entity import Entity
+from energydatamodel.element import Element
 
 
 @dataclass(repr=False, kw_only=True)
-class Node(Entity):
-    """An Entity that exists as a thing — can hold members and a timezone.
+class Node(Element):
+    """An Element that exists as a graph vertex — can hold members and a timezone.
 
-    Subclassed by Asset, GridNode, Sensor, Area, and the Collection marker
-    class (Portfolio, Site, Region, ...).
+    Subclassed by NodeAsset (equipment) and Area (administrative regions).
     """
 
-    members: List[Entity] = field(default_factory=list)
-    tz: Optional[pytz.BaseTzInfo] = None
+    members: List[Element] = field(default_factory=list)
+    tz: Optional[datetime.tzinfo] = None
 
-    _BASE_FIELDS: ClassVar[frozenset] = Entity._BASE_FIELDS | frozenset({
+    _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset({
         "members", "tz",
     })
     _CHILDREN_FIELDS: ClassVar[frozenset] = frozenset({"members"})
@@ -41,10 +41,10 @@ class Node(Entity):
     def children(self) -> list:
         return list(self.members)
 
-    def add_child(self, obj: Entity) -> None:
-        if not isinstance(obj, Entity):
+    def add_child(self, obj: Element) -> None:
+        if not isinstance(obj, Element):
             raise TypeError(
-                f"{type(self).__name__} only accepts Entity children, "
+                f"{type(self).__name__} only accepts Element children, "
                 f"got {type(obj).__name__}"
             )
         self.members.append(obj)

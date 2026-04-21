@@ -1,8 +1,8 @@
 """Path-based cross-tree references.
 
-A ``Reference[T]`` points to another Entity by its position in the tree
+A ``Reference[T]`` points to another Element by its position in the tree
 (e.g. ``"Nordic/SE4"``) rather than by Python identity. The reference starts
-as a path string and is resolved to an Entity object once the tree is loaded.
+as a path string and is resolved to an Element object once the tree is loaded.
 """
 
 from __future__ import annotations
@@ -10,10 +10,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Generic, TypeVar, Union
 
 if TYPE_CHECKING:
-    from energydatamodel.entity import Entity
+    from energydatamodel.element import Element
 
 
-T = TypeVar("T", bound="Entity")
+T = TypeVar("T", bound="Element")
 
 
 class UnresolvedReferenceError(LookupError):
@@ -21,15 +21,15 @@ class UnresolvedReferenceError(LookupError):
 
 
 class Reference(Generic[T]):
-    """Typed marker for a cross-tree reference to another Entity.
+    """Typed marker for a cross-tree reference to another Element.
 
-    Stores either a ``str`` path (pre-resolve) or an Entity object (post-resolve).
+    Stores either a ``str`` path (pre-resolve) or an Element object (post-resolve).
     Used on fields like ``Edge.from_entity`` / ``Edge.to_entity``.
     """
 
     __slots__ = ("_target",)
 
-    def __init__(self, target: Union[str, "Entity"]):
+    def __init__(self, target: Union[str, "Element"]):
         self._target = target
 
     # -----------------------------------------------------------------
@@ -37,11 +37,11 @@ class Reference(Generic[T]):
         return not isinstance(self._target, str)
 
     @property
-    def target(self) -> Union[str, "Entity"]:
+    def target(self) -> Union[str, "Element"]:
         return self._target
 
-    def get(self) -> "Entity":
-        """Return the resolved Entity. Raises if still a path string."""
+    def get(self) -> "Element":
+        """Return the resolved Element. Raises if still a path string."""
         if isinstance(self._target, str):
             raise UnresolvedReferenceError(
                 f"Reference to {self._target!r} has not been resolved."
@@ -49,7 +49,7 @@ class Reference(Generic[T]):
         return self._target
 
     # -----------------------------------------------------------------
-    def resolve(self, root: "Entity") -> "Entity":
+    def resolve(self, root: "Element") -> "Element":
         """Resolve the reference against ``root``. Idempotent."""
         if not isinstance(self._target, str):
             return self._target
@@ -62,11 +62,11 @@ class Reference(Generic[T]):
         self._target = obj
         return obj
 
-    def path(self, root: "Entity") -> str:
+    def path(self, root: "Element") -> str:
         """Canonical path from ``root`` to the target.
 
         Returns the same canonical full path whether ``self`` holds a string
-        path or a resolved Entity. Does not mutate ``self``. Raises
+        path or a resolved Element. Does not mutate ``self``. Raises
         ``UnresolvedReferenceError`` if the target is not reachable from ``root``.
         """
         if isinstance(self._target, str):
@@ -122,7 +122,7 @@ class Reference(Generic[T]):
 # ---------------------------------------------------------------------
 
 
-def _lookup_by_path(root: "Entity", path: str) -> "Entity | None":
+def _lookup_by_path(root: "Element", path: str) -> "Element | None":
     """Resolve a slash-separated path like ``"Nordic/SE4"`` by walking ``name``s."""
     parts = [p for p in path.split("/") if p]
     if not parts:
@@ -143,7 +143,7 @@ def _lookup_by_path(root: "Entity", path: str) -> "Entity | None":
     return node
 
 
-def _path_to(root: "Entity", target: "Entity") -> "str | None":
+def _path_to(root: "Element", target: "Element") -> "str | None":
     """Compute path from root → target, return None if target is not in the tree."""
     trail: list[str] = []
 

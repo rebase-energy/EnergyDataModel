@@ -3,11 +3,11 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from energydatamodel.bases import Asset
+from energydatamodel.bases import NodeAsset
 
 
 @dataclass(repr=False, kw_only=True)
-class HeatPump(Asset):
+class HeatPump(NodeAsset):
     """A heat pump in an energy system."""
 
     capacity: Optional[float] = None  #: heating/cooling capacity in kW.

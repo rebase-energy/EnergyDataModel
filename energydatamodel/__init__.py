@@ -1,4 +1,4 @@
-"""energydatamodel — unified Entity/Node/Edge hierarchy for energy assets & structures."""
+"""energydatamodel — unified Element/Node/Edge hierarchy for energy assets & structures."""
 
 from timedatamodel import (
     DataShape,
@@ -11,11 +11,12 @@ from timedatamodel import (
 from timedatamodel import GeoLocation as TDMGeoLocation
 
 # Core
-from .entity import Entity
+from .element import Element
+from .asset import Asset
 from .node import Node
 from .edge import Edge
 from .reference import Reference, UnresolvedReferenceError
-from .bases import Asset, GridNode, Sensor
+from .bases import GridNode, NodeAsset, Sensor
 
 # Geospatial
 from .geospatial import (
@@ -50,6 +51,7 @@ from .wind import WindFarm, WindPowerArea, WindTurbine
 from .powergrid import (
     Carrier,
     DeliveryPoint,
+    EdgeAsset,
     Interconnection,
     JunctionPoint,
     Line,
@@ -71,7 +73,7 @@ from .area import (
     WeatherCell,
 )
 
-# Containers (Collection marker + subclasses)
+# Containers (Collection + subclasses)
 from .containers import (
     Collection,
     EnergyCommunity,
@@ -100,19 +102,19 @@ from .quantities import Kind, Quantity, Scope, build_metric
 
 # JSON IO
 from .json_io import (
-    entity_from_json,
-    entity_to_json,
+    element_from_json,
+    element_to_json,
     from_json_str,
-    register_builtin_entities,
-    register_entity,
+    register_builtin_elements,
+    register_element,
     register_value_type,
     to_json_str,
 )
 
-# Auto-register every Entity subclass imported above for JSON dispatch.
-register_builtin_entities()
+# Auto-register every Element subclass imported above for JSON dispatch.
+register_builtin_elements()
 
-# Register non-Entity value dataclasses for JSON dispatch.
+# Register non-Element value dataclasses for JSON dispatch.
 for _cls in (GeoLocation, GeoMultiPolygon, Carrier):
     register_value_type(_cls)
 del _cls
