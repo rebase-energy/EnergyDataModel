@@ -3,11 +3,11 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from energydatamodel.bases import Asset
+from energydatamodel.bases import NodeAsset
 
 
 @dataclass(repr=False, kw_only=True)
-class Battery(Asset):
+class Battery(NodeAsset):
     storage_capacity: Optional[float] = None
     min_soc: Optional[float] = None
     max_charge: Optional[float] = None

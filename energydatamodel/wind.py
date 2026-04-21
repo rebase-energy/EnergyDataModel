@@ -7,12 +7,12 @@ from typing import Optional, Union
 
 import pandas as pd
 
-from energydatamodel.bases import Asset
-from energydatamodel.entity import Entity
+from energydatamodel.bases import NodeAsset
+from energydatamodel.element import Element
 
 
 @dataclass(repr=False, kw_only=True)
-class WindTurbine(Asset):
+class WindTurbine(NodeAsset):
     capacity: Optional[Union[float, pd.DataFrame]] = None
     hub_height: Optional[float] = None
     rotor_diameter: Optional[float] = None
@@ -22,7 +22,7 @@ class WindTurbine(Asset):
 
 
 @dataclass(repr=False, kw_only=True)
-class WindFarm(Asset):
+class WindFarm(NodeAsset):
     """A wind farm — an Asset that contains :class:`WindTurbine` members.
 
     Stored in the inherited ``members`` list (no separate typed field).
@@ -32,7 +32,7 @@ class WindFarm(Asset):
     capacity: Optional[Union[float, pd.DataFrame]] = None
     farm_efficiency: Optional[pd.DataFrame] = None
 
-    def add_child(self, obj: Entity) -> None:
+    def add_child(self, obj: Element) -> None:
         if not isinstance(obj, WindTurbine):
             raise TypeError(
                 f"WindFarm only accepts WindTurbine children, got {type(obj).__name__}"
@@ -41,7 +41,7 @@ class WindFarm(Asset):
 
 
 @dataclass(repr=False, kw_only=True)
-class WindPowerArea(Asset):
+class WindPowerArea(NodeAsset):
     """A wind-power-potential area (e.g. offshore zone).
 
     The area's polygon lives in the inherited ``geometry`` field. Constituent

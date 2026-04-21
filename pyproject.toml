@@ -16,9 +16,9 @@ dependencies = [
     "geopandas>=1.0.1",
     "pandas>=2.2.2",
     "pvlib>=0.12.0",
-    "pytz>=2025.1",
     "shapely>=2.0.7",
     "timedatamodel>=0.2.1",
+    "tzdata; sys_platform == 'win32'",
 ]
 
 [project.urls]

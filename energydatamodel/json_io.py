@@ -1,10 +1,10 @@
-"""JSON serialization for Entity trees.
+"""JSON serialization for Element trees.
 
-Wire format: each entity → ``{"type": "ClassName", ...fields}``. Lists of
-Entities become nested arrays of such dicts. ``Reference`` fields become path
+Wire format: each element → ``{"type": "ClassName", ...fields}``. Lists of
+Elements become nested arrays of such dicts. ``Reference`` fields become path
 strings. Enums become their string values. Dataclass value types (e.g.
 ``Location``, ``Carrier``) are serialized as nested dicts without a ``type``
-tag (they're not Entity subclasses and are round-tripped by field-type
+tag (they're not Element subclasses and are round-tripped by field-type
 inspection on the receiving side).
 
 ``from_json`` is a two-pass walk:
@@ -19,14 +19,17 @@ from __future__ import annotations
 import dataclasses
 import datetime
 import json as json_module
+import typing
 from enum import Enum
+from functools import lru_cache
 from typing import Any, Dict, List, Optional, Type, get_args, get_origin
+from zoneinfo import ZoneInfo
 
 from shapely.geometry import mapping, shape
 from shapely.geometry.base import BaseGeometry
 from timedatamodel import DataType, Frequency, TimeSeriesDescriptor, TimeSeriesType
 
-from energydatamodel.entity import Entity
+from energydatamodel.element import Element
 from energydatamodel.reference import Reference, UnresolvedReferenceError
 
 
@@ -35,16 +38,16 @@ from energydatamodel.reference import Reference, UnresolvedReferenceError
 # ---------------------------------------------------------------------
 
 
-_REGISTRY: Dict[str, Type[Entity]] = {}
+_REGISTRY: Dict[str, Type[Element]] = {}
 _VALUE_REGISTRY: Dict[str, type] = {}
 
 
-def register_entity(cls: Type[Entity]) -> Type[Entity]:
-    """Register an Entity subclass under its class name for JSON dispatch."""
+def register_element(cls: Type[Element]) -> Type[Element]:
+    """Register an Element subclass under its class name for JSON dispatch."""
     name = cls.__name__
     if name in _REGISTRY and _REGISTRY[name] is not cls:
         raise ValueError(
-            f"register_entity: duplicate name {name!r} "
+            f"register_element: duplicate name {name!r} "
             f"(existing={_REGISTRY[name]!r}, new={cls!r})"
         )
     _REGISTRY[name] = cls
@@ -52,11 +55,11 @@ def register_entity(cls: Type[Entity]) -> Type[Entity]:
 
 
 def register_value_type(cls: type) -> type:
-    """Register a non-Entity value dataclass (Location, Carrier, ...) for JSON dispatch.
+    """Register a non-Element value dataclass (Location, Carrier, ...) for JSON dispatch.
 
     Value types carry a ``__type__`` tag on the wire and are instantiated by
-    class-name lookup on load. Analogous to ``register_entity`` but without the
-    Entity inheritance requirement.
+    class-name lookup on load. Analogous to ``register_element`` but without the
+    Element inheritance requirement.
     """
     name = cls.__name__
     if name in _VALUE_REGISTRY and _VALUE_REGISTRY[name] is not cls:
@@ -68,30 +71,34 @@ def register_value_type(cls: type) -> type:
     return cls
 
 
-def get_registry() -> Dict[str, Type[Entity]]:
+def get_registry() -> Dict[str, Type[Element]]:
     return dict(_REGISTRY)
 
 
 # ---------------------------------------------------------------------
-# Serialization (Entity → dict)
+# Serialization (Element → dict)
 # ---------------------------------------------------------------------
 
 
-def _serialize_value(value: Any, *, include_ids: bool, root: Entity) -> Any:
+def _serialize_value(value: Any, *, include_ids: bool, root: Element) -> Any:
     if value is None:
         return None
-    if isinstance(value, Entity):
-        return _entity_to_dict(value, include_ids=include_ids, root=root)
+    if isinstance(value, Element):
+        return _element_to_dict(value, include_ids=include_ids, root=root)
     if isinstance(value, Reference):
         # Always emit the canonical full path from ``root``, regardless of whether
-        # the Reference's internal target is still a string or a resolved Entity.
+        # the Reference's internal target is still a string or a resolved Element.
         # ``Reference.path`` raises ``UnresolvedReferenceError`` if unreachable.
         return {"__ref__": value.path(root)}
     if isinstance(value, Enum):
         return value.value
+    if isinstance(value, datetime.datetime):
+        return value.isoformat()
+    if isinstance(value, datetime.date):
+        return value.isoformat()
     if isinstance(value, datetime.tzinfo):
-        # pytz timezones expose ``zone``; stdlib zoneinfo uses ``key``. Fall back to str().
-        return getattr(value, "zone", None) or getattr(value, "key", None) or str(value)
+        name = getattr(value, "key", None) or str(value)
+        return {"__tz__": name}
     if isinstance(value, BaseGeometry):
         # Shapely geometry → GeoJSON dict tagged with ``__geometry__`` for dispatch on load.
         return {"__geometry__": True, **mapping(value)}
@@ -122,7 +129,7 @@ def _descriptor_to_dict(desc: TimeSeriesDescriptor) -> dict:
     return out
 
 
-def _plain_dataclass_to_dict(obj, *, include_ids: bool, root: Entity) -> dict:
+def _plain_dataclass_to_dict(obj, *, include_ids: bool, root: Element) -> dict:
     out: dict = {"__type__": type(obj).__name__}
     for f in dataclasses.fields(obj):
         v = getattr(obj, f.name)
@@ -130,13 +137,13 @@ def _plain_dataclass_to_dict(obj, *, include_ids: bool, root: Entity) -> dict:
     return out
 
 
-def _entity_to_dict(entity: Entity, *, include_ids: bool, root: Entity) -> dict:
-    out: dict = {"type": type(entity).__name__}
-    for f in dataclasses.fields(entity):
+def _element_to_dict(element: Element, *, include_ids: bool, root: Element) -> dict:
+    out: dict = {"type": type(element).__name__}
+    for f in dataclasses.fields(element):
         name = f.name
         if name == "_id" and not include_ids:
             continue
-        value = getattr(entity, name)
+        value = getattr(element, name)
         if value is None:
             continue
         if isinstance(value, list) and not value:
@@ -145,34 +152,34 @@ def _entity_to_dict(entity: Entity, *, include_ids: bool, root: Entity) -> dict:
     return out
 
 
-def entity_to_json(entity: Entity, *, include_ids: bool = False) -> dict:
-    """Public: serialize an Entity (and its subtree) to a JSON-compatible dict.
+def element_to_json(element: Element, *, include_ids: bool = False) -> dict:
+    """Public: serialize an Element (and its subtree) to a JSON-compatible dict.
 
-    Resolved ``Reference`` fields are emitted as full paths from ``entity``
+    Resolved ``Reference`` fields are emitted as full paths from ``element``
     (the serialization root), so same-name collisions in different branches
     round-trip deterministically. Raises ``UnresolvedReferenceError`` if a
-    resolved reference points outside ``entity``'s subtree.
+    resolved reference points outside ``element``'s subtree.
     """
-    return _entity_to_dict(entity, include_ids=include_ids, root=entity)
+    return _element_to_dict(element, include_ids=include_ids, root=element)
 
 
-def to_json_str(entity: Entity, *, include_ids: bool = False, indent: Optional[int] = None) -> str:
+def to_json_str(element: Element, *, include_ids: bool = False, indent: Optional[int] = None) -> str:
     """Convenience: return a JSON string instead of a dict."""
-    return json_module.dumps(entity_to_json(entity, include_ids=include_ids), indent=indent)
+    return json_module.dumps(element_to_json(element, include_ids=include_ids), indent=indent)
 
 
 # ---------------------------------------------------------------------
-# Deserialization (dict → Entity)
+# Deserialization (dict → Element)
 # ---------------------------------------------------------------------
 
 
-def entity_from_json(data: dict, *, expected_type: Optional[Type[Entity]] = None) -> Entity:
-    """Public: deserialize a JSON-compatible dict into an Entity tree.
+def element_from_json(data: dict, *, expected_type: Optional[Type[Element]] = None) -> Element:
+    """Public: deserialize a JSON-compatible dict into an Element tree.
 
     Performs the two-pass walk (instantiate + resolve references).
     """
     root = _instantiate(data)
-    if expected_type is not None and expected_type is not Entity:
+    if expected_type is not None and expected_type is not Element:
         if not isinstance(root, expected_type):
             raise TypeError(
                 f"Expected {expected_type.__name__}, got {type(root).__name__}"
@@ -181,8 +188,8 @@ def entity_from_json(data: dict, *, expected_type: Optional[Type[Entity]] = None
     return root
 
 
-def from_json_str(text: str, *, expected_type: Optional[Type[Entity]] = None) -> Entity:
-    return entity_from_json(json_module.loads(text), expected_type=expected_type)
+def from_json_str(text: str, *, expected_type: Optional[Type[Element]] = None) -> Element:
+    return element_from_json(json_module.loads(text), expected_type=expected_type)
 
 
 # ----- pass 1: instantiate -----
@@ -203,13 +210,15 @@ def _instantiate(data: Any) -> Any:
         cls = _VALUE_REGISTRY[data["__type__"]]
         kwargs = {k: _instantiate(v) for k, v in data.items() if k != "__type__"}
         return cls(**kwargs)
+    if isinstance(data, dict) and "__tz__" in data:
+        return ZoneInfo(data["__tz__"])
     if isinstance(data, dict) and "__ref__" in data:
         return Reference(data["__ref__"])
     if isinstance(data, dict) and "type" in data:
         type_name = data["type"]
         if type_name not in _REGISTRY:
             raise ValueError(
-                f"Unknown Entity type {type_name!r}. Known types: {sorted(_REGISTRY)}"
+                f"Unknown Element type {type_name!r}. Known types: {sorted(_REGISTRY)}"
             )
         cls = _REGISTRY[type_name]
         kwargs = _build_kwargs(cls, data)
@@ -219,16 +228,28 @@ def _instantiate(data: Any) -> Any:
     return data
 
 
-def _build_kwargs(cls: Type[Entity], data: dict) -> dict:
+@lru_cache(maxsize=None)
+def _resolved_type_hints(cls: type) -> Dict[str, Any]:
+    """Resolve string annotations on a dataclass to concrete types (once per class)."""
+    try:
+        return typing.get_type_hints(cls)
+    except Exception:
+        return {}
+
+
+def _build_kwargs(cls: Type[Element], data: dict) -> dict:
     kwargs: dict = {}
     field_map = {f.name: f for f in dataclasses.fields(cls)}
+    hints = _resolved_type_hints(cls)
     for key, raw in data.items():
         if key == "type":
             continue
         if key not in field_map:
             continue  # unknown field — ignore (forward-compat)
         f = field_map[key]
-        kwargs[key] = _instantiate_for_field(f.type, raw)
+        # Prefer resolved type hint (handles ``from __future__ import annotations``).
+        field_type = hints.get(key, f.type)
+        kwargs[key] = _instantiate_for_field(field_type, raw)
     return kwargs
 
 
@@ -240,6 +261,16 @@ def _instantiate_for_field(field_type: Any, raw: Any) -> Any:
         if isinstance(t, type) and issubclass(t, Enum) and isinstance(raw, str):
             try:
                 return t(raw)
+            except ValueError:
+                pass
+        if isinstance(t, type) and t is datetime.date and isinstance(raw, str):
+            try:
+                return datetime.date.fromisoformat(raw)
+            except ValueError:
+                pass
+        if isinstance(t, type) and t is datetime.datetime and isinstance(raw, str):
+            try:
+                return datetime.datetime.fromisoformat(raw)
             except ValueError:
                 pass
     # Dicts / lists → instantiate recursively.
@@ -283,7 +314,7 @@ def _descriptor_from_dict(d: dict) -> TimeSeriesDescriptor:
 # ----- pass 2: resolve references -----
 
 
-def _resolve_references(node: Entity, *, root: Entity) -> None:
+def _resolve_references(node: Element, *, root: Element) -> None:
     for f in dataclasses.fields(node):
         v = getattr(node, f.name)
         if isinstance(v, Reference):
@@ -293,25 +324,26 @@ def _resolve_references(node: Entity, *, root: Entity) -> None:
 
 
 # ---------------------------------------------------------------------
-# Convenience: register every currently-known Entity subclass.
+# Convenience: register every currently-known Element subclass.
 # Called from ``__init__`` after all modules have loaded.
 # ---------------------------------------------------------------------
 
 
-def register_builtin_entities() -> None:
-    """Register all Entity subclasses reachable via __subclasses__ at call time.
+def register_builtin_elements() -> None:
+    """Register all Element subclasses reachable via __subclasses__ at call time.
 
     Use as a fallback so callers don't have to decorate every class manually —
-    the explicit ``@register_entity`` decorator remains the canonical path.
-    Walks both the Node and Edge subtrees under Entity.
+    the explicit ``@register_element`` decorator remains the canonical path.
+    Walks the whole Element subtree (Node, Edge, Asset, Collection, and all
+    their descendants).
     """
 
-    def _walk(cls: Type[Entity]):
+    def _walk(cls: Type[Element]):
         for sub in cls.__subclasses__():
             try:
-                register_entity(sub)
+                register_element(sub)
             except ValueError:
                 pass  # already registered with same class object
             _walk(sub)
 
-    _walk(Entity)
+    _walk(Element)

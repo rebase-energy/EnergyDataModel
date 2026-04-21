@@ -11,7 +11,7 @@ constructor functions). Type discrimination is via ``isinstance``.
   Carries an extra ``nominal_frequency`` field (50 Hz in Europe / Nordic /
   GB / Ireland / Baltic / IPS-UPS; 60 Hz in North America).
 
-The geometry (Polygon / MultiPolygon) lives on :class:`Entity` and is
+The geometry (Polygon / MultiPolygon) lives on :class:`Element` and is
 inherited; areas without a known polygon simply leave it ``None``.
 """
 

@@ -41,15 +41,17 @@
 
 ## Class hierarchy
 
-Everything in EnergyDataModel inherits from a single root, `Entity`, which carries identity (`name`, `_id`), attached time-series descriptors, and an optional [shapely](https://shapely.readthedocs.io/) geometry. Two sibling subtrees specialize it:
+Everything in EnergyDataModel inherits from a single root, `Element`, which carries identity (`name`, `_id`), attached time-series descriptors, and an optional [shapely](https://shapely.readthedocs.io/) geometry. Three sibling subtrees specialize it, plus an `Asset` mixin:
 
-* **`Node`** — anything that exists as a thing (assets, areas, sensors, grid nodes, collections). Adds `members` and `tz`.
+* **`Node`** — graph vertices (equipment, areas, sensors, grid topology points). Adds `members` and `tz`.
 * **`Edge`** — relationships between two nodes (lines, transformers, interconnectors). Adds `from_entity`, `to_entity`, `directed`.
+* **`Collection`** — logical groupings (Portfolio, Site, ...). Adds `members` and `tz`. Not a graph vertex — `isinstance(portfolio, Node)` is False.
+* **`Asset`** — cross-cutting mixin marking physical equipment. Adds `commissioning_date`. Mixed into Node via `NodeAsset` and into Edge via `EdgeAsset`; never used as a leaf type.
 
 ```
-Entity  (name, _id, timeseries, geometry)
+Element  (name, _id, timeseries, geometry)
 ├── Node  (+ members, tz)
-│   ├── Asset                — physical energy equipment
+│   ├── NodeAsset            — Node × Asset (physical equipment vertices)
 │   │   WindTurbine, WindFarm, WindPowerArea, PVArray, PVSystem,
 │   │   SolarPowerArea, Battery, HeatPump, HydroPowerPlant,
 │   │   HydroTurbine, Reservoir, Building, House
@@ -58,20 +60,22 @@ Entity  (name, _id, timeseries, geometry)
 │   ├── Sensor               — measurement instruments
 │   │   TemperatureSensor, WindSpeedSensor, RadiationSensor,
 │   │   RainSensor, HumiditySensor
-│   ├── Area                 — administrative / market regions
-│   │   BiddingZone, Country, ControlArea, WeatherCell,
-│   │   SynchronousArea (+ nominal_frequency)
-│   └── Collection           — grouping / container marker
-│       Portfolio, Site, MultiSite, Region,
-│       EnergyCommunity, VirtualPowerPlant, SubNetwork, Network
-└── Edge  (+ from_entity, to_entity, directed)
-    Line, Link, Transformer, Pipe, Interconnection
+│   └── Area                 — administrative / market regions
+│       BiddingZone, Country, ControlArea, WeatherCell,
+│       SynchronousArea (+ nominal_frequency)
+├── Edge  (+ from_entity, to_entity, directed)
+│   └── EdgeAsset            — Edge × Asset (physical equipment edges)
+│       Line, Link, Transformer, Pipe, Interconnection
+├── Collection  (+ members, tz)    — logical grouping, not a vertex
+│   Portfolio, Site, MultiSite, Region,
+│   EnergyCommunity, VirtualPowerPlant, SubNetwork, Network
+└── Asset  (+ commissioning_date)  — mixin, never a leaf
 ```
 
 | Module         | Data Classes |
 | :----          | :----        |
-| 🧱&nbsp;`entity` / `node` / `edge` | `Entity`, `Node`, `Edge` |
-| 🏷️&nbsp;`bases` | `Asset`, `GridNode`, `Sensor` |
+| 🧱&nbsp;`element` / `node` / `edge` | `Element`, `Node`, `Edge` |
+| 🏷️&nbsp;`asset` / `bases` | `Asset`, `NodeAsset`, `GridNode`, `Sensor` |
 | 🗺️&nbsp;`geospatial` | `GeoLocation`, `GeoPolygon`, `GeoMultiPolygon` |
 | ☀️&nbsp;`solar` | `FixedMount`, `SingleAxisTrackerMount`, `PVArray`, `PVSystem`, `SolarPowerArea` |
 | 🌬️&nbsp;`wind` | `WindTurbine`, `WindFarm`, `WindPowerArea` |
@@ -80,7 +84,7 @@ Entity  (name, _id, timeseries, geometry)
 | ♻️&nbsp;`heatpump` | `HeatPump` |
 | 🏠&nbsp;`building` | `Building`, `House` |
 | 🌡️&nbsp;`weathersensor` | `TemperatureSensor`, `WindSpeedSensor`, `RadiationSensor`, `RainSensor`, `HumiditySensor` |
-| ⚡&nbsp;`powergrid` | `Carrier`, `JunctionPoint`, `Meter`, `DeliveryPoint`, `Line`, `Link`, `Transformer`, `Pipe`, `Interconnection`, `SubNetwork`, `Network` |
+| ⚡&nbsp;`powergrid` | `Carrier`, `EdgeAsset`, `JunctionPoint`, `Meter`, `DeliveryPoint`, `Line`, `Link`, `Transformer`, `Pipe`, `Interconnection`, `SubNetwork`, `Network` |
 | 🗺️&nbsp;`area` | `Area`, `BiddingZone`, `Country`, `ControlArea`, `WeatherCell`, `SynchronousArea` |
 | 📦&nbsp;`containers` | `Collection`, `Portfolio`, `Site`, `MultiSite`, `Region`, `EnergyCommunity`, `VirtualPowerPlant` |
 | 📈&nbsp;`constructors` | `electricity_supply`, `electricity_demand`, `electricity_supply_area`, `electricity_demand_area`, `spot_price`, `cross_border_flow`, `grid_frequency`, `temperature`, `gas_supply`, `gas_demand`, `heating_demand` |

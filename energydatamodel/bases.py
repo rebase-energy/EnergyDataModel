@@ -1,19 +1,14 @@
-"""Semantic intermediates under :class:`Node`.
+"""Node-side equipment intermediates.
 
-These three subclasses don't add fields beyond what ``Node`` already gives
-them (geometry inherited via ``Entity``, members + tz inherited from
-``Node``); they exist as semantic markers so callers can write
-``isinstance(x, Asset)`` / ``isinstance(x, GridNode)`` / ``isinstance(x, Sensor)``
-to discriminate roles cleanly.
-
-* :class:`Asset` — physical energy equipment (generates, consumes, or stores
-  energy). Subclassed by WindTurbine, PVSystem, Battery, HeatPump,
-  HydroPowerPlant, Building, House, etc.
-* :class:`GridNode` — topological point in an electrical/grid network (a bus,
-  a meter, a delivery point). Adds ``carrier``.
-* :class:`Sensor` — measurement instrument. No added fields on the base;
-  concrete sensor subclasses (TemperatureSensor, WindSpeedSensor, ...) carry
-  installation-specific fields like ``height``.
+* :class:`NodeAsset` — mixes ``Node`` and ``Asset``. The single mixin point on
+  the node side; everything physical and vertex-shaped lives below it with
+  plain single inheritance. Subclassed directly by WindTurbine, Battery,
+  HeatPump, etc.; and further by :class:`Sensor` and :class:`GridNode` for
+  their role-specific fields.
+* :class:`Sensor` — measurement instruments. Adds ``height`` (shared by every
+  concrete sensor in the weather-sensor family).
+* :class:`GridNode` — topological points in an electrical / grid network
+  (bus, meter, delivery point). Adds ``carrier``.
 """
 
 from __future__ import annotations
@@ -21,6 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, ClassVar, Optional
 
+from energydatamodel.asset import Asset
 from energydatamodel.node import Node
 
 if TYPE_CHECKING:
@@ -28,48 +24,54 @@ if TYPE_CHECKING:
 
 
 # ---------------------------------------------------------------------
-# Asset — base for physical energy equipment
+# NodeAsset — the single (Node, Asset) mixin point
 # ---------------------------------------------------------------------
 
 
 @dataclass(repr=False, kw_only=True)
-class Asset(Node):
-    """Physical energy equipment that generates, consumes, or stores energy.
+class NodeAsset(Node, Asset):
+    """Mixin intermediate: a ``Node`` that is also an ``Asset``.
 
-    Subclasses (``WindTurbine``, ``Battery``, ``HeatPump``, ...) add their own
-    domain fields. The docstring lives here; leaf classes carry only domain
-    fields.
+    Concrete equipment classes (``WindTurbine``, ``Battery``, ``HeatPump``, ...)
+    and the role-specific intermediates :class:`Sensor` and :class:`GridNode`
+    all inherit from here. Single inheritance below this point.
     """
 
+    _BASE_FIELDS: ClassVar[frozenset] = Node._BASE_FIELDS | Asset._BASE_FIELDS
+
 
 # ---------------------------------------------------------------------
-# GridNode — topological point in an electrical / grid network
+# Sensor — measurement instruments
 # ---------------------------------------------------------------------
 
 
 @dataclass(repr=False, kw_only=True)
-class GridNode(Node):
+class Sensor(NodeAsset):
+    """A measurement instrument that observes an environmental variable.
+
+    Concrete sensor subclasses (``TemperatureSensor``, ``WindSpeedSensor``, …)
+    inherit ``height`` from here and add no new fields.
+    """
+
+    height: Optional[float] = None
+
+    _BASE_FIELDS: ClassVar[frozenset] = NodeAsset._BASE_FIELDS | frozenset({"height"})
+
+
+# ---------------------------------------------------------------------
+# GridNode — topological point in a grid
+# ---------------------------------------------------------------------
+
+
+@dataclass(repr=False, kw_only=True)
+class GridNode(NodeAsset):
     """A topological point in a grid network — a bus, meter, or delivery point.
 
-    Distinct from :class:`Asset`: GridNodes don't generate or consume energy
-    themselves; they're abstract points where other things connect.
+    GridNodes are equipment too (they have manufacturers, commissioning dates,
+    etc. via :class:`Asset`). They're distinguished from generation/consumption
+    assets by carrying a ``carrier``.
     """
 
     carrier: Optional["Carrier"] = None
 
-    _BASE_FIELDS: ClassVar[frozenset] = Node._BASE_FIELDS | frozenset({"carrier"})
-
-
-# ---------------------------------------------------------------------
-# Sensor — measurement instrument
-# ---------------------------------------------------------------------
-
-
-@dataclass(repr=False, kw_only=True)
-class Sensor(Node):
-    """A measurement instrument that observes an environmental variable.
-
-    No fields on the base; concrete sensor subclasses (``TemperatureSensor``,
-    ``WindSpeedSensor``, etc.) carry installation-specific fields like
-    ``height``.
-    """
+    _BASE_FIELDS: ClassVar[frozenset] = NodeAsset._BASE_FIELDS | frozenset({"carrier"})

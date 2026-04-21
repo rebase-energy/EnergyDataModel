@@ -1,12 +1,13 @@
 """Collection marker and container subclasses.
 
-:class:`Collection` is a :class:`Node` whose primary purpose is grouping
-other entities. It adds no fields — it exists as a semantic marker for
-``isinstance(x, Collection)`` checks and UI/API grouping.
+:class:`Collection` is an :class:`Element` whose primary purpose is grouping
+other elements. It is **not** a :class:`Node` — collections aren't graph
+vertices; they're organizational/logical groupings. Collection shares the
+``members`` and ``tz`` field shape with Node, but the semantics differ —
+``isinstance(x, Node)`` on a Portfolio should return False.
 
-Concrete subclasses carry no additional fields either; they distinguish
-a Portfolio from a Site at the type level for serialization / introspection
-/ UI.
+Concrete subclasses carry no additional fields; they distinguish a Portfolio
+from a Site at the type level for serialization / introspection / UI.
 
 Conventions:
 
@@ -22,14 +23,40 @@ Conventions:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import datetime
+from dataclasses import dataclass, field
+from typing import ClassVar, List, Optional
 
-from energydatamodel.node import Node
+from energydatamodel.element import Element
 
 
 @dataclass(repr=False, kw_only=True)
-class Collection(Node):
-    """Marker for entities whose primary purpose is grouping other entities."""
+class Collection(Element):
+    """An Element whose primary purpose is grouping other Elements.
+
+    Not a :class:`Node` — collections are organizational groupings, not graph
+    vertices. Carries ``members`` and ``tz`` (same shape as Node, different
+    semantics).
+    """
+
+    members: List[Element] = field(default_factory=list)
+    tz: Optional[datetime.tzinfo] = None
+
+    _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset({
+        "members", "tz",
+    })
+    _CHILDREN_FIELDS: ClassVar[frozenset] = frozenset({"members"})
+
+    def children(self) -> list:
+        return list(self.members)
+
+    def add_child(self, obj: Element) -> None:
+        if not isinstance(obj, Element):
+            raise TypeError(
+                f"{type(self).__name__} only accepts Element children, "
+                f"got {type(obj).__name__}"
+            )
+        self.members.append(obj)
 
 
 @dataclass(repr=False, kw_only=True)

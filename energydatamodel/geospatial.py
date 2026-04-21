@@ -1,20 +1,21 @@
 """Geospatial helper types.
 
-These are value types (not :class:`Entity` subclasses) — they carry
+These are value types (not :class:`Element` subclasses) — they carry
 coordinates and geometry only, and can be used as inputs that get converted
-into shapely geometries on Entity. Shapely is the underlying truth for all
-geometry storage on Entity.
+into shapely geometries on Element. Shapely is the underlying truth for all
+geometry storage on Element.
 """
 
 from __future__ import annotations
 
+import datetime
 import json
 from dataclasses import dataclass
 from typing import Optional, Union
+from zoneinfo import ZoneInfo
 
 import geopandas as gpd
 import pvlib
-import pytz
 from shapely.geometry import MultiPolygon, Point, Polygon
 
 
@@ -23,19 +24,19 @@ class GeoLocation:
     """Point location with a timezone and optional altitude.
 
     Convenience input value type. Convert to a shapely ``Point`` via
-    :meth:`to_point` when populating an Entity's ``geometry`` field.
+    :meth:`to_point` when populating an Element's ``geometry`` field.
     """
 
     longitude: float
     latitude: float
-    tz: Union[str, pytz.BaseTzInfo] = "UTC"
+    tz: Union[str, datetime.tzinfo] = "UTC"
     altitude: Optional[float] = None
     name: Optional[str] = None
 
     def __post_init__(self):
         self.point = Point(self.longitude, self.latitude)
         if isinstance(self.tz, str):
-            self.tz = pytz.timezone(self.tz)
+            self.tz = ZoneInfo(self.tz)
 
     @classmethod
     def from_point(cls, point: Point):
@@ -51,7 +52,7 @@ class GeoLocation:
     def to_point(self) -> Point:
         """Return a shapely ``Point`` using ``(longitude, latitude)`` ordering.
 
-        Use this to populate an Entity's ``geometry`` field from a
+        Use this to populate an Element's ``geometry`` field from a
         ``GeoLocation`` input.
         """
         return Point(self.longitude, self.latitude)

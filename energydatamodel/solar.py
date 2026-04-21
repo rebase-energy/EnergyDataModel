@@ -9,8 +9,8 @@ from typing import Optional, Union
 import pandas as pd
 import pvlib
 
-from energydatamodel.bases import Asset
-from energydatamodel.entity import Entity
+from energydatamodel.bases import NodeAsset
+from energydatamodel.element import Element
 
 
 @dataclass
@@ -32,7 +32,7 @@ class SingleAxisTrackerMount:
 
 
 @dataclass(repr=False, kw_only=True)
-class PVArray(Asset):
+class PVArray(NodeAsset):
     capacity: Optional[float] = None
     surface_azimuth: Optional[float] = None
     surface_tilt: Optional[float] = None
@@ -45,7 +45,7 @@ class PVArray(Asset):
 
 
 @dataclass(repr=False, kw_only=True)
-class PVSystem(Asset):
+class PVSystem(NodeAsset):
     """A PV system — an Asset that contains :class:`PVArray` members.
 
     Stored in the inherited ``members`` list. ``add_child`` enforces the type
@@ -76,7 +76,7 @@ class PVSystem(Asset):
                 )
             )
 
-    def add_child(self, obj: Entity) -> None:
+    def add_child(self, obj: Element) -> None:
         if not isinstance(obj, PVArray):
             raise TypeError(
                 f"PVSystem only accepts PVArray children, got {type(obj).__name__}"
@@ -109,7 +109,7 @@ class PVSystem(Asset):
 
 
 @dataclass(repr=False, kw_only=True)
-class SolarPowerArea(Asset):
+class SolarPowerArea(NodeAsset):
     """A solar-power-potential area.
 
     The area's polygon lives in the inherited ``geometry`` field.

@@ -6,19 +6,19 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-from energydatamodel.bases import Asset
+from energydatamodel.bases import NodeAsset
 
 
 @dataclass(repr=False, kw_only=True)
-class Building(Asset):
-    """A building. An :class:`Asset` (location, capacity-like fields) that also
-    contains child Entities via the inherited ``members`` list."""
+class Building(NodeAsset):
+    """A building. A physical asset that also contains child Elements via the
+    inherited ``members`` list."""
 
     type: Optional[str] = None
 
 
 @dataclass(repr=False, kw_only=True)
-class House(Asset):
+class House(NodeAsset):
     """A house. Same structure as :class:`Building` with a few convenience
     accessors."""
 
