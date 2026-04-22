@@ -41,8 +41,8 @@ class TestRoundTrip:
     def test_type_tag_on_entities(self):
         p = _nordic_portfolio()
         js = p.to_json()
-        assert js["type"] == "Portfolio"
-        assert js["members"][0]["type"] == "Site"
+        assert js["__type__"] == "Portfolio"
+        assert js["members"][0]["__type__"] == "Site"
 
     def test_references_resolved_after_from_json(self):
         p = _nordic_portfolio()
@@ -69,11 +69,11 @@ class TestRoundTrip:
         # Directly feeding a broken path dict into from_json (e.g. a hand-crafted
         # payload from another system) must still raise at resolve time.
         js = {
-            "type": "Portfolio",
+            "__type__": "Portfolio",
             "name": "root",
             "members": [
                 {
-                    "type": "Interconnection",
+                    "__type__": "Interconnection",
                     "name": "X",
                     "from_entity": {"__ref__": "Ghost"},
                     "to_entity": {"__ref__": "Ghost2"},
@@ -377,3 +377,112 @@ class TestKitchenSinkRoundTrip:
         # Descend to an asset and compare.
         assert restored.members[0].members[0].members[0].members[0]._id == \
                p.members[0].members[0].members[0].members[0]._id
+
+
+class TestExcludeFields:
+    """Tests for the ``exclude_fields`` parameter on ``element_to_json`` / ``to_json``."""
+
+    def test_exclude_members_produces_flat_dict(self):
+        p = edm.Portfolio(name="P", members=[
+            edm.Site(name="S", members=[edm.WindTurbine(name="T", capacity=3.0)]),
+        ])
+        js = p.to_json(exclude_fields={"members"})
+        assert js["__type__"] == "Portfolio"
+        assert js["name"] == "P"
+        assert "members" not in js
+
+    def test_exclude_applies_recursively(self):
+        # ``members`` excluded on every nested Element, not just the root.
+        portfolio = edm.Portfolio(name="P", members=[
+            edm.Site(name="S", members=[edm.WindTurbine(name="T", capacity=3.0)]),
+        ])
+        # Exclude ``capacity`` — a leaf field — everywhere it appears.
+        js = portfolio.to_json(exclude_fields={"capacity"})
+        # The WindTurbine exists (members still included), but no capacity anywhere.
+        turbine = js["members"][0]["members"][0]
+        assert turbine["__type__"] == "WindTurbine"
+        assert "capacity" not in turbine
+
+    def test_exclude_from_to_entity_on_edge(self):
+        ic = edm.Interconnection(
+            name="IC", from_entity=edm.Reference("A"), to_entity=edm.Reference("B"),
+            capacity_forward=1000,
+        )
+        # Reference dump normally requires root resolution, but exclusion bypasses it.
+        js = edm.element_to_json(ic, exclude_fields={"from_entity", "to_entity"})
+        assert js["__type__"] == "Interconnection"
+        assert js["name"] == "IC"
+        assert js["capacity_forward"] == 1000
+        assert "from_entity" not in js
+        assert "to_entity" not in js
+
+    def test_exclude_fields_default_unchanged(self):
+        p = _nordic_portfolio()
+        # No exclude_fields → full tree serialization is unchanged.
+        assert p.to_json() == edm.element_to_json(p, exclude_fields=None)
+
+
+class TestElementToStorageDict:
+    """Tests for ``element_to_storage_dict`` — the flat-row wrapper."""
+
+    def test_excludes_children(self):
+        p = edm.Portfolio(name="Europe", members=[
+            edm.Site(name="Offshore", members=[edm.WindTurbine(name="T", capacity=3.0)]),
+        ])
+        d = edm.element_to_storage_dict(p)
+        assert d["__type__"] == "Portfolio"
+        assert d["name"] == "Europe"
+        assert "members" not in d
+
+    def test_preserves_own_fields(self):
+        t = edm.WindTurbine(
+            name="T01", capacity=3.5, hub_height=80, geometry=Point(3.0, 55.0),
+        )
+        d = edm.element_to_storage_dict(t)
+        assert d["__type__"] == "WindTurbine"
+        assert d["name"] == "T01"
+        assert d["capacity"] == 3.5
+        assert d["hub_height"] == 80
+        assert d["geometry"]["__geometry__"] is True
+
+    def test_extra_excludes_for_edges(self):
+        line = edm.Line(
+            name="L1", capacity=500,
+            from_entity=edm.Reference("A"), to_entity=edm.Reference("B"),
+        )
+        d = edm.element_to_storage_dict(
+            line, extra_excludes={"from_entity", "to_entity"}
+        )
+        assert d["__type__"] == "Line"
+        assert d["capacity"] == 500
+        assert "from_entity" not in d
+        assert "to_entity" not in d
+
+    def test_round_trip_single_element(self):
+        t = edm.WindTurbine(
+            name="T01", capacity=3.5, hub_height=80,
+            commissioning_date=date(2020, 1, 1),
+            geometry=Polygon([(0, 0), (1, 0), (1, 1), (0, 1)]),
+        )
+        d = edm.element_to_storage_dict(t)
+        restored = edm.element_from_json(d)
+        assert isinstance(restored, edm.WindTurbine)
+        assert restored.name == "T01"
+        assert restored.capacity == 3.5
+        assert restored.hub_height == 80
+        assert restored.commissioning_date == date(2020, 1, 1)
+        assert restored.geometry.equals(t.geometry)
+
+    def test_round_trip_preserves_tz(self):
+        s = edm.Site(name="S", tz=ZoneInfo("Europe/Stockholm"))
+        d = edm.element_to_storage_dict(s)
+        restored = edm.element_from_json(d)
+        assert isinstance(restored.tz, ZoneInfo)
+        assert str(restored.tz) == "Europe/Stockholm"
+
+    def test_round_trip_preserves_sensor_height(self):
+        ts = edm.TemperatureSensor(name="Temp", height=10.0)
+        d = edm.element_to_storage_dict(ts)
+        restored = edm.element_from_json(d)
+        assert isinstance(restored, edm.TemperatureSensor)
+        assert restored.height == 10.0

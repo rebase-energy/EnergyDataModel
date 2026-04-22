@@ -1,15 +1,17 @@
 """JSON serialization for Element trees.
 
-Wire format: each element → ``{"type": "ClassName", ...fields}``. Lists of
-Elements become nested arrays of such dicts. ``Reference`` fields become path
-strings. Enums become their string values. Dataclass value types (e.g.
-``Location``, ``Carrier``) are serialized as nested dicts without a ``type``
-tag (they're not Element subclasses and are round-tripped by field-type
-inspection on the receiving side).
+Wire format: each element → ``{"__type__": "ClassName", ...fields}``. Lists
+of Elements become nested arrays of such dicts. ``Reference`` fields become
+path strings. Enums become their string values. Value-type dataclasses
+(``Location``, ``Carrier``, ...) use the same ``__type__`` tag.
+
+The reserved ``__type__`` key (double-underscore prefix) avoids collisions
+with dataclass fields — classes like :class:`Building` and :class:`House`
+have a ``type`` field of their own, which must survive round-trip.
 
 ``from_json`` is a two-pass walk:
 
-1. Instantiate: dispatch each ``"type"`` to its class via the registry,
+1. Instantiate: dispatch each ``"__type__"`` to its class via the registry,
    instantiate with string-path ``Reference``s.
 2. Resolve: walk the tree once more, resolve every Reference against the root.
 """
@@ -80,11 +82,19 @@ def get_registry() -> Dict[str, Type[Element]]:
 # ---------------------------------------------------------------------
 
 
-def _serialize_value(value: Any, *, include_ids: bool, root: Element) -> Any:
+def _serialize_value(
+    value: Any,
+    *,
+    include_ids: bool,
+    root: Element,
+    exclude_fields: Optional[set] = None,
+) -> Any:
     if value is None:
         return None
     if isinstance(value, Element):
-        return _element_to_dict(value, include_ids=include_ids, root=root)
+        return _element_to_dict(
+            value, include_ids=include_ids, root=root, exclude_fields=exclude_fields
+        )
     if isinstance(value, Reference):
         # Always emit the canonical full path from ``root``, regardless of whether
         # the Reference's internal target is still a string or a resolved Element.
@@ -107,11 +117,20 @@ def _serialize_value(value: Any, *, include_ids: bool, root: Element) -> Any:
     if dataclasses.is_dataclass(value) and not isinstance(value, type):
         return _plain_dataclass_to_dict(value, include_ids=include_ids, root=root)
     if isinstance(value, list):
-        return [_serialize_value(v, include_ids=include_ids, root=root) for v in value]
+        return [
+            _serialize_value(v, include_ids=include_ids, root=root, exclude_fields=exclude_fields)
+            for v in value
+        ]
     if isinstance(value, tuple):
-        return {"__tuple__": [_serialize_value(v, include_ids=include_ids, root=root) for v in value]}
+        return {"__tuple__": [
+            _serialize_value(v, include_ids=include_ids, root=root, exclude_fields=exclude_fields)
+            for v in value
+        ]}
     if isinstance(value, dict):
-        return {k: _serialize_value(v, include_ids=include_ids, root=root) for k, v in value.items()}
+        return {
+            k: _serialize_value(v, include_ids=include_ids, root=root, exclude_fields=exclude_fields)
+            for k, v in value.items()
+        }
     if isinstance(value, (str, int, float, bool)):
         return value
     # Fallback: string repr. Avoids silent data loss for unknown types.
@@ -137,35 +156,86 @@ def _plain_dataclass_to_dict(obj, *, include_ids: bool, root: Element) -> dict:
     return out
 
 
-def _element_to_dict(element: Element, *, include_ids: bool, root: Element) -> dict:
-    out: dict = {"type": type(element).__name__}
+def _element_to_dict(
+    element: Element,
+    *,
+    include_ids: bool,
+    root: Element,
+    exclude_fields: Optional[set] = None,
+) -> dict:
+    out: dict = {"__type__": type(element).__name__}
     for f in dataclasses.fields(element):
         name = f.name
         if name == "_id" and not include_ids:
+            continue
+        if exclude_fields and name in exclude_fields:
             continue
         value = getattr(element, name)
         if value is None:
             continue
         if isinstance(value, list) and not value:
             continue
-        out[name] = _serialize_value(value, include_ids=include_ids, root=root)
+        out[name] = _serialize_value(
+            value, include_ids=include_ids, root=root, exclude_fields=exclude_fields
+        )
     return out
 
 
-def element_to_json(element: Element, *, include_ids: bool = False) -> dict:
+def element_to_json(
+    element: Element,
+    *,
+    include_ids: bool = False,
+    exclude_fields: Optional[set] = None,
+) -> dict:
     """Public: serialize an Element (and its subtree) to a JSON-compatible dict.
 
     Resolved ``Reference`` fields are emitted as full paths from ``element``
     (the serialization root), so same-name collisions in different branches
     round-trip deterministically. Raises ``UnresolvedReferenceError`` if a
     resolved reference points outside ``element``'s subtree.
+
+    Args:
+        element: The Element to serialize.
+        include_ids: If True, emit ``_id`` fields (omitted by default).
+        exclude_fields: Set of field names to skip when serializing. Applied
+            recursively to nested Elements (e.g. passing ``{"members"}``
+            produces a flat, children-free dict). See
+            :func:`element_to_storage_dict` for the canonical flat-row form.
     """
-    return _element_to_dict(element, include_ids=include_ids, root=element)
+    return _element_to_dict(
+        element, include_ids=include_ids, root=element, exclude_fields=exclude_fields
+    )
 
 
-def to_json_str(element: Element, *, include_ids: bool = False, indent: Optional[int] = None) -> str:
+def to_json_str(
+    element: Element,
+    *,
+    include_ids: bool = False,
+    indent: Optional[int] = None,
+    exclude_fields: Optional[set] = None,
+) -> str:
     """Convenience: return a JSON string instead of a dict."""
-    return json_module.dumps(element_to_json(element, include_ids=include_ids), indent=indent)
+    return json_module.dumps(
+        element_to_json(element, include_ids=include_ids, exclude_fields=exclude_fields),
+        indent=indent,
+    )
+
+
+def element_to_storage_dict(
+    element: Element, *, extra_excludes: Optional[set] = None
+) -> dict:
+    """Flat-row serialization: element's own fields only, children excluded.
+
+    Suitable for persistence layers that store tree structure separately
+    (e.g. via ``parent_id`` columns rather than nested JSON). ``_id`` and any
+    fields in the element's ``_CHILDREN_FIELDS`` are excluded automatically;
+    add more via ``extra_excludes`` (e.g. ``{"from_entity", "to_entity"}``
+    for edges whose endpoints are stored as FK columns).
+    """
+    excludes = set(element._CHILDREN_FIELDS)
+    if extra_excludes:
+        excludes = excludes | extra_excludes
+    return element_to_json(element, exclude_fields=excludes)
 
 
 # ---------------------------------------------------------------------
@@ -196,9 +266,8 @@ def from_json_str(text: str, *, expected_type: Optional[Type[Element]] = None) -
 
 
 def _instantiate(data: Any) -> Any:
-    # Check tagged-dict markers (more specific) before the generic ``"type"`` branch:
-    # GeoJSON also uses a ``"type"`` field (e.g. ``"Polygon"``), so geometry must be
-    # detected via the ``__geometry__`` tag first.
+    # Tagged-dict markers: the double-underscore keys are reserved for
+    # serializer metadata and cannot collide with dataclass field names.
     if isinstance(data, dict) and "__tuple__" in data:
         return tuple(_instantiate(v) for v in data["__tuple__"])
     if isinstance(data, dict) and data.get("__geometry__") is True:
@@ -214,15 +283,15 @@ def _instantiate(data: Any) -> Any:
         return ZoneInfo(data["__tz__"])
     if isinstance(data, dict) and "__ref__" in data:
         return Reference(data["__ref__"])
-    if isinstance(data, dict) and "type" in data:
-        type_name = data["type"]
-        if type_name not in _REGISTRY:
-            raise ValueError(
-                f"Unknown Element type {type_name!r}. Known types: {sorted(_REGISTRY)}"
-            )
-        cls = _REGISTRY[type_name]
+    if isinstance(data, dict) and data.get("__type__") in _REGISTRY:
+        cls = _REGISTRY[data["__type__"]]
         kwargs = _build_kwargs(cls, data)
         return cls(**kwargs)
+    if isinstance(data, dict) and "__type__" in data:
+        # Tagged but unknown — fail loudly.
+        raise ValueError(
+            f"Unknown Element type {data['__type__']!r}. Known types: {sorted(_REGISTRY)}"
+        )
     if isinstance(data, list):
         return [_instantiate(v) for v in data]
     return data
@@ -242,7 +311,7 @@ def _build_kwargs(cls: Type[Element], data: dict) -> dict:
     field_map = {f.name: f for f in dataclasses.fields(cls)}
     hints = _resolved_type_hints(cls)
     for key, raw in data.items():
-        if key == "type":
+        if key == "__type__":
             continue
         if key not in field_map:
             continue  # unknown field — ignore (forward-compat)

@@ -104,6 +104,7 @@ from .quantities import Kind, Quantity, Scope, build_metric
 from .json_io import (
     element_from_json,
     element_to_json,
+    element_to_storage_dict,
     from_json_str,
     register_builtin_elements,
     register_element,

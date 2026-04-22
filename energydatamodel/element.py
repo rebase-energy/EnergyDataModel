@@ -133,10 +133,17 @@ class Element:
         return props
 
     # --------------------------------------------------------------- json
-    def to_json(self, include_ids: bool = False) -> dict:
+    def to_json(
+        self,
+        include_ids: bool = False,
+        *,
+        exclude_fields: Optional[set] = None,
+    ) -> dict:
         """Serialize to a JSON-compatible dict. Full implementation in ``json_io``."""
         from energydatamodel.json_io import element_to_json
-        return element_to_json(self, include_ids=include_ids)
+        return element_to_json(
+            self, include_ids=include_ids, exclude_fields=exclude_fields
+        )
 
     @classmethod
     def from_json(cls, data: dict) -> "Element":
