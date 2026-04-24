@@ -28,7 +28,7 @@ documentation = "https://docs.energydatamodel.org/en/latest"
 
 [project.optional-dependencies]
 docs = [
-    "sphinx==7.2.6",
+    "sphinx>=7.4",
     "sphinx-autodoc-typehints>=2.0.1",
     "sphinx-rtd-theme>=3.0.2",
 ]
