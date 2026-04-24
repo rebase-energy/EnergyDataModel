@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from energydatamodel.element import Element
 
@@ -30,7 +30,7 @@ class Asset(Element):
     (``WindTurbine``) or a graph edge (``Line``).
     """
 
-    commissioning_date: Optional[date] = None
+    commissioning_date: date | None = None
 
     _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset({
         "commissioning_date",

@@ -7,8 +7,6 @@ dataclass is frozen, so we always instantiate anew).
 
 from __future__ import annotations
 
-from typing import Optional
-
 from timedatamodel import DataType, Frequency, TimeSeriesDescriptor
 
 from energydatamodel.quantities import Kind, Quantity, Scope, build_metric
@@ -19,10 +17,10 @@ def _make(
     kind: Kind,
     scope: Scope,
     unit: str,
-    data_type: Optional[DataType],
-    frequency: Optional[Frequency],
+    data_type: DataType | None,
+    frequency: Frequency | None,
     timezone: str,
-    description: Optional[str],
+    description: str | None,
 ) -> TimeSeriesDescriptor:
     return TimeSeriesDescriptor(
         name=build_metric(quantity, kind, scope),
@@ -41,40 +39,40 @@ def _make(
 
 def electricity_supply(
     unit: str = "MW",
-    data_type: Optional[DataType] = DataType.ACTUAL,
-    frequency: Optional[Frequency] = None,
+    data_type: DataType | None = DataType.ACTUAL,
+    frequency: Frequency | None = None,
     timezone: str = "UTC",
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> TimeSeriesDescriptor:
     return _make(Quantity.ELECTRICITY, Kind.SUPPLY, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
 def electricity_demand(
     unit: str = "MW",
-    data_type: Optional[DataType] = DataType.ACTUAL,
-    frequency: Optional[Frequency] = None,
+    data_type: DataType | None = DataType.ACTUAL,
+    frequency: Frequency | None = None,
     timezone: str = "UTC",
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> TimeSeriesDescriptor:
     return _make(Quantity.ELECTRICITY, Kind.DEMAND, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
 def electricity_supply_area(
     unit: str = "MW",
-    data_type: Optional[DataType] = DataType.ACTUAL,
-    frequency: Optional[Frequency] = None,
+    data_type: DataType | None = DataType.ACTUAL,
+    frequency: Frequency | None = None,
     timezone: str = "UTC",
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> TimeSeriesDescriptor:
     return _make(Quantity.ELECTRICITY, Kind.SUPPLY, Scope.AREA, unit, data_type, frequency, timezone, description)
 
 
 def electricity_demand_area(
     unit: str = "MW",
-    data_type: Optional[DataType] = DataType.ACTUAL,
-    frequency: Optional[Frequency] = None,
+    data_type: DataType | None = DataType.ACTUAL,
+    frequency: Frequency | None = None,
     timezone: str = "UTC",
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> TimeSeriesDescriptor:
     return _make(Quantity.ELECTRICITY, Kind.DEMAND, Scope.AREA, unit, data_type, frequency, timezone, description)
 
@@ -86,20 +84,20 @@ def electricity_demand_area(
 
 def spot_price(
     unit: str = "EUR / MWh",
-    data_type: Optional[DataType] = DataType.ACTUAL,
-    frequency: Optional[Frequency] = None,
+    data_type: DataType | None = DataType.ACTUAL,
+    frequency: Frequency | None = None,
     timezone: str = "UTC",
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> TimeSeriesDescriptor:
     return _make(Quantity.PRICE, Kind.SPOT, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
 def cross_border_flow(
     unit: str = "MW",
-    data_type: Optional[DataType] = DataType.ACTUAL,
-    frequency: Optional[Frequency] = None,
+    data_type: DataType | None = DataType.ACTUAL,
+    frequency: Frequency | None = None,
     timezone: str = "UTC",
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> TimeSeriesDescriptor:
     return _make(Quantity.ELECTRICITY, Kind.FLOW, Scope.AREA, unit, data_type, frequency, timezone, description)
 
@@ -111,40 +109,40 @@ def cross_border_flow(
 
 def temperature(
     unit: str = "degC",
-    data_type: Optional[DataType] = DataType.ACTUAL,
-    frequency: Optional[Frequency] = None,
+    data_type: DataType | None = DataType.ACTUAL,
+    frequency: Frequency | None = None,
     timezone: str = "UTC",
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> TimeSeriesDescriptor:
     return _make(Quantity.TEMPERATURE, Kind.STATE, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
 def gas_supply(
     unit: str = "MW",
-    data_type: Optional[DataType] = DataType.ACTUAL,
-    frequency: Optional[Frequency] = None,
+    data_type: DataType | None = DataType.ACTUAL,
+    frequency: Frequency | None = None,
     timezone: str = "UTC",
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> TimeSeriesDescriptor:
     return _make(Quantity.GAS, Kind.SUPPLY, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
 def gas_demand(
     unit: str = "MW",
-    data_type: Optional[DataType] = DataType.ACTUAL,
-    frequency: Optional[Frequency] = None,
+    data_type: DataType | None = DataType.ACTUAL,
+    frequency: Frequency | None = None,
     timezone: str = "UTC",
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> TimeSeriesDescriptor:
     return _make(Quantity.GAS, Kind.DEMAND, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
 def heating_demand(
     unit: str = "MW",
-    data_type: Optional[DataType] = DataType.ACTUAL,
-    frequency: Optional[Frequency] = None,
+    data_type: DataType | None = DataType.ACTUAL,
+    frequency: Frequency | None = None,
     timezone: str = "UTC",
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> TimeSeriesDescriptor:
     return _make(Quantity.HEATING, Kind.DEMAND, Scope.POINT, unit, data_type, frequency, timezone, description)
 
@@ -156,10 +154,10 @@ def heating_demand(
 
 def grid_frequency(
     unit: str = "Hz",
-    data_type: Optional[DataType] = DataType.OBSERVATION,
-    frequency: Optional[Frequency] = Frequency.PT1S,
+    data_type: DataType | None = DataType.OBSERVATION,
+    frequency: Frequency | None = Frequency.PT1S,
     timezone: str = "UTC",
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> TimeSeriesDescriptor:
     """Grid frequency (Hz) — a per-synchronous-area observation.
 

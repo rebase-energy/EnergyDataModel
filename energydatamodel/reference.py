@@ -7,7 +7,7 @@ as a path string and is resolved to an Element object once the tree is loaded.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, TypeVar, Union
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 if TYPE_CHECKING:
     from energydatamodel.element import Element
@@ -29,7 +29,7 @@ class Reference(Generic[T]):
 
     __slots__ = ("_target",)
 
-    def __init__(self, target: Union[str, "Element"]):
+    def __init__(self, target: str | Element):
         self._target = target
 
     # -----------------------------------------------------------------
@@ -37,10 +37,10 @@ class Reference(Generic[T]):
         return not isinstance(self._target, str)
 
     @property
-    def target(self) -> Union[str, "Element"]:
+    def target(self) -> str | Element:
         return self._target
 
-    def get(self) -> "Element":
+    def get(self) -> Element:
         """Return the resolved Element. Raises if still a path string."""
         if isinstance(self._target, str):
             raise UnresolvedReferenceError(
@@ -49,7 +49,7 @@ class Reference(Generic[T]):
         return self._target
 
     # -----------------------------------------------------------------
-    def resolve(self, root: "Element") -> "Element":
+    def resolve(self, root: Element) -> Element:
         """Resolve the reference against ``root``. Idempotent."""
         if not isinstance(self._target, str):
             return self._target
@@ -62,7 +62,7 @@ class Reference(Generic[T]):
         self._target = obj
         return obj
 
-    def path(self, root: "Element") -> str:
+    def path(self, root: Element) -> str:
         """Canonical path from ``root`` to the target.
 
         Returns the same canonical full path whether ``self`` holds a string
@@ -122,7 +122,7 @@ class Reference(Generic[T]):
 # ---------------------------------------------------------------------
 
 
-def _lookup_by_path(root: "Element", path: str) -> "Element | None":
+def _lookup_by_path(root: Element, path: str) -> Element | None:
     """Resolve a slash-separated path like ``"Nordic/SE4"`` by walking ``name``s."""
     parts = [p for p in path.split("/") if p]
     if not parts:
@@ -143,7 +143,7 @@ def _lookup_by_path(root: "Element", path: str) -> "Element | None":
     return node
 
 
-def _path_to(root: "Element", target: "Element") -> "str | None":
+def _path_to(root: Element, target: Element) -> str | None:
     """Compute path from root → target, return None if target is not in the tree."""
     trail: list[str] = []
 

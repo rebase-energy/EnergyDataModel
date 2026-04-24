@@ -23,8 +23,8 @@ import datetime
 import json as json_module
 import typing
 from enum import Enum
-from functools import lru_cache
-from typing import Any, Dict, List, Optional, Type, get_args, get_origin
+from functools import cache
+from typing import Any, get_args, get_origin
 from zoneinfo import ZoneInfo
 
 from shapely.geometry import mapping, shape
@@ -32,19 +32,18 @@ from shapely.geometry.base import BaseGeometry
 from timedatamodel import DataType, Frequency, TimeSeriesDescriptor, TimeSeriesType
 
 from energydatamodel.element import Element
-from energydatamodel.reference import Reference, UnresolvedReferenceError
-
+from energydatamodel.reference import Reference
 
 # ---------------------------------------------------------------------
 # Registries
 # ---------------------------------------------------------------------
 
 
-_REGISTRY: Dict[str, Type[Element]] = {}
-_VALUE_REGISTRY: Dict[str, type] = {}
+_REGISTRY: dict[str, type[Element]] = {}
+_VALUE_REGISTRY: dict[str, type] = {}
 
 
-def register_element(cls: Type[Element]) -> Type[Element]:
+def register_element(cls: type[Element]) -> type[Element]:
     """Register an Element subclass under its class name for JSON dispatch."""
     name = cls.__name__
     if name in _REGISTRY and _REGISTRY[name] is not cls:
@@ -73,7 +72,7 @@ def register_value_type(cls: type) -> type:
     return cls
 
 
-def get_registry() -> Dict[str, Type[Element]]:
+def get_registry() -> dict[str, type[Element]]:
     return dict(_REGISTRY)
 
 
@@ -87,7 +86,7 @@ def _serialize_value(
     *,
     include_ids: bool,
     root: Element,
-    exclude_fields: Optional[set] = None,
+    exclude_fields: set | None = None,
 ) -> Any:
     if value is None:
         return None
@@ -161,7 +160,7 @@ def _element_to_dict(
     *,
     include_ids: bool,
     root: Element,
-    exclude_fields: Optional[set] = None,
+    exclude_fields: set | None = None,
 ) -> dict:
     out: dict = {"__type__": type(element).__name__}
     for f in dataclasses.fields(element):
@@ -185,7 +184,7 @@ def element_to_json(
     element: Element,
     *,
     include_ids: bool = False,
-    exclude_fields: Optional[set] = None,
+    exclude_fields: set | None = None,
 ) -> dict:
     """Public: serialize an Element (and its subtree) to a JSON-compatible dict.
 
@@ -211,8 +210,8 @@ def to_json_str(
     element: Element,
     *,
     include_ids: bool = False,
-    indent: Optional[int] = None,
-    exclude_fields: Optional[set] = None,
+    indent: int | None = None,
+    exclude_fields: set | None = None,
 ) -> str:
     """Convenience: return a JSON string instead of a dict."""
     return json_module.dumps(
@@ -222,7 +221,7 @@ def to_json_str(
 
 
 def element_to_storage_dict(
-    element: Element, *, extra_excludes: Optional[set] = None
+    element: Element, *, extra_excludes: set | None = None
 ) -> dict:
     """Flat-row serialization: element's own fields only, children excluded.
 
@@ -243,7 +242,7 @@ def element_to_storage_dict(
 # ---------------------------------------------------------------------
 
 
-def element_from_json(data: dict, *, expected_type: Optional[Type[Element]] = None) -> Element:
+def element_from_json(data: dict, *, expected_type: type[Element] | None = None) -> Element:
     """Public: deserialize a JSON-compatible dict into an Element tree.
 
     Performs the two-pass walk (instantiate + resolve references).
@@ -258,7 +257,7 @@ def element_from_json(data: dict, *, expected_type: Optional[Type[Element]] = No
     return root
 
 
-def from_json_str(text: str, *, expected_type: Optional[Type[Element]] = None) -> Element:
+def from_json_str(text: str, *, expected_type: type[Element] | None = None) -> Element:
     return element_from_json(json_module.loads(text), expected_type=expected_type)
 
 
@@ -297,8 +296,8 @@ def _instantiate(data: Any) -> Any:
     return data
 
 
-@lru_cache(maxsize=None)
-def _resolved_type_hints(cls: type) -> Dict[str, Any]:
+@cache
+def _resolved_type_hints(cls: type) -> dict[str, Any]:
     """Resolve string annotations on a dataclass to concrete types (once per class)."""
     try:
         return typing.get_type_hints(cls)
@@ -306,7 +305,7 @@ def _resolved_type_hints(cls: type) -> Dict[str, Any]:
         return {}
 
 
-def _build_kwargs(cls: Type[Element], data: dict) -> dict:
+def _build_kwargs(cls: type[Element], data: dict) -> dict:
     kwargs: dict = {}
     field_map = {f.name: f for f in dataclasses.fields(cls)}
     hints = _resolved_type_hints(cls)
@@ -407,7 +406,7 @@ def register_builtin_elements() -> None:
     their descendants).
     """
 
-    def _walk(cls: Type[Element]):
+    def _walk(cls: type[Element]):
         for sub in cls.__subclasses__():
             try:
                 register_element(sub)

@@ -28,13 +28,11 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass, field, fields
-from typing import ClassVar, List, Optional
+from typing import ClassVar
 
 import pandas as pd
-import shapely
 from shapely.geometry import LineString, Point, Polygon, mapping
 from shapely.geometry.base import BaseGeometry
-
 from timedatamodel import TimeSeriesDescriptor
 
 
@@ -60,10 +58,10 @@ class Element:
     geometry.
     """
 
-    name: Optional[str] = None
-    _id: Optional[str] = None
-    timeseries: List[TimeSeriesDescriptor] = field(default_factory=list)
-    geometry: Optional[BaseGeometry] = None
+    name: str | None = None
+    _id: str | None = None
+    timeseries: list[TimeSeriesDescriptor] = field(default_factory=list)
+    geometry: BaseGeometry | None = None
 
     # Fields excluded from ``to_properties()`` — stored as top-level DB columns
     # or handled by the serialization layer directly.
@@ -75,21 +73,21 @@ class Element:
 
     # ------------------------------------------------------------------ shape
     @property
-    def lat(self) -> Optional[float]:
+    def lat(self) -> float | None:
         """Latitude, if ``geometry`` is a shapely ``Point``; else ``None``."""
         if isinstance(self.geometry, Point):
             return self.geometry.y
         return None
 
     @property
-    def lon(self) -> Optional[float]:
+    def lon(self) -> float | None:
         """Longitude, if ``geometry`` is a shapely ``Point``; else ``None``."""
         if isinstance(self.geometry, Point):
             return self.geometry.x
         return None
 
     @property
-    def centroid(self) -> Optional[Point]:
+    def centroid(self) -> Point | None:
         """Centroid of ``geometry``, or ``None`` if no geometry."""
         if self.geometry is None:
             return None
@@ -137,7 +135,7 @@ class Element:
         self,
         include_ids: bool = False,
         *,
-        exclude_fields: Optional[set] = None,
+        exclude_fields: set | None = None,
     ) -> dict:
         """Serialize to a JSON-compatible dict. Full implementation in ``json_io``."""
         from energydatamodel.json_io import element_to_json
@@ -146,7 +144,7 @@ class Element:
         )
 
     @classmethod
-    def from_json(cls, data: dict) -> "Element":
+    def from_json(cls, data: dict) -> Element:
         """Deserialize from a JSON-compatible dict. Full implementation in ``json_io``."""
         from energydatamodel.json_io import element_from_json
         return element_from_json(data, expected_type=cls)

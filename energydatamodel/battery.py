@@ -1,16 +1,15 @@
 """Battery asset."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 from energydatamodel.bases import NodeAsset
 
 
 @dataclass(repr=False, kw_only=True)
 class Battery(NodeAsset):
-    storage_capacity: Optional[float] = None
-    min_soc: Optional[float] = None
-    max_charge: Optional[float] = None
-    max_discharge: Optional[float] = None
-    charge_efficiency: Optional[float] = None
-    discharge_efficiency: Optional[float] = None
+    storage_capacity: float | None = None
+    min_soc: float | None = None
+    max_charge: float | None = None
+    max_discharge: float | None = None
+    charge_efficiency: float | None = None
+    discharge_efficiency: float | None = None

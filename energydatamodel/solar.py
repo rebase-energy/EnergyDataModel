@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from typing import Optional, Union
 
 import pandas as pd
 import pvlib
@@ -23,25 +22,25 @@ class FixedMount:
 class SingleAxisTrackerMount:
     axis_tilt: float = 0.0
     axis_azimuth: float = 0.0
-    max_angle: Union[float, tuple] = 90.0
+    max_angle: float | tuple = 90.0
     backtrack: bool = True
     gcr: float = 0.2857142857142857
     cross_axis_tilt: float = 0.0
-    racking_model: Optional[str] = None
-    module_height: Optional[float] = None
+    racking_model: str | None = None
+    module_height: float | None = None
 
 
 @dataclass(repr=False, kw_only=True)
 class PVArray(NodeAsset):
-    capacity: Optional[float] = None
-    surface_azimuth: Optional[float] = None
-    surface_tilt: Optional[float] = None
-    surface_area: Optional[float] = None
-    efficiency: Optional[float] = None
-    module: Optional[str] = None
+    capacity: float | None = None
+    surface_azimuth: float | None = None
+    surface_tilt: float | None = None
+    surface_area: float | None = None
+    efficiency: float | None = None
+    module: str | None = None
     module_type: str = "glass_polymer"
-    module_parameters: Optional[Union[dict, pd.Series]] = None
-    temperature_model_parameters: Optional[Union[dict, pd.Series]] = None
+    module_parameters: dict | pd.Series | None = None
+    temperature_model_parameters: dict | pd.Series | None = None
 
 
 @dataclass(repr=False, kw_only=True)
@@ -53,13 +52,13 @@ class PVSystem(NodeAsset):
     top-level params if none were supplied (back-compat convenience).
     """
 
-    capacity: Optional[float] = None
-    surface_azimuth: Optional[float] = None
-    surface_tilt: Optional[float] = None
-    albedo: Optional[float] = None
-    surface_type: Optional[str] = None
-    module_parameters: Optional[dict] = None
-    inverter_parameters: Optional[dict] = None
+    capacity: float | None = None
+    surface_azimuth: float | None = None
+    surface_tilt: float | None = None
+    albedo: float | None = None
+    surface_type: str | None = None
+    module_parameters: dict | None = None
+    inverter_parameters: dict | None = None
     module_type: str = "glass_polymer"
     racking_model: str = "open_rack"
 
@@ -115,7 +114,7 @@ class SolarPowerArea(NodeAsset):
     The area's polygon lives in the inherited ``geometry`` field.
     """
 
-    capacity: Optional[Union[float, pd.DataFrame]] = None
+    capacity: float | pd.DataFrame | None = None
 
     def to_geojson(self, exclude_none: bool = True):
         if self.geometry is None:

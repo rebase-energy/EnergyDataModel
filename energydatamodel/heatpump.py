@@ -1,7 +1,6 @@
 """Heat pump asset."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 from energydatamodel.bases import NodeAsset
 
@@ -10,6 +9,6 @@ from energydatamodel.bases import NodeAsset
 class HeatPump(NodeAsset):
     """A heat pump in an energy system."""
 
-    capacity: Optional[float] = None  #: heating/cooling capacity in kW.
-    cop: Optional[float] = None  #: coefficient of performance.
-    energy_source: Optional[str] = None  #: e.g. 'electricity', 'geothermal'.
+    capacity: float | None = None  #: heating/cooling capacity in kW.
+    cop: float | None = None  #: coefficient of performance.
+    energy_source: str | None = None  #: e.g. 'electricity', 'geothermal'.

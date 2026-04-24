@@ -1,8 +1,7 @@
 """Tests for Reference[T] — path-based cross-tree references."""
 
-import pytest
-
 import energydatamodel as edm
+import pytest
 from energydatamodel.reference import UnresolvedReferenceError
 
 

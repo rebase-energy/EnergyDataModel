@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
-
 
 from energydatamodel.bases import NodeAsset
 
@@ -14,7 +12,7 @@ class Building(NodeAsset):
     """A building. A physical asset that also contains child Elements via the
     inherited ``members`` list."""
 
-    type: Optional[str] = None
+    type: str | None = None
 
 
 @dataclass(repr=False, kw_only=True)
@@ -22,7 +20,7 @@ class House(NodeAsset):
     """A house. Same structure as :class:`Building` with a few convenience
     accessors."""
 
-    type: Optional[str] = None
+    type: str | None = None
 
     # ----- convenience queries -------------------------------------------------
     def has_demand(self) -> bool:

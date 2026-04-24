@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Union
 
 import pandas as pd
 
@@ -13,12 +12,12 @@ from energydatamodel.element import Element
 
 @dataclass(repr=False, kw_only=True)
 class WindTurbine(NodeAsset):
-    capacity: Optional[Union[float, pd.DataFrame]] = None
-    hub_height: Optional[float] = None
-    rotor_diameter: Optional[float] = None
-    turbine_model: Optional[str] = None
-    power_curve: Optional[Union[pd.DataFrame, dict]] = None
-    power_coefficient_curve: Optional[Union[pd.DataFrame, dict]] = None
+    capacity: float | pd.DataFrame | None = None
+    hub_height: float | None = None
+    rotor_diameter: float | None = None
+    turbine_model: str | None = None
+    power_curve: pd.DataFrame | dict | None = None
+    power_coefficient_curve: pd.DataFrame | dict | None = None
 
 
 @dataclass(repr=False, kw_only=True)
@@ -29,8 +28,8 @@ class WindFarm(NodeAsset):
     ``add_child`` enforces the type at runtime.
     """
 
-    capacity: Optional[Union[float, pd.DataFrame]] = None
-    farm_efficiency: Optional[pd.DataFrame] = None
+    capacity: float | pd.DataFrame | None = None
+    farm_efficiency: pd.DataFrame | None = None
 
     def add_child(self, obj: Element) -> None:
         if not isinstance(obj, WindTurbine):
@@ -48,6 +47,6 @@ class WindPowerArea(NodeAsset):
     turbines or farms (if any) live in the inherited ``members`` list.
     """
 
-    capacity: Optional[Union[float, pd.DataFrame]] = None
-    area: Optional[float] = None
-    farm_efficiency: Optional[pd.DataFrame] = None
+    capacity: float | pd.DataFrame | None = None
+    area: float | None = None
+    farm_efficiency: pd.DataFrame | None = None

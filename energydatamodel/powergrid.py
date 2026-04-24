@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from energydatamodel.asset import Asset
 from energydatamodel.bases import GridNode
@@ -70,21 +70,21 @@ class DeliveryPoint(GridNode):
 class Line(EdgeAsset):
     """Transmission or distribution line."""
 
-    capacity: Optional[float] = None
+    capacity: float | None = None
 
 
 @dataclass(repr=False, kw_only=True)
 class Link(EdgeAsset):
     """DC link or similar two-node power link."""
 
-    capacity: Optional[float] = None
+    capacity: float | None = None
 
 
 @dataclass(repr=False, kw_only=True)
 class Transformer(EdgeAsset):
     """Transformer between two buses."""
 
-    capacity: Optional[float] = None
+    capacity: float | None = None
 
 
 @dataclass(repr=False, kw_only=True)
@@ -95,15 +95,15 @@ class Interconnection(EdgeAsset):
     TSO data typically reports them separately.
     """
 
-    capacity_forward: Optional[float] = None
-    capacity_backward: Optional[float] = None
+    capacity_forward: float | None = None
+    capacity_backward: float | None = None
 
 
 @dataclass(repr=False, kw_only=True)
 class Pipe(EdgeAsset):
     """Gas / heat pipe."""
 
-    capacity: Optional[float] = None
+    capacity: float | None = None
     medium: str = "gas"
 
 

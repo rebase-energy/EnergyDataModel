@@ -4,13 +4,11 @@ import json
 from datetime import date, tzinfo
 from zoneinfo import ZoneInfo
 
+import energydatamodel as edm
 import pytest
+from energydatamodel.reference import UnresolvedReferenceError
 from shapely.geometry import Point, Polygon
 from timedatamodel import DataType
-
-import energydatamodel as edm
-from energydatamodel.geospatial import GeoLocation
-from energydatamodel.reference import UnresolvedReferenceError
 
 
 def _nordic_portfolio():

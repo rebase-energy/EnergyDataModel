@@ -30,7 +30,6 @@ author = 'rebase.energy'
 # Add these lines at the top of conf.py to import the necessary modules
 import os
 import sys
-import sphinx_rtd_theme  # If you're using the ReadTheDocs theme
 
 # Add the path to your project to the sys.path list (if not already present)
 sys.path.insert(0, os.path.abspath('../'))

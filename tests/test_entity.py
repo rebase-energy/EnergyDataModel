@@ -1,9 +1,8 @@
 """Tests for Element, Node, Edge, Asset mixin, and the role intermediates."""
 
+import energydatamodel as edm
 import pytest
 from shapely.geometry import Point, Polygon
-
-import energydatamodel as edm
 
 
 class TestElement:

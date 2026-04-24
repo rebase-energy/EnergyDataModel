@@ -14,7 +14,7 @@ Interconnection) live in :mod:`energydatamodel.powergrid` under
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, ClassVar, Optional
+from typing import TYPE_CHECKING, ClassVar
 
 from energydatamodel.element import Element
 from energydatamodel.reference import Reference
@@ -32,8 +32,8 @@ class Edge(Element):
     flag is kept for explicit cases (e.g. pure bidirectional pipes).
     """
 
-    from_entity: Optional[Reference["Node"]] = None
-    to_entity: Optional[Reference["Node"]] = None
+    from_entity: Reference[Node] | None = None
+    to_entity: Reference[Node] | None = None
     directed: bool = True
 
     _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset({

@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass, field
-from typing import ClassVar, List, Optional
+from typing import ClassVar
 
 from energydatamodel.element import Element
 
@@ -39,8 +39,8 @@ class Collection(Element):
     semantics).
     """
 
-    members: List[Element] = field(default_factory=list)
-    tz: Optional[datetime.tzinfo] = None
+    members: list[Element] = field(default_factory=list)
+    tz: datetime.tzinfo | None = None
 
     _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset({
         "members", "tz",

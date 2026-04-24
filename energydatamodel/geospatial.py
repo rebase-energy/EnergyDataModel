@@ -11,7 +11,6 @@ from __future__ import annotations
 import datetime
 import json
 from dataclasses import dataclass
-from typing import Optional, Union
 from zoneinfo import ZoneInfo
 
 import geopandas as gpd
@@ -29,9 +28,9 @@ class GeoLocation:
 
     longitude: float
     latitude: float
-    tz: Union[str, datetime.tzinfo] = "UTC"
-    altitude: Optional[float] = None
-    name: Optional[str] = None
+    tz: str | datetime.tzinfo = "UTC"
+    altitude: float | None = None
+    name: str | None = None
 
     def __post_init__(self):
         self.point = Point(self.longitude, self.latitude)
@@ -80,7 +79,7 @@ class GeoMultiPolygon:
     """MultiPolygon wrapper (composition rather than inheritance)."""
 
     multipolygon: MultiPolygon = None
-    name: Optional[str] = None
+    name: str | None = None
 
     @classmethod
     def from_geojson(cls, file: str):
