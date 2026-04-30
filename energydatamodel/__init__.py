@@ -11,8 +11,8 @@ sub-namespaces:
 * ``edm.heatpump`` — HeatPump
 * ``edm.building`` — Building, House
 * ``edm.weather`` — temperature/wind/radiation/rain/humidity sensors
-* ``edm.grid`` — Carrier, edges (Line, Link, Transformer, Pipe,
-  Interconnection), grid nodes (JunctionPoint, Meter, DeliveryPoint),
+* ``edm.grid`` — Carrier, edges (Line, Link, Pipe, Interconnection),
+  grid nodes (JunctionPoint, Meter, DeliveryPoint, Transformer),
   Network/SubNetwork, EdgeAsset
 
 Subclassing any registered Element class (e.g. ``edm.NodeAsset``,

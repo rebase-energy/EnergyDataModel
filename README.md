@@ -60,12 +60,13 @@ Element  (name, _id, timeseries, geometry)
 │   ├── Sensor               — measurement instruments
 │   │   TemperatureSensor, WindSpeedSensor, RadiationSensor,
 │   │   RainSensor, HumiditySensor
-│   └── Area                 — administrative / market regions
-│       BiddingZone, Country, ControlArea, WeatherCell,
-│       SynchronousArea (+ nominal_frequency)
+│   ├── Area                 — administrative / market regions
+│   │   BiddingZone, Country, ControlArea, WeatherCell,
+│   │   SynchronousArea (+ nominal_frequency)
+│   └── Transformer          — HV/LV-side topological vertex (NodeAsset)
 ├── Edge  (+ from_element, to_element, directed)
 │   └── EdgeAsset            — Edge × Asset (physical equipment edges)
-│       Line, Link, Transformer, Pipe, Interconnection
+│       Line, Link, Pipe, Interconnection
 ├── Collection  (+ members, tz)    — logical grouping, not a vertex
 │   Portfolio, Site, MultiSite, Region,
 │   EnergyCommunity, VirtualPowerPlant, SubNetwork, Network
@@ -85,7 +86,7 @@ System-structural classes (containers, areas, networks, bases, utilities) live f
 | ♻️&nbsp;`edm.heatpump` | `HeatPump` |
 | 🏠&nbsp;`edm.building` | `Building`, `House` |
 | 🌡️&nbsp;`edm.weather` | `TemperatureSensor`, `WindSpeedSensor`, `RadiationSensor`, `RainSensor`, `HumiditySensor` |
-| ⚡&nbsp;`edm.grid` | `Carrier`, `EdgeAsset`, `JunctionPoint`, `Meter`, `DeliveryPoint`, `Line`, `Link`, `Transformer`, `Pipe`, `Interconnection`, `SubNetwork`, `Network` |
+| ⚡&nbsp;`edm.grid` | nodes: `JunctionPoint`, `Meter`, `DeliveryPoint`, `Transformer`<br/>edges: `Line`, `Link`, `Pipe`, `Interconnection`, `EdgeAsset`<br/>other: `Carrier`, `SubNetwork`, `Network` |
 | 🗺️&nbsp;`edm` (area) | `Area`, `BiddingZone`, `Country`, `ControlArea`, `WeatherCell`, `SynchronousArea` |
 | 📦&nbsp;`edm` (containers) | `Collection`, `Portfolio`, `Site`, `MultiSite`, `Region`, `EnergyCommunity`, `VirtualPowerPlant` |
 | 📈&nbsp;`edm` (constructors) | `electricity_supply`, `electricity_demand`, `electricity_supply_area`, `electricity_demand_area`, `spot_price`, `cross_border_flow`, `grid_frequency`, `temperature`, `gas_supply`, `gas_demand`, `heating_demand` |

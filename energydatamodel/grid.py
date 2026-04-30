@@ -1,11 +1,12 @@
 """Power-grid concrete classes.
 
 * :class:`EdgeAsset` is the single ``(Edge, Asset)`` mixin point on the edge
-  side. Concrete edge-equipment classes (``Line``, ``Link``, ``Transformer``,
-  ``Pipe``, ``Interconnection``) single-inherit from here.
+  side. Concrete edge-equipment classes (``Line``, ``Link``, ``Pipe``,
+  ``Interconnection``) single-inherit from here.
 * GridNode subclasses (``JunctionPoint``, ``Meter``, ``DeliveryPoint``) live
   here as concrete topological points. The ``GridNode`` base lives in
-  :mod:`energydatamodel.bases`.
+  :mod:`energydatamodel.bases`. ``Transformer`` is also a node (a vertex with
+  HV and LV sides), inheriting from :class:`NodeAsset`.
 * ``SubNetwork`` and ``Network`` are :class:`Collection` subclasses used to
   group buses + lines.
 * ``Carrier`` is a plain value type (not an Element).
@@ -17,7 +18,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from energydatamodel.asset import Asset
-from energydatamodel.bases import GridNode
+from energydatamodel.bases import GridNode, NodeAsset
 from energydatamodel.containers import Collection
 from energydatamodel.edge import Edge
 
@@ -27,9 +28,9 @@ __all__ = [
     "JunctionPoint",
     "Meter",
     "DeliveryPoint",
+    "Transformer",
     "Line",
     "Link",
-    "Transformer",
     "Pipe",
     "Interconnection",
     "SubNetwork",
@@ -53,8 +54,7 @@ class EdgeAsset(Edge, Asset):
     """Mixin intermediate: an ``Edge`` that is also an ``Asset``.
 
     Single mixin point on the edge side. Concrete edge equipment classes
-    (``Line``, ``Link``, ``Transformer``, ``Pipe``, ``Interconnection``)
-    single-inherit from here.
+    (``Line``, ``Link``, ``Pipe``, ``Interconnection``) single-inherit from here.
     """
 
     _BASE_FIELDS: ClassVar[frozenset] = Edge._BASE_FIELDS | Asset._BASE_FIELDS
@@ -78,6 +78,20 @@ class DeliveryPoint(GridNode):
     """A delivery point (end of a feeder)."""
 
 
+@dataclass(repr=False, kw_only=True)
+class Transformer(NodeAsset):
+    """Transformer joining HV and LV sides of an electrical network.
+
+    Modeled as a node, not an edge — matches pandapower / PyPSA topology
+    where a transformer is a vertex with two voltage sides and edges
+    (Lines) attach to each side.
+    """
+
+    capacity: float | None = None  #: Apparent-power rating in MVA.
+    voltage_hv: float | None = None  #: HV-side nominal voltage in kV.
+    voltage_lv: float | None = None  #: LV-side nominal voltage in kV.
+
+
 # ----------------------------------------------------------------- Edges
 
 
@@ -91,13 +105,6 @@ class Line(EdgeAsset):
 @dataclass(repr=False, kw_only=True)
 class Link(EdgeAsset):
     """DC link or similar two-node power link."""
-
-    capacity: float | None = None
-
-
-@dataclass(repr=False, kw_only=True)
-class Transformer(EdgeAsset):
-    """Transformer between two buses."""
 
     capacity: float | None = None
 

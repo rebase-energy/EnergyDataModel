@@ -117,10 +117,10 @@ class TestAssetMixin:
         assert isinstance(edm.grid.Meter(name="m"), edm.Asset)
         assert isinstance(edm.grid.DeliveryPoint(name="d"), edm.Asset)
         assert isinstance(edm.grid.JunctionPoint(name="j"), edm.Asset)
+        assert isinstance(edm.grid.Transformer(name="t"), edm.Asset)
 
     def test_edge_equipment_is_asset(self):
         assert isinstance(edm.grid.Line(name="l"), edm.Asset)
-        assert isinstance(edm.grid.Transformer(name="t"), edm.Asset)
         assert isinstance(edm.grid.Pipe(name="p"), edm.Asset)
         assert isinstance(edm.grid.Interconnection(name="ic"), edm.Asset)
 

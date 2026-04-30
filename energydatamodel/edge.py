@@ -6,9 +6,10 @@ between two buses, a pipe between two delivery points. Edges sit sibling to
 ``Node`` under :class:`Element`, not under ``Node`` — this keeps ``members``
 and ``tz`` off Edges, where they don't apply.
 
-Concrete edge-equipment subclasses (Line, Link, Transformer, Pipe,
-Interconnection) live in :mod:`energydatamodel.grid` under
-:class:`EdgeAsset`.
+Concrete edge-equipment subclasses (Line, Link, Pipe, Interconnection)
+live in :mod:`energydatamodel.grid` under :class:`EdgeAsset`. Note that
+``Transformer`` is a node (``NodeAsset``), not an edge — it has HV and
+LV sides that lines connect to.
 """
 
 from __future__ import annotations
