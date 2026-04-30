@@ -10,8 +10,8 @@ def _make_tree():
     dk2 = edm.BiddingZone(name="DK2")
     icx = edm.grid.Interconnection(
         name="SE4-DK2",
-        from_entity=edm.Reference("SE4"),
-        to_entity=edm.Reference("DK2"),
+        from_element=edm.Reference("SE4"),
+        to_element=edm.Reference("DK2"),
     )
     return edm.Portfolio(name="Nordic", members=[se4, dk2, icx]), se4, dk2, icx
 
@@ -25,9 +25,9 @@ class TestReference:
 
     def test_resolve_against_tree(self):
         portfolio, se4, _, icx = _make_tree()
-        icx.from_entity.resolve(portfolio)
-        assert icx.from_entity.is_resolved()
-        assert icx.from_entity.get() is se4
+        icx.from_element.resolve(portfolio)
+        assert icx.from_element.is_resolved()
+        assert icx.from_element.get() is se4
 
     def test_resolve_unknown_raises(self):
         portfolio, *_ = _make_tree()

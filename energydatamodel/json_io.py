@@ -214,7 +214,7 @@ def element_to_storage_dict(element: Element, *, extra_excludes: set | None = No
     Suitable for persistence layers that store tree structure separately
     (e.g. via ``parent_id`` columns rather than nested JSON). ``_id`` and any
     fields in the element's ``_CHILDREN_FIELDS`` are excluded automatically;
-    add more via ``extra_excludes`` (e.g. ``{"from_entity", "to_entity"}``
+    add more via ``extra_excludes`` (e.g. ``{"from_element", "to_element"}``
     for edges whose endpoints are stored as FK columns).
     """
     excludes = set(element._CHILDREN_FIELDS)

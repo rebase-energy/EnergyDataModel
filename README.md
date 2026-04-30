@@ -44,7 +44,7 @@
 Everything in EnergyDataModel inherits from a single root, `Element`, which carries identity (`name`, `_id`), attached time-series descriptors, and an optional [shapely](https://shapely.readthedocs.io/) geometry. Three sibling subtrees specialize it, plus an `Asset` mixin:
 
 * **`Node`** — graph vertices (equipment, areas, sensors, grid topology points). Adds `members` and `tz`.
-* **`Edge`** — relationships between two nodes (lines, transformers, interconnectors). Adds `from_entity`, `to_entity`, `directed`.
+* **`Edge`** — relationships between two nodes (lines, transformers, interconnectors). Adds `from_element`, `to_element`, `directed`.
 * **`Collection`** — logical groupings (Portfolio, Site, ...). Adds `members` and `tz`. Not a graph vertex — `isinstance(portfolio, Node)` is False.
 * **`Asset`** — cross-cutting mixin marking physical equipment. Adds `commissioning_date`. Mixed into Node via `NodeAsset` and into Edge via `EdgeAsset`; never used as a leaf type.
 
@@ -63,7 +63,7 @@ Element  (name, _id, timeseries, geometry)
 │   └── Area                 — administrative / market regions
 │       BiddingZone, Country, ControlArea, WeatherCell,
 │       SynchronousArea (+ nominal_frequency)
-├── Edge  (+ from_entity, to_entity, directed)
+├── Edge  (+ from_element, to_element, directed)
 │   └── EdgeAsset            — Edge × Asset (physical equipment edges)
 │       Line, Link, Transformer, Pipe, Interconnection
 ├── Collection  (+ members, tz)    — logical grouping, not a vertex
@@ -72,21 +72,23 @@ Element  (name, _id, timeseries, geometry)
 └── Asset  (+ commissioning_date)  — mixin, never a leaf
 ```
 
-| Module         | Data Classes |
+System-structural classes (containers, areas, networks, bases, utilities) live flat at `edm.X`. Technology-specific equipment lives under sub-namespaces — `edm.solar.PVSystem`, `edm.wind.WindTurbine`, `edm.grid.Line`, etc.
+
+| Namespace         | Data Classes |
 | :----          | :----        |
-| 🧱&nbsp;`element` / `node` / `edge` | `Element`, `Node`, `Edge` |
-| 🏷️&nbsp;`asset` / `bases` | `Asset`, `NodeAsset`, `GridNode`, `Sensor` |
-| ☀️&nbsp;`solar` | `FixedMount`, `SingleAxisTrackerMount`, `PVArray`, `PVSystem`, `SolarPowerArea` |
-| 🌬️&nbsp;`wind` | `WindTurbine`, `WindFarm`, `WindPowerArea` |
-| 🔋&nbsp;`battery` | `Battery` |
-| 💦&nbsp;`hydro` | `Reservoir`, `HydroTurbine`, `HydroPowerPlant` |
-| ♻️&nbsp;`heatpump` | `HeatPump` |
-| 🏠&nbsp;`building` | `Building`, `House` |
-| 🌡️&nbsp;`weathersensor` | `TemperatureSensor`, `WindSpeedSensor`, `RadiationSensor`, `RainSensor`, `HumiditySensor` |
-| ⚡&nbsp;`powergrid` | `Carrier`, `EdgeAsset`, `JunctionPoint`, `Meter`, `DeliveryPoint`, `Line`, `Link`, `Transformer`, `Pipe`, `Interconnection`, `SubNetwork`, `Network` |
-| 🗺️&nbsp;`area` | `Area`, `BiddingZone`, `Country`, `ControlArea`, `WeatherCell`, `SynchronousArea` |
-| 📦&nbsp;`containers` | `Collection`, `Portfolio`, `Site`, `MultiSite`, `Region`, `EnergyCommunity`, `VirtualPowerPlant` |
-| 📈&nbsp;`constructors` | `electricity_supply`, `electricity_demand`, `electricity_supply_area`, `electricity_demand_area`, `spot_price`, `cross_border_flow`, `grid_frequency`, `temperature`, `gas_supply`, `gas_demand`, `heating_demand` |
+| 🧱&nbsp;`edm` (core) | `Element`, `Node`, `Edge` |
+| 🏷️&nbsp;`edm` (bases) | `Asset`, `NodeAsset`, `GridNode`, `Sensor` |
+| ☀️&nbsp;`edm.solar` | `FixedMount`, `SingleAxisTrackerMount`, `PVArray`, `PVSystem`, `SolarPowerArea` |
+| 🌬️&nbsp;`edm.wind` | `WindTurbine`, `WindFarm`, `WindPowerArea` |
+| 🔋&nbsp;`edm.battery` | `Battery` |
+| 💦&nbsp;`edm.hydro` | `Reservoir`, `HydroTurbine`, `HydroPowerPlant` |
+| ♻️&nbsp;`edm.heatpump` | `HeatPump` |
+| 🏠&nbsp;`edm.building` | `Building`, `House` |
+| 🌡️&nbsp;`edm.weather` | `TemperatureSensor`, `WindSpeedSensor`, `RadiationSensor`, `RainSensor`, `HumiditySensor` |
+| ⚡&nbsp;`edm.grid` | `Carrier`, `EdgeAsset`, `JunctionPoint`, `Meter`, `DeliveryPoint`, `Line`, `Link`, `Transformer`, `Pipe`, `Interconnection`, `SubNetwork`, `Network` |
+| 🗺️&nbsp;`edm` (area) | `Area`, `BiddingZone`, `Country`, `ControlArea`, `WeatherCell`, `SynchronousArea` |
+| 📦&nbsp;`edm` (containers) | `Collection`, `Portfolio`, `Site`, `MultiSite`, `Region`, `EnergyCommunity`, `VirtualPowerPlant` |
+| 📈&nbsp;`edm` (constructors) | `electricity_supply`, `electricity_demand`, `electricity_supply_area`, `electricity_demand_area`, `spot_price`, `cross_border_flow`, `grid_frequency`, `temperature`, `gas_supply`, `gas_demand`, `heating_demand` |
 
 Explore the data model visually [here](https://zoomhub.net/Zxa5x). \
 Read the full documentation [here](https://docs.energydatamodel.org/en/latest/).
@@ -109,17 +111,17 @@ Create an energy system made up of two sites with co-located solar, wind and bat
 import energydatamodel as edm
 from shapely.geometry import Point
 
-pvsystem_1 = edm.PVSystem(name="PV-1", capacity=2400, surface_azimuth=180, surface_tilt=25)
-windturbine_1 = edm.WindTurbine(name="WT-1", capacity=3200, hub_height=120, rotor_diameter=100)
-battery_1 = edm.Battery(name="B-1", storage_capacity=1000, min_soc=150, max_charge=500, max_discharge=500)
+pvsystem_1 = edm.solar.PVSystem(name="PV-1", capacity=2400, surface_azimuth=180, surface_tilt=25)
+windturbine_1 = edm.wind.WindTurbine(name="WT-1", capacity=3200, hub_height=120, rotor_diameter=100)
+battery_1 = edm.battery.Battery(name="B-1", storage_capacity=1000, min_soc=150, max_charge=500, max_discharge=500)
 
 site_1 = edm.Site(name="Site-1",
                   geometry=Point(64, 46),  # (lon, lat)
                   members=[pvsystem_1, windturbine_1, battery_1])
 
-pvsystem_2 = edm.PVSystem(name="PV-2", capacity=2400, surface_azimuth=180, surface_tilt=25)
-windturbine_2 = edm.WindTurbine(name="WT-2", capacity=3200, hub_height=120, rotor_diameter=100)
-battery_2 = edm.Battery(name="B-2", storage_capacity=1000, min_soc=150, max_charge=500, max_discharge=500)
+pvsystem_2 = edm.solar.PVSystem(name="PV-2", capacity=2400, surface_azimuth=180, surface_tilt=25)
+windturbine_2 = edm.wind.WindTurbine(name="WT-2", capacity=3200, hub_height=120, rotor_diameter=100)
+battery_2 = edm.battery.Battery(name="B-2", storage_capacity=1000, min_soc=150, max_charge=500, max_discharge=500)
 
 site_2 = edm.Site(name="Site-2",
                   geometry=Point(58, 51),
@@ -149,6 +151,41 @@ nsa = edm.SynchronousArea(
 ```
 
 For more examples on usage and applications of **EnergyDataModel** see the documentation examples page [here](https://docs.energydatamodel.org/en/latest/examples.html).
+
+## Extending EnergyDataModel
+
+EDM is built to be extended. To add your own asset type, just inherit from the closest base — usually `edm.NodeAsset` for physical equipment, `edm.grid.EdgeAsset` for things connecting two nodes, or `edm.Element` for anything else. Use `@dataclass(repr=False, kw_only=True)` to match the rest of the model.
+
+```python
+from dataclasses import dataclass
+import energydatamodel as edm
+
+@dataclass(repr=False, kw_only=True)
+class Electrolyzer(edm.NodeAsset):
+    capacity_kw: float | None = None
+    efficiency: float | None = None
+```
+
+Your class is automatically registered for JSON round-trips — no decorator, no extra setup:
+
+```python
+e = Electrolyzer(name="EL-1", capacity_kw=5000, efficiency=0.65)
+site = edm.Site(name="H2 Site", members=[e])
+
+raw = site.to_json()
+restored = edm.Element.from_json(raw)
+assert isinstance(restored.members[0], Electrolyzer)
+```
+
+The only requirement is that **the module defining your class is imported before `from_json` is called**. EDM looks up types by name in a process-wide registry, so the class must be defined for the loader to find it. In practice this means a single `import my_assets` (or `from my_assets import Electrolyzer`) at the top of any script that loads saved models — the same pattern used by every Python registry library. If the loader can't find a type, it raises `ValueError: Unknown Element type 'Electrolyzer'`.
+
+For one-off custom fields that don't justify a new class, every `Element` carries an `extra: dict` you can populate freely:
+
+```python
+pv = edm.solar.PVSystem(name="PV-1", capacity=2400, extra={"owner": "Acme", "asset_id_legacy": 17})
+```
+
+Values in `extra` round-trip through JSON as long as they're JSON-native, shapely geometries, enums, or other dataclass / EDM types. Other types fall back to `repr()` on serialization, so prefer the typed-field route if fidelity matters.
 
 ## Installation
 We recommend installing using a virtual environment like [venv](https://docs.python.org/3/library/venv.html), [poetry](https://python-poetry.org/) or [uv](https://docs.astral.sh/uv/). 

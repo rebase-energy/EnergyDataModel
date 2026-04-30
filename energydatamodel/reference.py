@@ -29,7 +29,7 @@ class Reference(Generic[T]):
     * a ``tuple[str, ...]`` path (preserves names containing slashes)
     * an :class:`Element` object (resolved form)
 
-    Used on fields like ``Edge.from_entity`` / ``Edge.to_entity``.
+    Used on fields like ``Edge.from_element`` / ``Edge.to_element``.
     """
 
     __slots__ = ("_target",)

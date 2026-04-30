@@ -13,7 +13,7 @@ Sibling subtrees specialize ``Element``:
   as a "thing": graph vertices, Areas, plus container markers.
   Adds ``members`` and ``tz``.
 * :class:`Edge` (in :mod:`energydatamodel.edge`) — edges between
-  two Nodes. Adds ``from_entity``, ``to_entity``, ``directed``.
+  two Nodes. Adds ``from_element``, ``to_element``, ``directed``.
 * :class:`Asset` (in :mod:`energydatamodel.asset`) — mixin marking
   physical energy equipment. Mixed with ``Node`` or ``Edge`` via
   :class:`NodeAsset` / :class:`EdgeAsset`.

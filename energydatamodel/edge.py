@@ -32,14 +32,14 @@ class Edge(Element):
     flag is kept for explicit cases (e.g. pure bidirectional pipes).
     """
 
-    from_entity: Reference[Node] | None = None
-    to_entity: Reference[Node] | None = None
+    from_element: Reference[Node] | None = None
+    to_element: Reference[Node] | None = None
     directed: bool = True
 
     _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset(
         {
-            "from_entity",
-            "to_entity",
+            "from_element",
+            "to_element",
             "directed",
         }
     )

@@ -23,8 +23,8 @@ def _nordic_portfolio():
     dk2 = edm.BiddingZone(name="DK2", timeseries=[edm.spot_price()])
     icx = edm.grid.Interconnection(
         name="SE4-DK2",
-        from_entity=edm.Reference("SE4"),
-        to_entity=edm.Reference("DK2"),
+        from_element=edm.Reference("SE4"),
+        to_element=edm.Reference("DK2"),
         timeseries=[edm.cross_border_flow()],
     )
     return edm.Portfolio(name="Nordic", members=[site, se4, dk2, icx])
@@ -47,18 +47,18 @@ class TestRoundTrip:
         p = _nordic_portfolio()
         restored = edm.Portfolio.from_json(p.to_json())
         icx = next(m for m in restored.members if isinstance(m, edm.grid.Interconnection))
-        assert icx.from_entity.is_resolved()
-        assert icx.to_entity.is_resolved()
-        assert icx.from_entity.get().name == "SE4"
-        assert icx.to_entity.get().name == "DK2"
+        assert icx.from_element.is_resolved()
+        assert icx.to_element.is_resolved()
+        assert icx.from_element.get().name == "SE4"
+        assert icx.to_element.get().name == "DK2"
 
     def test_unresolved_reference_raises_on_dump(self):
         # Canonical-path serialization fails fast when a string reference can't
         # be resolved against the root — caught at to_json, not at round-trip.
         icx = edm.grid.Interconnection(
             name="X",
-            from_entity=edm.Reference("Ghost"),
-            to_entity=edm.Reference("Ghost2"),
+            from_element=edm.Reference("Ghost"),
+            to_element=edm.Reference("Ghost2"),
         )
         wrapper = edm.Portfolio(name="root", members=[icx])
         with pytest.raises(UnresolvedReferenceError):
@@ -74,8 +74,8 @@ class TestRoundTrip:
                 {
                     "__type__": "Interconnection",
                     "name": "X",
-                    "from_entity": {"__ref__": "Ghost"},
-                    "to_entity": {"__ref__": "Ghost2"},
+                    "from_element": {"__ref__": "Ghost"},
+                    "to_element": {"__ref__": "Ghost2"},
                 }
             ],
         }
@@ -86,8 +86,8 @@ class TestRoundTrip:
         stranger = edm.BiddingZone(name="NO2")
         icx = edm.grid.Interconnection(
             name="X",
-            from_entity=edm.Reference(stranger),
-            to_entity=edm.Reference(stranger),
+            from_element=edm.Reference(stranger),
+            to_element=edm.Reference(stranger),
         )
         portfolio = edm.Portfolio(name="root", members=[icx])
         with pytest.raises(UnresolvedReferenceError):
@@ -278,16 +278,16 @@ def _kitchen_sink_portfolio():
 
     icx_nested = edm.grid.Interconnection(
         name="Line-into-SE4",
-        from_entity=edm.Reference("BusA"),
-        to_entity=edm.Reference("NSA-Nordic/SE4"),
+        from_element=edm.Reference("BusA"),
+        to_element=edm.Reference("NSA-Nordic/SE4"),
         capacity_forward=1700,
         capacity_backward=1300,
         timeseries=[edm.cross_border_flow(unit="MW")],
     )
     icx_sibling = edm.grid.Interconnection(
         name="SE4-DK2",
-        from_entity=edm.Reference("NSA-Nordic/SE4"),
-        to_entity=edm.Reference("NSA-Nordic/DK2"),
+        from_element=edm.Reference("NSA-Nordic/SE4"),
+        to_element=edm.Reference("NSA-Nordic/DK2"),
         capacity_forward=2000,
         capacity_backward=2000,
     )
@@ -355,13 +355,13 @@ class TestKitchenSinkRoundTrip:
         assert len(edges) == 2
         nested = next(e for e in edges if e.name == "Line-into-SE4")
         sibling = next(e for e in edges if e.name == "SE4-DK2")
-        assert nested.from_entity.is_resolved()
-        assert nested.to_entity.is_resolved()
-        assert nested.to_entity.get().name == "SE4"
-        assert isinstance(nested.to_entity.get(), edm.BiddingZone)
-        assert sibling.from_entity.get() is not sibling.to_entity.get()
-        assert sibling.from_entity.get().name == "SE4"
-        assert sibling.to_entity.get().name == "DK2"
+        assert nested.from_element.is_resolved()
+        assert nested.to_element.is_resolved()
+        assert nested.to_element.get().name == "SE4"
+        assert isinstance(nested.to_element.get(), edm.BiddingZone)
+        assert sibling.from_element.get() is not sibling.to_element.get()
+        assert sibling.from_element.get().name == "SE4"
+        assert sibling.to_element.get().name == "DK2"
 
     def test_value_types_and_dates_preserved(self):
         restored = edm.Portfolio.from_json(_kitchen_sink_portfolio().to_json())
@@ -427,20 +427,20 @@ class TestExcludeFields:
         assert turbine["__type__"] == "WindTurbine"
         assert "capacity" not in turbine
 
-    def test_exclude_from_to_entity_on_edge(self):
+    def test_exclude_from_to_element_on_edge(self):
         ic = edm.grid.Interconnection(
             name="IC",
-            from_entity=edm.Reference("A"),
-            to_entity=edm.Reference("B"),
+            from_element=edm.Reference("A"),
+            to_element=edm.Reference("B"),
             capacity_forward=1000,
         )
         # Reference dump normally requires root resolution, but exclusion bypasses it.
-        js = edm.element_to_json(ic, exclude_fields={"from_entity", "to_entity"})
+        js = edm.element_to_json(ic, exclude_fields={"from_element", "to_element"})
         assert js["__type__"] == "Interconnection"
         assert js["name"] == "IC"
         assert js["capacity_forward"] == 1000
-        assert "from_entity" not in js
-        assert "to_entity" not in js
+        assert "from_element" not in js
+        assert "to_element" not in js
 
     def test_exclude_fields_default_unchanged(self):
         p = _nordic_portfolio()
@@ -481,14 +481,14 @@ class TestElementToStorageDict:
         line = edm.grid.Line(
             name="L1",
             capacity=500,
-            from_entity=edm.Reference("A"),
-            to_entity=edm.Reference("B"),
+            from_element=edm.Reference("A"),
+            to_element=edm.Reference("B"),
         )
-        d = edm.element_to_storage_dict(line, extra_excludes={"from_entity", "to_entity"})
+        d = edm.element_to_storage_dict(line, extra_excludes={"from_element", "to_element"})
         assert d["__type__"] == "Line"
         assert d["capacity"] == 500
-        assert "from_entity" not in d
-        assert "to_entity" not in d
+        assert "from_element" not in d
+        assert "to_element" not in d
 
     def test_round_trip_single_element(self):
         t = edm.wind.WindTurbine(

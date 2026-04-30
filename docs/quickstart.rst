@@ -29,9 +29,9 @@ serialize to JSON and reload losslessly.
    import energydatamodel as edm
    from shapely.geometry import Point
 
-   pvsystem = edm.PVSystem(name="PV-1", capacity=2400, surface_azimuth=180, surface_tilt=25)
-   windturbine = edm.WindTurbine(name="WT-1", capacity=3200, hub_height=120, rotor_diameter=100)
-   battery = edm.Battery(name="B-1", storage_capacity=1000, max_charge=500, max_discharge=500)
+   pvsystem = edm.solar.PVSystem(name="PV-1", capacity=2400, surface_azimuth=180, surface_tilt=25)
+   windturbine = edm.wind.WindTurbine(name="WT-1", capacity=3200, hub_height=120, rotor_diameter=100)
+   battery = edm.battery.Battery(name="B-1", storage_capacity=1000, max_charge=500, max_discharge=500)
 
    site = edm.Site(
        name="Site-1",

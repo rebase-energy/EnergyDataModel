@@ -90,16 +90,16 @@ class TestEdge:
         assert not hasattr(ic, "members")
         assert not hasattr(ic, "tz")
 
-    def test_from_to_entity_fields(self):
+    def test_from_to_element_fields(self):
         ic = edm.grid.Interconnection(
             name="ic",
-            from_entity=edm.Reference("A"),
-            to_entity=edm.Reference("B"),
+            from_element=edm.Reference("A"),
+            to_element=edm.Reference("B"),
             capacity_forward=100,
             capacity_backward=80,
         )
-        assert ic.from_entity is not None
-        assert ic.to_entity is not None
+        assert ic.from_element is not None
+        assert ic.to_element is not None
         assert ic.directed is True
 
 
@@ -244,11 +244,11 @@ class TestDiamondMRO:
     def test_line_construction(self):
         l = edm.grid.Line(
             name="L",
-            from_entity=edm.Reference("A"),
-            to_entity=edm.Reference("B"),
+            from_element=edm.Reference("A"),
+            to_element=edm.Reference("B"),
             capacity=100.0,
         )
         assert l.name == "L"
         assert l.capacity == 100.0
         assert l.directed is True
-        assert l.from_entity is not None
+        assert l.from_element is not None
