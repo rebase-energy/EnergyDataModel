@@ -41,7 +41,7 @@ from pathlib import Path
 
 import energydatamodel as edm
 from docutils.core import publish_parts
-from energydatamodel.bases import GridNode, Sensor
+from energydatamodel.bases import Sensor
 
 PACKAGE_ROOT = Path(edm.__file__).resolve().parent
 PACKAGE_NAME = edm.__name__
@@ -93,9 +93,10 @@ def _categorize(cls: type) -> str:
     if issubclass(cls, edm.Collection):
         return "collection"
     module = cls.__module__
-    # GridNode / EdgeAsset subclasses live in grid; split by base.
+    # Grid module mixes nodes (GridNode subclasses + Transformer as a NodeAsset)
+    # with edges (EdgeAsset subclasses). Classify by Node vs Edge ancestry.
     if module == "energydatamodel.grid":
-        if issubclass(cls, GridNode) and cls is not GridNode:
+        if issubclass(cls, edm.Node):
             return "grid_node"
         return "grid_edge"
     if issubclass(cls, Sensor) and cls is not Sensor:

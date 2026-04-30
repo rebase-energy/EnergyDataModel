@@ -5,8 +5,8 @@
   ``Interconnection``) single-inherit from here.
 * GridNode subclasses (``JunctionPoint``, ``Meter``, ``DeliveryPoint``) live
   here as concrete topological points. The ``GridNode`` base lives in
-  :mod:`energydatamodel.bases`. ``Transformer`` is also a node (a vertex with
-  HV and LV sides), inheriting from :class:`NodeAsset`.
+  :mod:`energydatamodel.bases`. ``Transformer`` is also a :class:`GridNode`
+  (a vertex with HV and LV sides on the electricity carrier).
 * ``SubNetwork`` and ``Network`` are :class:`Collection` subclasses used to
   group buses + lines.
 * ``Carrier`` is a plain value type (not an Element).
@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from energydatamodel.asset import Asset
-from energydatamodel.bases import GridNode, NodeAsset
+from energydatamodel.bases import GridNode
 from energydatamodel.containers import Collection
 from energydatamodel.edge import Edge
 
@@ -79,12 +79,13 @@ class DeliveryPoint(GridNode):
 
 
 @dataclass(repr=False, kw_only=True)
-class Transformer(NodeAsset):
+class Transformer(GridNode):
     """Transformer joining HV and LV sides of an electrical network.
 
-    Modeled as a node, not an edge — matches pandapower / PyPSA topology
-    where a transformer is a vertex with two voltage sides and edges
-    (Lines) attach to each side.
+    Modeled as a topological grid node, not an edge — matches pandapower /
+    PyPSA topology where a transformer is a vertex with two voltage sides
+    and edges (Lines) attach to each side. Inherits ``carrier`` from
+    :class:`GridNode` (always electricity for a transformer).
     """
 
     capacity: float | None = None  #: Apparent-power rating in MVA.

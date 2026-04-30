@@ -48,31 +48,6 @@ Everything in EnergyDataModel inherits from a single root, `Element`, which carr
 * **`Collection`** — logical groupings (Portfolio, Site, ...). Adds `members` and `tz`. Not a graph vertex — `isinstance(portfolio, Node)` is False.
 * **`Asset`** — cross-cutting mixin marking physical equipment. Adds `commissioning_date`. Mixed into Node via `NodeAsset` and into Edge via `EdgeAsset`; never used as a leaf type.
 
-```
-Element  (name, _id, timeseries, geometry)
-├── Node  (+ members, tz)
-│   ├── NodeAsset            — Node × Asset (physical equipment vertices)
-│   │   WindTurbine, WindFarm, WindPowerArea, PVArray, PVSystem,
-│   │   SolarPowerArea, Battery, HeatPump, HydroPowerPlant,
-│   │   HydroTurbine, Reservoir, Building, House
-│   ├── GridNode             — topological grid points (carrier)
-│   │   JunctionPoint, Meter, DeliveryPoint
-│   ├── Sensor               — measurement instruments
-│   │   TemperatureSensor, WindSpeedSensor, RadiationSensor,
-│   │   RainSensor, HumiditySensor
-│   ├── Area                 — administrative / market regions
-│   │   BiddingZone, Country, ControlArea, WeatherCell,
-│   │   SynchronousArea (+ nominal_frequency)
-│   └── Transformer          — HV/LV-side topological vertex (NodeAsset)
-├── Edge  (+ from_element, to_element, directed)
-│   └── EdgeAsset            — Edge × Asset (physical equipment edges)
-│       Line, Link, Pipe, Interconnection
-├── Collection  (+ members, tz)    — logical grouping, not a vertex
-│   Portfolio, Site, MultiSite, Region,
-│   EnergyCommunity, VirtualPowerPlant, SubNetwork, Network
-└── Asset  (+ commissioning_date)  — mixin, never a leaf
-```
-
 System-structural classes (containers, areas, networks, bases, utilities) live flat at `edm.X`. Technology-specific equipment lives under sub-namespaces — `edm.solar.PVSystem`, `edm.wind.WindTurbine`, `edm.grid.Line`, etc.
 
 | Namespace         | Data Classes |

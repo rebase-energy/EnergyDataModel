@@ -94,3 +94,22 @@ html_static_path = ["_static"]
 html_css_files = [
     "css/class-hierarchy.css",
 ]
+
+
+# -- Class-explorer regeneration ---------------------------------------------
+# Regenerate edm-explorer.html (the Cytoscape class graph) before each build,
+# so the iframe served from _static/ is always in sync with the live class
+# hierarchy. Runs locally and on Read-the-Docs.
+
+
+def _build_class_explorer(app):
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    script = Path(__file__).parent.parent / "build_class_explorer.py"
+    subprocess.run([sys.executable, str(script)], check=True)
+
+
+def setup(app):
+    app.connect("builder-inited", _build_class_explorer)
