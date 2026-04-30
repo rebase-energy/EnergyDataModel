@@ -62,11 +62,10 @@ class PVSystem(NodeAsset):
     module_type: str = "glass_polymer"
     racking_model: str = "open_rack"
 
-    def __post_init__(self):
+    def __post_init__(self, lat: float | None = None, lon: float | None = None):
+        super().__post_init__(lat, lon)
         # Auto-create a PVArray from top-level params if no members were supplied.
-        if not self.members and all(
-            v is not None for v in (self.capacity, self.surface_azimuth, self.surface_tilt)
-        ):
+        if not self.members and all(v is not None for v in (self.capacity, self.surface_azimuth, self.surface_tilt)):
             self.members.append(
                 PVArray(
                     capacity=self.capacity,
@@ -77,9 +76,7 @@ class PVSystem(NodeAsset):
 
     def add_child(self, obj: Element) -> None:
         if not isinstance(obj, PVArray):
-            raise TypeError(
-                f"PVSystem only accepts PVArray children, got {type(obj).__name__}"
-            )
+            raise TypeError(f"PVSystem only accepts PVArray children, got {type(obj).__name__}")
         self.members.append(obj)
 
     def to_pvlib(self, **kwargs):

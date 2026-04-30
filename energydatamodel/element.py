@@ -27,7 +27,7 @@ concrete dataclass so subclasses can ``super().__init__(...)`` cleanly.
 from __future__ import annotations
 
 import dataclasses
-from dataclasses import dataclass, field, fields
+from dataclasses import InitVar, dataclass, field, fields
 from typing import ClassVar
 
 import pandas as pd
@@ -54,33 +54,79 @@ class Element:
     """Common base for every persistable object in EDM.
 
     Carries the fields shared by Nodes, Edges, Assets and Collections:
-    name, id, attached time-series descriptors, and an optional shapely
-    geometry.
+    name, id, attached time-series descriptors, an optional shapely
+    geometry, and an ``extra`` dict for ad-hoc fields.
+
+    Subclasses are auto-registered for JSON dispatch via
+    ``__init_subclass__`` — defining ``class Foo(NodeAsset): ...`` is enough
+    for round-trip serialization, no decorator required.
     """
 
     name: str | None = None
     _id: str | None = None
     timeseries: list[TimeSeriesDescriptor] = field(default_factory=list)
     geometry: BaseGeometry | None = None
+    # Free-form bag for ad-hoc fields not modeled here. Round-trips through JSON
+    # as long as values are JSON-native, shapely geometries, enums, dataclasses,
+    # or other registered EDM types — other types fall through to ``repr()``.
+    extra: dict = field(default_factory=dict)
+    lat: InitVar[float | None] = None
+    lon: InitVar[float | None] = None
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        # Auto-register every Element subclass for JSON dispatch on definition.
+        # Last-write-wins: re-running a class definition in a notebook creates
+        # a new class object with the same name, and we want the latest one to
+        # be authoritative — matches Python's own class-redefinition semantics.
+        # Lazy import avoids the circular dependency with ``json_io``.
+        from energydatamodel.json_io import _REGISTRY
+
+        _REGISTRY[cls.__name__] = cls
 
     # Fields excluded from ``to_properties()`` — stored as top-level DB columns
     # or handled by the serialization layer directly.
-    _BASE_FIELDS: ClassVar[frozenset] = frozenset({
-        "name", "_id", "timeseries", "geometry",
-    })
+    _BASE_FIELDS: ClassVar[frozenset] = frozenset(
+        {
+            "name",
+            "_id",
+            "timeseries",
+            "geometry",
+            "extra",
+        }
+    )
     # Fields that hold child objects — excluded from ``to_properties()``.
     _CHILDREN_FIELDS: ClassVar[frozenset] = frozenset()
 
+    def __post_init__(self, lat: float | None, lon: float | None) -> None:
+        if (lat is None) != (lon is None):
+            raise ValueError("lat and lon must be provided together")
+        if lat is not None:
+            if self.geometry is not None:
+                raise ValueError("pass either (lat, lon) or geometry, not both")
+            self.geometry = Point(lon, lat)
+        elif isinstance(self.geometry, (tuple, list)):
+            if len(self.geometry) != 2 or not all(isinstance(v, (int, float)) for v in self.geometry):
+                raise ValueError("geometry tuple shorthand must be (lon, lat) of two numbers")
+            self.geometry = Point(self.geometry[0], self.geometry[1])
+        if self.geometry is not None:
+            minx, miny, maxx, maxy = self.geometry.bounds
+            if not (minx >= -180 and maxx <= 180 and miny >= -90 and maxy <= 90):
+                raise ValueError(
+                    f"geometry bounds {self.geometry.bounds} fall outside "
+                    "WGS84 lon/lat range — did you swap lat and lon?"
+                )
+
     # ------------------------------------------------------------------ shape
     @property
-    def lat(self) -> float | None:
+    def latitude(self) -> float | None:
         """Latitude, if ``geometry`` is a shapely ``Point``; else ``None``."""
         if isinstance(self.geometry, Point):
             return self.geometry.y
         return None
 
     @property
-    def lon(self) -> float | None:
+    def longitude(self) -> float | None:
         """Longitude, if ``geometry`` is a shapely ``Point``; else ``None``."""
         if isinstance(self.geometry, Point):
             return self.geometry.x
@@ -101,8 +147,7 @@ class Element:
     def add_child(self, obj) -> None:
         """Attach a child. Override in subclasses that support children."""
         raise TypeError(
-            f"{type(self).__name__} does not support add_child(). "
-            f"Override add_child() to enable tree reconstruction."
+            f"{type(self).__name__} does not support add_child(). Override add_child() to enable tree reconstruction."
         )
 
     def to_tree(self) -> str:
@@ -139,14 +184,14 @@ class Element:
     ) -> dict:
         """Serialize to a JSON-compatible dict. Full implementation in ``json_io``."""
         from energydatamodel.json_io import element_to_json
-        return element_to_json(
-            self, include_ids=include_ids, exclude_fields=exclude_fields
-        )
+
+        return element_to_json(self, include_ids=include_ids, exclude_fields=exclude_fields)
 
     @classmethod
     def from_json(cls, data: dict) -> Element:
         """Deserialize from a JSON-compatible dict. Full implementation in ``json_io``."""
         from energydatamodel.json_io import element_from_json
+
         return element_from_json(data, expected_type=cls)
 
     # ------------------------------------------------------------- geojson

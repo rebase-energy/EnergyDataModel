@@ -43,7 +43,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx_autodoc_typehints',
     'sphinx.ext.viewcode',
-    'nbsphinx', 
+    'nbsphinx',
 ]
 
 # Set the autodoc default flags
@@ -89,3 +89,9 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# Custom CSS — widen the class_hierarchy page so the Cytoscape iframe
+# has room to breathe.
+html_css_files = [
+    'css/class-hierarchy.css',
+]

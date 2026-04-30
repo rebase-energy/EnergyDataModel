@@ -55,3 +55,48 @@ class TestReference:
         ref = edm.Reference("Nordic/Sweden/Lillgrund/T01")
         ref.resolve(portfolio)
         assert ref.get() is t01
+
+
+class TestReferenceTuple:
+    """Tuple-form references: identity-as-path that's safe for names with /."""
+
+    def test_construct_from_tuple(self):
+        ref = edm.Reference(("Nordic", "SE4"))
+        assert ref.target == ("Nordic", "SE4")
+        assert not ref.is_resolved()
+
+    def test_construct_from_list_normalises_to_tuple(self):
+        ref = edm.Reference(["Nordic", "SE4"])
+        assert ref.target == ("Nordic", "SE4")
+
+    def test_resolve_tuple_against_tree(self):
+        portfolio, se4, *_ = _make_tree()
+        ref = edm.Reference(("Nordic", "SE4"))
+        assert ref.resolve(portfolio) is se4
+
+    def test_path_tuple_of_resolved(self):
+        portfolio, se4, _, _ = _make_tree()
+        ref = edm.Reference(se4)
+        assert ref.path_tuple(portfolio) == ("Nordic", "SE4")
+
+    def test_path_tuple_of_unresolved_string(self):
+        portfolio, *_ = _make_tree()
+        ref = edm.Reference("Nordic/SE4")
+        assert ref.path_tuple(portfolio) == ("Nordic", "SE4")
+
+    def test_path_tuple_of_unresolved_tuple(self):
+        portfolio, *_ = _make_tree()
+        ref = edm.Reference(("Nordic", "SE4"))
+        assert ref.path_tuple(portfolio) == ("Nordic", "SE4")
+
+    def test_name_with_slash_only_works_via_tuple(self):
+        weird = edm.BiddingZone(name="A/B")
+        portfolio = edm.Portfolio(name="P", members=[weird])
+        # String-path resolution mis-parses 'A/B' as two segments → fails.
+        bad = edm.Reference("P/A/B")
+        with pytest.raises(UnresolvedReferenceError):
+            bad.resolve(portfolio)
+        # Tuple form preserves the slash literally.
+        good = edm.Reference(("P", "A/B"))
+        assert good.resolve(portfolio) is weird
+        assert good.path_tuple(portfolio) == ("P", "A/B")

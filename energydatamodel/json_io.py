@@ -172,7 +172,7 @@ def _element_to_dict(
         value = getattr(element, name)
         if value is None:
             continue
-        if isinstance(value, list) and not value:
+        if isinstance(value, (list, dict)) and not value:
             continue
         out[name] = _serialize_value(
             value, include_ids=include_ids, root=root, exclude_fields=exclude_fields

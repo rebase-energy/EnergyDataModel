@@ -29,15 +29,44 @@ class TestElement:
 
     def test_geometry_point_lat_lon(self):
         e = edm.Element(name="x", geometry=Point(13.0, 55.0))
-        assert e.lon == 13.0
-        assert e.lat == 55.0
+        assert e.longitude == 13.0
+        assert e.latitude == 55.0
 
     def test_geometry_polygon_no_lat_lon(self):
         poly = Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])
         e = edm.Element(name="x", geometry=poly)
-        assert e.lat is None
-        assert e.lon is None
+        assert e.latitude is None
+        assert e.longitude is None
         assert e.centroid is not None
+
+    def test_lat_lon_kwargs_build_point(self):
+        e = edm.Element(name="x", lat=55.0, lon=13.0)
+        assert isinstance(e.geometry, Point)
+        assert e.geometry.x == 13.0
+        assert e.geometry.y == 55.0
+        assert e.latitude == 55.0
+        assert e.longitude == 13.0
+
+    def test_geometry_tuple_shorthand(self):
+        e = edm.Element(name="x", geometry=(13.0, 55.0))
+        assert isinstance(e.geometry, Point)
+        assert (e.geometry.x, e.geometry.y) == (13.0, 55.0)
+
+    def test_lat_lon_with_geometry_raises(self):
+        with pytest.raises(ValueError, match="either"):
+            edm.Element(name="x", lat=55.0, lon=13.0, geometry=Point(1.0, 2.0))
+
+    def test_lat_alone_raises(self):
+        with pytest.raises(ValueError, match="together"):
+            edm.Element(name="x", lat=55.0)
+
+    def test_out_of_bounds_raises(self):
+        with pytest.raises(ValueError, match="WGS84"):
+            edm.Element(name="x", lat=200.0, lon=10.0)
+
+    def test_subclass_lat_lon(self):
+        t = edm.WindTurbine(name="t", lat=59.9, lon=10.5, capacity=3.0)
+        assert (t.geometry.x, t.geometry.y) == (10.5, 59.9)
 
 
 class TestNode:
@@ -106,6 +135,7 @@ class TestAssetMixin:
 
     def test_commissioning_date(self):
         from datetime import date
+
         t = edm.WindTurbine(name="t", commissioning_date=date(2020, 1, 1))
         assert t.commissioning_date == date(2020, 1, 1)
 
@@ -196,6 +226,7 @@ class TestDiamondMRO:
     def test_wind_turbine_construction(self):
         """Constructing a diamond class should initialize Element fields once."""
         from datetime import date
+
         t = edm.WindTurbine(
             name="t",
             commissioning_date=date(2020, 1, 1),

@@ -76,7 +76,6 @@ Element  (name, _id, timeseries, geometry)
 | :----          | :----        |
 | 🧱&nbsp;`element` / `node` / `edge` | `Element`, `Node`, `Edge` |
 | 🏷️&nbsp;`asset` / `bases` | `Asset`, `NodeAsset`, `GridNode`, `Sensor` |
-| 🗺️&nbsp;`geospatial` | `GeoLocation`, `GeoPolygon`, `GeoMultiPolygon` |
 | ☀️&nbsp;`solar` | `FixedMount`, `SingleAxisTrackerMount`, `PVArray`, `PVSystem`, `SolarPowerArea` |
 | 🌬️&nbsp;`wind` | `WindTurbine`, `WindFarm`, `WindPowerArea` |
 | 🔋&nbsp;`battery` | `Battery` |

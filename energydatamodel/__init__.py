@@ -56,13 +56,6 @@ from .edge import Edge
 # Core
 from .element import Element
 
-# Geospatial
-from .geospatial import (
-    GeoLocation,
-    GeoMultiPolygon,
-    GeoPolygon,
-    Location,
-)
 from .heatpump import HeatPump
 from .hydro import HydroPowerPlant, HydroTurbine, Reservoir
 
@@ -112,13 +105,10 @@ from .weathersensor import (
 )
 from .wind import WindFarm, WindPowerArea, WindTurbine
 
-# Auto-register every Element subclass imported above for JSON dispatch.
-register_builtin_elements()
-
-# Register non-Element value dataclasses for JSON dispatch.
-for _cls in (GeoLocation, GeoMultiPolygon, Carrier):
-    register_value_type(_cls)
-del _cls
+# Element subclasses self-register via ``Element.__init_subclass__`` at definition
+# time, so a separate walk is no longer required. Value dataclasses (non-Element)
+# don't go through that hook and must still be registered explicitly.
+register_value_type(Carrier)
 
 
 __version__ = "0.1.0"

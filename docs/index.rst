@@ -15,5 +15,6 @@ Indices and tables
 
    introduction
    installation
+   class_hierarchy
    examples
    energydatamodel
