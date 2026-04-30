@@ -47,10 +47,7 @@ def register_element(cls: type[Element]) -> type[Element]:
     """Register an Element subclass under its class name for JSON dispatch."""
     name = cls.__name__
     if name in _REGISTRY and _REGISTRY[name] is not cls:
-        raise ValueError(
-            f"register_element: duplicate name {name!r} "
-            f"(existing={_REGISTRY[name]!r}, new={cls!r})"
-        )
+        raise ValueError(f"register_element: duplicate name {name!r} (existing={_REGISTRY[name]!r}, new={cls!r})")
     _REGISTRY[name] = cls
     return cls
 
@@ -65,8 +62,7 @@ def register_value_type(cls: type) -> type:
     name = cls.__name__
     if name in _VALUE_REGISTRY and _VALUE_REGISTRY[name] is not cls:
         raise ValueError(
-            f"register_value_type: duplicate name {name!r} "
-            f"(existing={_VALUE_REGISTRY[name]!r}, new={cls!r})"
+            f"register_value_type: duplicate name {name!r} (existing={_VALUE_REGISTRY[name]!r}, new={cls!r})"
         )
     _VALUE_REGISTRY[name] = cls
     return cls
@@ -91,9 +87,7 @@ def _serialize_value(
     if value is None:
         return None
     if isinstance(value, Element):
-        return _element_to_dict(
-            value, include_ids=include_ids, root=root, exclude_fields=exclude_fields
-        )
+        return _element_to_dict(value, include_ids=include_ids, root=root, exclude_fields=exclude_fields)
     if isinstance(value, Reference):
         # Always emit the canonical full path from ``root``, regardless of whether
         # the Reference's internal target is still a string or a resolved Element.
@@ -116,15 +110,13 @@ def _serialize_value(
     if dataclasses.is_dataclass(value) and not isinstance(value, type):
         return _plain_dataclass_to_dict(value, include_ids=include_ids, root=root)
     if isinstance(value, list):
-        return [
-            _serialize_value(v, include_ids=include_ids, root=root, exclude_fields=exclude_fields)
-            for v in value
-        ]
+        return [_serialize_value(v, include_ids=include_ids, root=root, exclude_fields=exclude_fields) for v in value]
     if isinstance(value, tuple):
-        return {"__tuple__": [
-            _serialize_value(v, include_ids=include_ids, root=root, exclude_fields=exclude_fields)
-            for v in value
-        ]}
+        return {
+            "__tuple__": [
+                _serialize_value(v, include_ids=include_ids, root=root, exclude_fields=exclude_fields) for v in value
+            ]
+        }
     if isinstance(value, dict):
         return {
             k: _serialize_value(v, include_ids=include_ids, root=root, exclude_fields=exclude_fields)
@@ -174,9 +166,7 @@ def _element_to_dict(
             continue
         if isinstance(value, (list, dict)) and not value:
             continue
-        out[name] = _serialize_value(
-            value, include_ids=include_ids, root=root, exclude_fields=exclude_fields
-        )
+        out[name] = _serialize_value(value, include_ids=include_ids, root=root, exclude_fields=exclude_fields)
     return out
 
 
@@ -201,9 +191,7 @@ def element_to_json(
             produces a flat, children-free dict). See
             :func:`element_to_storage_dict` for the canonical flat-row form.
     """
-    return _element_to_dict(
-        element, include_ids=include_ids, root=element, exclude_fields=exclude_fields
-    )
+    return _element_to_dict(element, include_ids=include_ids, root=element, exclude_fields=exclude_fields)
 
 
 def to_json_str(
@@ -220,9 +208,7 @@ def to_json_str(
     )
 
 
-def element_to_storage_dict(
-    element: Element, *, extra_excludes: set | None = None
-) -> dict:
+def element_to_storage_dict(element: Element, *, extra_excludes: set | None = None) -> dict:
     """Flat-row serialization: element's own fields only, children excluded.
 
     Suitable for persistence layers that store tree structure separately
@@ -250,9 +236,7 @@ def element_from_json(data: dict, *, expected_type: type[Element] | None = None)
     root = _instantiate(data)
     if expected_type is not None and expected_type is not Element:
         if not isinstance(root, expected_type):
-            raise TypeError(
-                f"Expected {expected_type.__name__}, got {type(root).__name__}"
-            )
+            raise TypeError(f"Expected {expected_type.__name__}, got {type(root).__name__}")
     _resolve_references(root, root=root)
     return root
 
@@ -288,9 +272,7 @@ def _instantiate(data: Any) -> Any:
         return cls(**kwargs)
     if isinstance(data, dict) and "__type__" in data:
         # Tagged but unknown — fail loudly.
-        raise ValueError(
-            f"Unknown Element type {data['__type__']!r}. Known types: {sorted(_REGISTRY)}"
-        )
+        raise ValueError(f"Unknown Element type {data['__type__']!r}. Known types: {sorted(_REGISTRY)}")
     if isinstance(data, list):
         return [_instantiate(v) for v in data]
     return data

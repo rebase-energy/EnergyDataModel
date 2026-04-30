@@ -1,7 +1,7 @@
 ⚡ Power grid classes
 =======================
 
-.. automodule:: energydatamodel.powergrid
+.. automodule:: energydatamodel.grid
    :members:
    :undoc-members:
    :show-inheritance:

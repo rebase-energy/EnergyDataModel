@@ -6,6 +6,14 @@ from dataclasses import dataclass
 
 from energydatamodel.bases import Sensor
 
+__all__ = [
+    "TemperatureSensor",
+    "WindSpeedSensor",
+    "RadiationSensor",
+    "RainSensor",
+    "HumiditySensor",
+]
+
 
 @dataclass(repr=False, kw_only=True)
 class TemperatureSensor(Sensor):

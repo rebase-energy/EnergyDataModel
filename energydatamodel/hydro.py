@@ -6,6 +6,8 @@ import pandas as pd
 
 from energydatamodel.bases import NodeAsset
 
+__all__ = ["Reservoir", "HydroTurbine", "HydroPowerPlant"]
+
 
 @dataclass(repr=False, kw_only=True)
 class Reservoir(NodeAsset):

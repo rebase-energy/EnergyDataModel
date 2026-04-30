@@ -20,7 +20,7 @@ from energydatamodel.asset import Asset
 from energydatamodel.node import Node
 
 if TYPE_CHECKING:
-    from energydatamodel.powergrid import Carrier
+    from energydatamodel.grid import Carrier
 
 
 # ---------------------------------------------------------------------

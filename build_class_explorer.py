@@ -56,7 +56,7 @@ MODULE_CATEGORY = {
     "energydatamodel.battery": "generation",
     "energydatamodel.building": "demand",
     "energydatamodel.heatpump": "demand",
-    "energydatamodel.weathersensor": "sensor",
+    "energydatamodel.weather": "sensor",
 }
 
 CATEGORY_PALETTE = {
@@ -89,12 +89,12 @@ def _categorize(cls: type) -> str:
     if name in BASE_NAMES:
         return "base"
     # Collection subtree wins over module — SubNetwork/Network live in
-    # powergrid.py but are conceptually containers.
+    # grid.py but are conceptually containers.
     if issubclass(cls, edm.Collection):
         return "collection"
     module = cls.__module__
-    # GridNode / EdgeAsset subclasses live in powergrid; split by base.
-    if module == "energydatamodel.powergrid":
+    # GridNode / EdgeAsset subclasses live in grid; split by base.
+    if module == "energydatamodel.grid":
         if issubclass(cls, GridNode) and cls is not GridNode:
             return "grid_node"
         return "grid_edge"

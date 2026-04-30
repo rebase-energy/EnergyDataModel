@@ -167,6 +167,12 @@ def grid_frequency(
     :class:`SynchronousArea` itself, not on the descriptor.
     """
     return _make(
-        Quantity.FREQUENCY, Kind.STATE, Scope.AREA,
-        unit, data_type, frequency, timezone, description,
+        Quantity.FREQUENCY,
+        Kind.STATE,
+        Scope.AREA,
+        unit,
+        data_type,
+        frequency,
+        timezone,
+        description,
     )

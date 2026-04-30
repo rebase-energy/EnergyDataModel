@@ -17,9 +17,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'EnergyDataModel'
-copyright = '2023, rebase.energy'
-author = 'rebase.energy'
+project = "EnergyDataModel"
+copyright = "2023, rebase.energy"
+author = "rebase.energy"
 
 
 # -- General configuration ---------------------------------------------------
@@ -32,30 +32,30 @@ import os
 import sys
 
 # Add the path to your project to the sys.path list (if not already present)
-sys.path.insert(0, os.path.abspath('../'))
-sys.path.insert(0, os.path.abspath('../energydatamodel'))
+sys.path.insert(0, os.path.abspath("../"))
+sys.path.insert(0, os.path.abspath("../energydatamodel"))
 
 
 # Add 'sphinx.ext.autodoc' to the list of extensions
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.napoleon',
-    'sphinx_autodoc_typehints',
-    'sphinx.ext.viewcode',
-    'nbsphinx',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+    "sphinx_autodoc_typehints",
+    "sphinx.ext.viewcode",
+    "nbsphinx",
 ]
 
 # Set the autodoc default flags
 autodoc_default_options = {
-    'members': True,   # Include class and instance methods
-    'undoc-members': False,   # Include members without docstrings
-    'show-inheritance': True,  # Show inheritance links
+    "members": True,  # Include class and instance methods
+    "undoc-members": False,  # Include members without docstrings
+    "show-inheritance": True,  # Show inheritance links
 }
-autodoc_member_order = 'bysource'
+autodoc_member_order = "bysource"
 
 intersphinx_mapping = {
-    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
 }
 
 napoleon_google_docstring = True
@@ -68,14 +68,13 @@ napoleon_use_rtype = True
 napoleon_use_ivar = True
 
 
-
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -83,15 +82,15 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', '**.ipynb_checkpoints']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "sphinx_rtd_theme"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # Custom CSS — widen the class_hierarchy page so the Cytoscape iframe
 # has room to breathe.
 html_css_files = [
-    'css/class-hierarchy.css',
+    "css/class-hierarchy.css",
 ]

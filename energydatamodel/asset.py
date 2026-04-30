@@ -6,7 +6,7 @@ meters, power lines, transformers, pipes. It is a pure mixin — never
 instantiated directly and never used as a leaf type. Concrete equipment
 classes inherit from ``Asset`` together with either :class:`Node` or
 :class:`Edge` via the :class:`NodeAsset` / :class:`EdgeAsset` intermediates in
-:mod:`energydatamodel.bases` and :mod:`energydatamodel.powergrid`.
+:mod:`energydatamodel.bases` and :mod:`energydatamodel.grid`.
 
 ``isinstance(x, Asset)`` answers "is this a piece of physical equipment?"
 uniformly across node- and edge-shaped classes.
@@ -32,6 +32,8 @@ class Asset(Element):
 
     commissioning_date: date | None = None
 
-    _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset({
-        "commissioning_date",
-    })
+    _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset(
+        {
+            "commissioning_date",
+        }
+    )

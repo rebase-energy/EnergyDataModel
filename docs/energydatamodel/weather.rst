@@ -1,7 +1,7 @@
 Weather Sensor classes
 =======================
 
-.. automodule:: energydatamodel.weathersensor
+.. automodule:: energydatamodel.weather
    :members:
    :undoc-members:
    :show-inheritance:

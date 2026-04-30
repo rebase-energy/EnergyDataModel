@@ -42,9 +42,12 @@ class Collection(Element):
     members: list[Element] = field(default_factory=list)
     tz: datetime.tzinfo | None = None
 
-    _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset({
-        "members", "tz",
-    })
+    _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset(
+        {
+            "members",
+            "tz",
+        }
+    )
     _CHILDREN_FIELDS: ClassVar[frozenset] = frozenset({"members"})
 
     def children(self) -> list:
@@ -52,10 +55,7 @@ class Collection(Element):
 
     def add_child(self, obj: Element) -> None:
         if not isinstance(obj, Element):
-            raise TypeError(
-                f"{type(self).__name__} only accepts Element children, "
-                f"got {type(obj).__name__}"
-            )
+            raise TypeError(f"{type(self).__name__} only accepts Element children, got {type(obj).__name__}")
         self.members.append(obj)
 
 

@@ -8,7 +8,7 @@ from energydatamodel.reference import UnresolvedReferenceError
 def _make_tree():
     se4 = edm.BiddingZone(name="SE4")
     dk2 = edm.BiddingZone(name="DK2")
-    icx = edm.Interconnection(
+    icx = edm.grid.Interconnection(
         name="SE4-DK2",
         from_entity=edm.Reference("SE4"),
         to_entity=edm.Reference("DK2"),
@@ -48,8 +48,8 @@ class TestReference:
             ref.path(portfolio)
 
     def test_nested_path(self):
-        t01 = edm.WindTurbine(name="T01", capacity=3.5)
-        farm = edm.WindFarm(name="Lillgrund", members=[t01])
+        t01 = edm.wind.WindTurbine(name="T01", capacity=3.5)
+        farm = edm.wind.WindFarm(name="Lillgrund", members=[t01])
         site = edm.Site(name="Sweden", members=[farm])
         portfolio = edm.Portfolio(name="Nordic", members=[site])
         ref = edm.Reference("Nordic/Sweden/Lillgrund/T01")

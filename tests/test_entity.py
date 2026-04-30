@@ -65,7 +65,7 @@ class TestElement:
             edm.Element(name="x", lat=200.0, lon=10.0)
 
     def test_subclass_lat_lon(self):
-        t = edm.WindTurbine(name="t", lat=59.9, lon=10.5, capacity=3.0)
+        t = edm.wind.WindTurbine(name="t", lat=59.9, lon=10.5, capacity=3.0)
         assert (t.geometry.x, t.geometry.y) == (10.5, 59.9)
 
 
@@ -86,12 +86,12 @@ class TestNode:
 class TestEdge:
     def test_no_members_field(self):
         # Edge sits sibling to Node under Element; does not carry members or tz.
-        ic = edm.Interconnection(name="x")
+        ic = edm.grid.Interconnection(name="x")
         assert not hasattr(ic, "members")
         assert not hasattr(ic, "tz")
 
     def test_from_to_entity_fields(self):
-        ic = edm.Interconnection(
+        ic = edm.grid.Interconnection(
             name="ic",
             from_entity=edm.Reference("A"),
             to_entity=edm.Reference("B"),
@@ -107,22 +107,22 @@ class TestAssetMixin:
     """Asset is a mixin — marker for physical equipment on both graph sides."""
 
     def test_node_asset_classes_are_asset(self):
-        assert isinstance(edm.WindTurbine(name="t"), edm.Asset)
-        assert isinstance(edm.Battery(name="b"), edm.Asset)
-        assert isinstance(edm.HeatPump(name="h"), edm.Asset)
-        assert isinstance(edm.Building(name="b"), edm.Asset)
+        assert isinstance(edm.wind.WindTurbine(name="t"), edm.Asset)
+        assert isinstance(edm.battery.Battery(name="b"), edm.Asset)
+        assert isinstance(edm.heatpump.HeatPump(name="h"), edm.Asset)
+        assert isinstance(edm.building.Building(name="b"), edm.Asset)
 
     def test_sensor_and_gridnode_are_asset(self):
-        assert isinstance(edm.TemperatureSensor(name="t"), edm.Asset)
-        assert isinstance(edm.Meter(name="m"), edm.Asset)
-        assert isinstance(edm.DeliveryPoint(name="d"), edm.Asset)
-        assert isinstance(edm.JunctionPoint(name="j"), edm.Asset)
+        assert isinstance(edm.weather.TemperatureSensor(name="t"), edm.Asset)
+        assert isinstance(edm.grid.Meter(name="m"), edm.Asset)
+        assert isinstance(edm.grid.DeliveryPoint(name="d"), edm.Asset)
+        assert isinstance(edm.grid.JunctionPoint(name="j"), edm.Asset)
 
     def test_edge_equipment_is_asset(self):
-        assert isinstance(edm.Line(name="l"), edm.Asset)
-        assert isinstance(edm.Transformer(name="t"), edm.Asset)
-        assert isinstance(edm.Pipe(name="p"), edm.Asset)
-        assert isinstance(edm.Interconnection(name="ic"), edm.Asset)
+        assert isinstance(edm.grid.Line(name="l"), edm.Asset)
+        assert isinstance(edm.grid.Transformer(name="t"), edm.Asset)
+        assert isinstance(edm.grid.Pipe(name="p"), edm.Asset)
+        assert isinstance(edm.grid.Interconnection(name="ic"), edm.Asset)
 
     def test_area_is_not_asset(self):
         assert not isinstance(edm.BiddingZone(name="z"), edm.Asset)
@@ -136,28 +136,28 @@ class TestAssetMixin:
     def test_commissioning_date(self):
         from datetime import date
 
-        t = edm.WindTurbine(name="t", commissioning_date=date(2020, 1, 1))
+        t = edm.wind.WindTurbine(name="t", commissioning_date=date(2020, 1, 1))
         assert t.commissioning_date == date(2020, 1, 1)
 
 
 class TestNodeAssetEdgeAsset:
     def test_wind_turbine_is_node_asset(self):
-        t = edm.WindTurbine(name="t", capacity=3.0)
+        t = edm.wind.WindTurbine(name="t", capacity=3.0)
         assert isinstance(t, edm.NodeAsset)
         assert isinstance(t, edm.Node)
         assert isinstance(t, edm.Asset)
         assert isinstance(t, edm.Element)
 
     def test_line_is_edge_asset(self):
-        l = edm.Line(name="L", capacity=100)
-        assert isinstance(l, edm.EdgeAsset)
+        l = edm.grid.Line(name="L", capacity=100)
+        assert isinstance(l, edm.grid.EdgeAsset)
         assert isinstance(l, edm.Edge)
         assert isinstance(l, edm.Asset)
         assert isinstance(l, edm.Element)
         assert not isinstance(l, edm.Node)
 
     def test_sensor_mro(self):
-        s = edm.TemperatureSensor(name="t", height=2.0)
+        s = edm.weather.TemperatureSensor(name="t", height=2.0)
         mro_names = [c.__name__ for c in type(s).__mro__]
         assert "Sensor" in mro_names
         assert "NodeAsset" in mro_names
@@ -168,23 +168,23 @@ class TestNodeAssetEdgeAsset:
 
 class TestGridNode:
     def test_carrier_field(self):
-        c = edm.Carrier(name="electricity", type="renewable")
-        j = edm.JunctionPoint(name="J", carrier=c)
+        c = edm.grid.Carrier(name="electricity", type="renewable")
+        j = edm.grid.JunctionPoint(name="J", carrier=c)
         assert j.carrier.name == "electricity"
 
 
 class TestSensor:
     def test_height_on_base(self):
-        s = edm.TemperatureSensor(name="T-sensor", height=2.0)
+        s = edm.weather.TemperatureSensor(name="T-sensor", height=2.0)
         assert s.height == 2.0
 
     def test_all_weather_sensors_inherit_height(self):
         for cls in (
-            edm.TemperatureSensor,
-            edm.WindSpeedSensor,
-            edm.RadiationSensor,
-            edm.RainSensor,
-            edm.HumiditySensor,
+            edm.weather.TemperatureSensor,
+            edm.weather.WindSpeedSensor,
+            edm.weather.RadiationSensor,
+            edm.weather.RainSensor,
+            edm.weather.HumiditySensor,
         ):
             s = cls(name="s", height=1.5)
             assert s.height == 1.5
@@ -218,7 +218,7 @@ class TestCollection:
         assert isinstance(s, edm.Collection)
 
     def test_network_is_collection(self):
-        n = edm.Network(name="N")
+        n = edm.grid.Network(name="N")
         assert isinstance(n, edm.Collection)
 
 
@@ -227,7 +227,7 @@ class TestDiamondMRO:
         """Constructing a diamond class should initialize Element fields once."""
         from datetime import date
 
-        t = edm.WindTurbine(
+        t = edm.wind.WindTurbine(
             name="t",
             commissioning_date=date(2020, 1, 1),
             capacity=3.0,
@@ -242,7 +242,7 @@ class TestDiamondMRO:
         assert t.timeseries == []
 
     def test_line_construction(self):
-        l = edm.Line(
+        l = edm.grid.Line(
             name="L",
             from_entity=edm.Reference("A"),
             to_entity=edm.Reference("B"),

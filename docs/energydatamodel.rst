@@ -14,7 +14,7 @@ The energydatamodel package provides...
    energydatamodel/battery
    energydatamodel/hydro
    energydatamodel/heatpump
-   energydatamodel/powergrid
+   energydatamodel/grid
    energydatamodel/building
    energydatamodel/collection
-   energydatamodel/weathersensor
+   energydatamodel/weather

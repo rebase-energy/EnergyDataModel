@@ -12,15 +12,16 @@ from timedatamodel import DataType
 
 
 def _nordic_portfolio():
-    t01 = edm.WindTurbine(
-        name="T01", capacity=3.5,
+    t01 = edm.wind.WindTurbine(
+        name="T01",
+        capacity=3.5,
         timeseries=[edm.electricity_supply(unit="MW", data_type=DataType.FORECAST)],
     )
-    lillgrund = edm.WindFarm(name="Lillgrund", capacity=110, members=[t01])
+    lillgrund = edm.wind.WindFarm(name="Lillgrund", capacity=110, members=[t01])
     site = edm.Site(name="Sweden-Offshore", members=[lillgrund])
     se4 = edm.BiddingZone(name="SE4", timeseries=[edm.spot_price()])
     dk2 = edm.BiddingZone(name="DK2", timeseries=[edm.spot_price()])
-    icx = edm.Interconnection(
+    icx = edm.grid.Interconnection(
         name="SE4-DK2",
         from_entity=edm.Reference("SE4"),
         to_entity=edm.Reference("DK2"),
@@ -45,7 +46,7 @@ class TestRoundTrip:
     def test_references_resolved_after_from_json(self):
         p = _nordic_portfolio()
         restored = edm.Portfolio.from_json(p.to_json())
-        icx = next(m for m in restored.members if isinstance(m, edm.Interconnection))
+        icx = next(m for m in restored.members if isinstance(m, edm.grid.Interconnection))
         assert icx.from_entity.is_resolved()
         assert icx.to_entity.is_resolved()
         assert icx.from_entity.get().name == "SE4"
@@ -54,7 +55,7 @@ class TestRoundTrip:
     def test_unresolved_reference_raises_on_dump(self):
         # Canonical-path serialization fails fast when a string reference can't
         # be resolved against the root — caught at to_json, not at round-trip.
-        icx = edm.Interconnection(
+        icx = edm.grid.Interconnection(
             name="X",
             from_entity=edm.Reference("Ghost"),
             to_entity=edm.Reference("Ghost2"),
@@ -83,7 +84,7 @@ class TestRoundTrip:
 
     def test_reference_outside_tree_raises_on_dump(self):
         stranger = edm.BiddingZone(name="NO2")
-        icx = edm.Interconnection(
+        icx = edm.grid.Interconnection(
             name="X",
             from_entity=edm.Reference(stranger),
             to_entity=edm.Reference(stranger),
@@ -105,8 +106,9 @@ class TestRoundTrip:
 
 class TestTimeSeriesDescriptorSerialization:
     def test_descriptor_round_trip(self):
-        t = edm.WindTurbine(
-            name="T", capacity=3.0,
+        t = edm.wind.WindTurbine(
+            name="T",
+            capacity=3.0,
             timeseries=[edm.electricity_supply(unit="MW", data_type=DataType.FORECAST)],
         )
         wrapper = edm.Portfolio(name="w", members=[t])
@@ -133,7 +135,7 @@ class TestGeometryRoundTrip:
         assert out.equals(poly)
 
     def test_point_on_wind_turbine(self):
-        t = edm.WindTurbine(name="T", capacity=1.0, geometry=Point(13.0, 55.0))
+        t = edm.wind.WindTurbine(name="T", capacity=1.0, geometry=Point(13.0, 55.0))
         wrapper = edm.Portfolio(name="root", members=[t])
         restored = edm.Portfolio.from_json(wrapper.to_json())
         out = restored.members[0].geometry
@@ -144,19 +146,19 @@ class TestGeometryRoundTrip:
 
 class TestValueTypeRoundTrip:
     def test_carrier_round_trip(self):
-        carrier = edm.Carrier(name="electricity", type="renewable")
-        j = edm.JunctionPoint(name="J", carrier=carrier)
+        carrier = edm.grid.Carrier(name="electricity", type="renewable")
+        j = edm.grid.JunctionPoint(name="J", carrier=carrier)
         wrapper = edm.Portfolio(name="root", members=[j])
         restored = edm.Portfolio.from_json(wrapper.to_json())
         out = restored.members[0].carrier
-        assert isinstance(out, edm.Carrier)
+        assert isinstance(out, edm.grid.Carrier)
         assert out.name == "electricity"
         assert out.type == "renewable"
 
 
 class TestDateAndTzRoundTrip:
     def test_commissioning_date_round_trip(self):
-        b = edm.Battery(name="B", commissioning_date=date(2020, 6, 1))
+        b = edm.battery.Battery(name="B", commissioning_date=date(2020, 6, 1))
         wrapper = edm.Portfolio(name="root", members=[b])
         restored = edm.Portfolio.from_json(wrapper.to_json())
         out = restored.members[0]
@@ -170,6 +172,7 @@ class TestDateAndTzRoundTrip:
         out = restored.members[0].tz
         assert isinstance(out, tzinfo)
         assert getattr(out, "key", None) == "Europe/Stockholm"
+
 
 class TestSynchronousArea:
     def test_round_trip_with_nominal_frequency(self):
@@ -205,28 +208,38 @@ def _kitchen_sink_portfolio():
         a sibling — both exercise :class:`Reference` path resolution.
       * ``SynchronousArea`` with ``nominal_frequency``.
     """
-    t01 = edm.WindTurbine(
-        name="T01", capacity=3.5, hub_height=80,
+    t01 = edm.wind.WindTurbine(
+        name="T01",
+        capacity=3.5,
+        hub_height=80,
         geometry=Point(12.78, 55.51),
         commissioning_date=date(2019, 4, 1),
         timeseries=[edm.electricity_supply(unit="MW", data_type=DataType.FORECAST)],
     )
-    t02 = edm.WindTurbine(
-        name="T02", capacity=3.5, hub_height=80,
+    t02 = edm.wind.WindTurbine(
+        name="T02",
+        capacity=3.5,
+        hub_height=80,
         geometry=Point(12.79, 55.52),
         timeseries=[edm.electricity_supply(unit="MW", data_type=DataType.ACTUAL)],
     )
-    lillgrund = edm.WindFarm(name="Lillgrund", capacity=110, members=[t01, t02])
+    lillgrund = edm.wind.WindFarm(name="Lillgrund", capacity=110, members=[t01, t02])
 
-    bat = edm.Battery(
-        name="Bat1", storage_capacity=10, max_charge=5, max_discharge=5,
+    bat = edm.battery.Battery(
+        name="Bat1",
+        storage_capacity=10,
+        max_charge=5,
+        max_discharge=5,
         commissioning_date=date(2022, 1, 15),
     )
-    hp = edm.HeatPump(
-        name="HP1", capacity=8, cop=3.5, energy_source="electricity",
+    hp = edm.heatpump.HeatPump(
+        name="HP1",
+        capacity=8,
+        cop=3.5,
+        energy_source="electricity",
         timeseries=[edm.heating_demand(unit="kW")],
     )
-    house = edm.House(
+    house = edm.building.House(
         name="House-42",
         geometry=Point(11.97, 57.71),
         tz=ZoneInfo("Europe/Stockholm"),
@@ -244,34 +257,39 @@ def _kitchen_sink_portfolio():
     se4_poly = Polygon([(12.5, 55.0), (16.5, 55.0), (16.5, 58.0), (12.5, 58.0)])
     dk2_poly = Polygon([(11.0, 54.5), (12.8, 54.5), (12.8, 56.0), (11.0, 56.0)])
     se4 = edm.BiddingZone(
-        name="SE4", geometry=se4_poly,
+        name="SE4",
+        geometry=se4_poly,
         timeseries=[edm.spot_price(unit="EUR / MWh")],
     )
     dk2 = edm.BiddingZone(
-        name="DK2", geometry=dk2_poly,
+        name="DK2",
+        geometry=dk2_poly,
         timeseries=[edm.spot_price(unit="EUR / MWh")],
     )
     nsa = edm.SynchronousArea(
-        name="NSA-Nordic", nominal_frequency=50.0,
+        name="NSA-Nordic",
+        nominal_frequency=50.0,
         members=[se4, dk2],
         timeseries=[edm.grid_frequency()],
     )
 
-    electricity = edm.Carrier(name="electricity", type="renewable")
-    bus = edm.JunctionPoint(name="BusA", carrier=electricity)
+    electricity = edm.grid.Carrier(name="electricity", type="renewable")
+    bus = edm.grid.JunctionPoint(name="BusA", carrier=electricity)
 
-    icx_nested = edm.Interconnection(
+    icx_nested = edm.grid.Interconnection(
         name="Line-into-SE4",
         from_entity=edm.Reference("BusA"),
         to_entity=edm.Reference("NSA-Nordic/SE4"),
-        capacity_forward=1700, capacity_backward=1300,
+        capacity_forward=1700,
+        capacity_backward=1300,
         timeseries=[edm.cross_border_flow(unit="MW")],
     )
-    icx_sibling = edm.Interconnection(
+    icx_sibling = edm.grid.Interconnection(
         name="SE4-DK2",
         from_entity=edm.Reference("NSA-Nordic/SE4"),
         to_entity=edm.Reference("NSA-Nordic/DK2"),
-        capacity_forward=2000, capacity_backward=2000,
+        capacity_forward=2000,
+        capacity_backward=2000,
     )
 
     return edm.Portfolio(
@@ -305,9 +323,9 @@ class TestKitchenSinkRoundTrip:
         assert isinstance(site, edm.Site)
         # Site → [WindFarm, House]; WindFarm → [T01, T02]; House → [HP1, Bat1]
         farm, house = site.members
-        assert isinstance(farm, edm.WindFarm)
+        assert isinstance(farm, edm.wind.WindFarm)
         assert [t.name for t in farm.members] == ["T01", "T02"]
-        assert isinstance(house, edm.House)
+        assert isinstance(house, edm.building.House)
         assert {type(m).__name__ for m in house.members} == {"HeatPump", "Battery"}
 
     def test_geometry_types_preserved(self):
@@ -333,7 +351,7 @@ class TestKitchenSinkRoundTrip:
         # ``SE4`` and ``DK2`` live under NSA (nested), not as direct siblings
         # of the edges. Reference resolution must search the whole tree.
         restored = edm.Portfolio.from_json(_kitchen_sink_portfolio().to_json())
-        edges = [m for m in restored.members if isinstance(m, edm.Interconnection)]
+        edges = [m for m in restored.members if isinstance(m, edm.grid.Interconnection)]
         assert len(edges) == 2
         nested = next(e for e in edges if e.name == "Line-into-SE4")
         sibling = next(e for e in edges if e.name == "SE4-DK2")
@@ -347,8 +365,8 @@ class TestKitchenSinkRoundTrip:
 
     def test_value_types_and_dates_preserved(self):
         restored = edm.Portfolio.from_json(_kitchen_sink_portfolio().to_json())
-        bus = next(m for m in restored.members if isinstance(m, edm.JunctionPoint))
-        assert isinstance(bus.carrier, edm.Carrier)
+        bus = next(m for m in restored.members if isinstance(m, edm.grid.JunctionPoint))
+        assert isinstance(bus.carrier, edm.grid.Carrier)
         assert bus.carrier.type == "renewable"
 
         site = restored.members[0].members[0]
@@ -373,17 +391,22 @@ class TestKitchenSinkRoundTrip:
         restored = edm.Portfolio.from_json(js)
         assert restored._id == p._id
         # Descend to an asset and compare.
-        assert restored.members[0].members[0].members[0].members[0]._id == \
-               p.members[0].members[0].members[0].members[0]._id
+        assert (
+            restored.members[0].members[0].members[0].members[0]._id
+            == p.members[0].members[0].members[0].members[0]._id
+        )
 
 
 class TestExcludeFields:
     """Tests for the ``exclude_fields`` parameter on ``element_to_json`` / ``to_json``."""
 
     def test_exclude_members_produces_flat_dict(self):
-        p = edm.Portfolio(name="P", members=[
-            edm.Site(name="S", members=[edm.WindTurbine(name="T", capacity=3.0)]),
-        ])
+        p = edm.Portfolio(
+            name="P",
+            members=[
+                edm.Site(name="S", members=[edm.wind.WindTurbine(name="T", capacity=3.0)]),
+            ],
+        )
         js = p.to_json(exclude_fields={"members"})
         assert js["__type__"] == "Portfolio"
         assert js["name"] == "P"
@@ -391,9 +414,12 @@ class TestExcludeFields:
 
     def test_exclude_applies_recursively(self):
         # ``members`` excluded on every nested Element, not just the root.
-        portfolio = edm.Portfolio(name="P", members=[
-            edm.Site(name="S", members=[edm.WindTurbine(name="T", capacity=3.0)]),
-        ])
+        portfolio = edm.Portfolio(
+            name="P",
+            members=[
+                edm.Site(name="S", members=[edm.wind.WindTurbine(name="T", capacity=3.0)]),
+            ],
+        )
         # Exclude ``capacity`` — a leaf field — everywhere it appears.
         js = portfolio.to_json(exclude_fields={"capacity"})
         # The WindTurbine exists (members still included), but no capacity anywhere.
@@ -402,8 +428,10 @@ class TestExcludeFields:
         assert "capacity" not in turbine
 
     def test_exclude_from_to_entity_on_edge(self):
-        ic = edm.Interconnection(
-            name="IC", from_entity=edm.Reference("A"), to_entity=edm.Reference("B"),
+        ic = edm.grid.Interconnection(
+            name="IC",
+            from_entity=edm.Reference("A"),
+            to_entity=edm.Reference("B"),
             capacity_forward=1000,
         )
         # Reference dump normally requires root resolution, but exclusion bypasses it.
@@ -424,17 +452,23 @@ class TestElementToStorageDict:
     """Tests for ``element_to_storage_dict`` — the flat-row wrapper."""
 
     def test_excludes_children(self):
-        p = edm.Portfolio(name="Europe", members=[
-            edm.Site(name="Offshore", members=[edm.WindTurbine(name="T", capacity=3.0)]),
-        ])
+        p = edm.Portfolio(
+            name="Europe",
+            members=[
+                edm.Site(name="Offshore", members=[edm.wind.WindTurbine(name="T", capacity=3.0)]),
+            ],
+        )
         d = edm.element_to_storage_dict(p)
         assert d["__type__"] == "Portfolio"
         assert d["name"] == "Europe"
         assert "members" not in d
 
     def test_preserves_own_fields(self):
-        t = edm.WindTurbine(
-            name="T01", capacity=3.5, hub_height=80, geometry=Point(3.0, 55.0),
+        t = edm.wind.WindTurbine(
+            name="T01",
+            capacity=3.5,
+            hub_height=80,
+            geometry=Point(3.0, 55.0),
         )
         d = edm.element_to_storage_dict(t)
         assert d["__type__"] == "WindTurbine"
@@ -444,27 +478,29 @@ class TestElementToStorageDict:
         assert d["geometry"]["__geometry__"] is True
 
     def test_extra_excludes_for_edges(self):
-        line = edm.Line(
-            name="L1", capacity=500,
-            from_entity=edm.Reference("A"), to_entity=edm.Reference("B"),
+        line = edm.grid.Line(
+            name="L1",
+            capacity=500,
+            from_entity=edm.Reference("A"),
+            to_entity=edm.Reference("B"),
         )
-        d = edm.element_to_storage_dict(
-            line, extra_excludes={"from_entity", "to_entity"}
-        )
+        d = edm.element_to_storage_dict(line, extra_excludes={"from_entity", "to_entity"})
         assert d["__type__"] == "Line"
         assert d["capacity"] == 500
         assert "from_entity" not in d
         assert "to_entity" not in d
 
     def test_round_trip_single_element(self):
-        t = edm.WindTurbine(
-            name="T01", capacity=3.5, hub_height=80,
+        t = edm.wind.WindTurbine(
+            name="T01",
+            capacity=3.5,
+            hub_height=80,
             commissioning_date=date(2020, 1, 1),
             geometry=Polygon([(0, 0), (1, 0), (1, 1), (0, 1)]),
         )
         d = edm.element_to_storage_dict(t)
         restored = edm.element_from_json(d)
-        assert isinstance(restored, edm.WindTurbine)
+        assert isinstance(restored, edm.wind.WindTurbine)
         assert restored.name == "T01"
         assert restored.capacity == 3.5
         assert restored.hub_height == 80
@@ -479,8 +515,8 @@ class TestElementToStorageDict:
         assert str(restored.tz) == "Europe/Stockholm"
 
     def test_round_trip_preserves_sensor_height(self):
-        ts = edm.TemperatureSensor(name="Temp", height=10.0)
+        ts = edm.weather.TemperatureSensor(name="Temp", height=10.0)
         d = edm.element_to_storage_dict(ts)
         restored = edm.element_from_json(d)
-        assert isinstance(restored, edm.TemperatureSensor)
+        assert isinstance(restored, edm.weather.TemperatureSensor)
         assert restored.height == 10.0

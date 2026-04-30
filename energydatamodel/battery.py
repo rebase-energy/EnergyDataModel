@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 from energydatamodel.bases import NodeAsset
 
+__all__ = ["Battery"]
+
 
 @dataclass(repr=False, kw_only=True)
 class Battery(NodeAsset):

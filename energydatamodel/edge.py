@@ -7,7 +7,7 @@ between two buses, a pipe between two delivery points. Edges sit sibling to
 and ``tz`` off Edges, where they don't apply.
 
 Concrete edge-equipment subclasses (Line, Link, Transformer, Pipe,
-Interconnection) live in :mod:`energydatamodel.powergrid` under
+Interconnection) live in :mod:`energydatamodel.grid` under
 :class:`EdgeAsset`.
 """
 
@@ -36,6 +36,10 @@ class Edge(Element):
     to_entity: Reference[Node] | None = None
     directed: bool = True
 
-    _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset({
-        "from_entity", "to_entity", "directed",
-    })
+    _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset(
+        {
+            "from_entity",
+            "to_entity",
+            "directed",
+        }
+    )

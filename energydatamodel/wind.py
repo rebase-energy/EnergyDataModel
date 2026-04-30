@@ -9,6 +9,8 @@ import pandas as pd
 from energydatamodel.bases import NodeAsset
 from energydatamodel.element import Element
 
+__all__ = ["WindTurbine", "WindFarm", "WindPowerArea"]
+
 
 @dataclass(repr=False, kw_only=True)
 class WindTurbine(NodeAsset):
@@ -33,9 +35,7 @@ class WindFarm(NodeAsset):
 
     def add_child(self, obj: Element) -> None:
         if not isinstance(obj, WindTurbine):
-            raise TypeError(
-                f"WindFarm only accepts WindTurbine children, got {type(obj).__name__}"
-            )
+            raise TypeError(f"WindFarm only accepts WindTurbine children, got {type(obj).__name__}")
         self.members.append(obj)
 
 

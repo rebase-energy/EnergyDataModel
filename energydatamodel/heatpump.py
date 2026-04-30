@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 from energydatamodel.bases import NodeAsset
 
+__all__ = ["HeatPump"]
+
 
 @dataclass(repr=False, kw_only=True)
 class HeatPump(NodeAsset):
