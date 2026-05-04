@@ -1,5 +1,7 @@
 """Tests for Element, Node, Edge, Asset mixin, and the role intermediates."""
 
+from uuid import UUID
+
 import energydatamodel as edm
 import pytest
 from shapely.geometry import Point, Polygon
@@ -9,9 +11,19 @@ class TestElement:
     def test_instantiate_direct(self):
         e = edm.Element(name="root")
         assert e.name == "root"
-        assert e._id is None
+        assert isinstance(e.id, UUID)
         assert e.timeseries == []
         assert e.geometry is None
+
+    def test_id_unique_per_instance(self):
+        a = edm.Element(name="a")
+        b = edm.Element(name="b")
+        assert a.id != b.id
+
+    def test_id_preserved_when_passed(self):
+        custom = UUID("01970000-0000-7000-8000-000000000000")
+        e = edm.Element(name="x", id=custom)
+        assert e.id == custom
 
     def test_default_children_empty(self):
         e = edm.Element(name="x")
@@ -22,9 +34,8 @@ class TestElement:
         with pytest.raises(TypeError, match="does not support"):
             e.add_child(edm.Node(name="y"))
 
-    def test_id_ignored_by_tree_logic(self):
-        e = edm.Element(name="x", _id="abc-123")
-        assert e._id == "abc-123"
+    def test_id_excluded_from_to_properties(self):
+        e = edm.Element(name="x")
         assert e.to_properties() == {}
 
     def test_geometry_point_lat_lon(self):
@@ -91,15 +102,17 @@ class TestEdge:
         assert not hasattr(ic, "tz")
 
     def test_from_to_element_fields(self):
+        a = edm.BiddingZone(name="A")
+        b = edm.BiddingZone(name="B")
         ic = edm.grid.Interconnection(
             name="ic",
-            from_element=edm.Reference("A"),
-            to_element=edm.Reference("B"),
+            from_element=edm.Reference(a),
+            to_element=edm.Reference(b),
             capacity_forward=100,
             capacity_backward=80,
         )
-        assert ic.from_element is not None
-        assert ic.to_element is not None
+        assert ic.from_element.id == a.id
+        assert ic.to_element.id == b.id
         assert ic.directed is True
 
 
@@ -242,13 +255,15 @@ class TestDiamondMRO:
         assert t.timeseries == []
 
     def test_line_construction(self):
-        l = edm.grid.Line(
+        a = edm.grid.JunctionPoint(name="A")
+        b = edm.grid.JunctionPoint(name="B")
+        line = edm.grid.Line(
             name="L",
-            from_element=edm.Reference("A"),
-            to_element=edm.Reference("B"),
+            from_element=edm.Reference(a),
+            to_element=edm.Reference(b),
             capacity=100.0,
         )
-        assert l.name == "L"
-        assert l.capacity == 100.0
-        assert l.directed is True
-        assert l.from_element is not None
+        assert line.name == "L"
+        assert line.capacity == 100.0
+        assert line.directed is True
+        assert line.from_element.id == a.id

@@ -1,9 +1,10 @@
 """Tests for the user-extension story: subclass auto-registration and the
-``Element.extra`` ad-hoc field."""
+``Element.extra`` ad-hoc field (JSON scalars only)."""
 
 from dataclasses import dataclass
 
 import energydatamodel as edm
+import pytest
 from energydatamodel.json_io import _REGISTRY
 
 
@@ -55,7 +56,7 @@ class TestExtraField:
         e = edm.Site(name="x")
         assert e.extra == {}
 
-    def test_extra_roundtrips_with_nested_values(self):
+    def test_extra_roundtrips_with_nested_scalars(self):
         site = edm.Site(
             name="x",
             extra={
@@ -81,3 +82,11 @@ class TestExtraField:
         restored = edm.Element.from_json(e.to_json())
         assert isinstance(restored, Electrolyzer)
         assert restored.extra == {"site_code": "H2-A"}
+
+    def test_extra_rejects_non_scalar_values(self):
+        # `extra` is now restricted to JSON-native scalars. Use a typed
+        # subclass for typed values.
+        zone = edm.BiddingZone(name="Z")
+        e = Electrolyzer(name="EL-1", capacity_kw=5000, extra={"linked": zone})
+        with pytest.raises(TypeError, match="non-JSON-scalar"):
+            e.to_json()

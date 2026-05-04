@@ -17,10 +17,9 @@ sibling of Node under :class:`Element` — not a subclass of Node.
 from __future__ import annotations
 
 import datetime
-from dataclasses import dataclass, field
-from typing import ClassVar
+from dataclasses import dataclass
 
-from energydatamodel.element import Element
+from energydatamodel.element import Element, infra
 
 
 @dataclass(repr=False, kw_only=True)
@@ -30,16 +29,8 @@ class Node(Element):
     Subclassed by NodeAsset (equipment) and Area (administrative regions).
     """
 
-    members: list[Element] = field(default_factory=list)
-    tz: datetime.tzinfo | None = None
-
-    _BASE_FIELDS: ClassVar[frozenset] = Element._BASE_FIELDS | frozenset(
-        {
-            "members",
-            "tz",
-        }
-    )
-    _CHILDREN_FIELDS: ClassVar[frozenset] = frozenset({"members"})
+    members: list[Element] = infra(default_factory=list, children=True)
+    tz: datetime.tzinfo | None = infra(default=None)
 
     def children(self) -> list:
         return list(self.members)

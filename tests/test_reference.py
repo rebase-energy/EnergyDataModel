@@ -1,4 +1,6 @@
-"""Tests for Reference[T] — path-based cross-tree references."""
+"""Tests for Reference[T] — UUID-based cross-tree references and Index."""
+
+from uuid import UUID, uuid4
 
 import energydatamodel as edm
 import pytest
@@ -10,35 +12,83 @@ def _make_tree():
     dk2 = edm.BiddingZone(name="DK2")
     icx = edm.grid.Interconnection(
         name="SE4-DK2",
-        from_element=edm.Reference("SE4"),
-        to_element=edm.Reference("DK2"),
+        from_element=edm.Reference(se4),
+        to_element=edm.Reference(dk2),
     )
     return edm.Portfolio(name="Nordic", members=[se4, dk2, icx]), se4, dk2, icx
 
 
-class TestReference:
-    def test_unresolved_initially(self):
-        ref = edm.Reference("Nordic/SE4")
-        assert not ref.is_resolved()
-        with pytest.raises(UnresolvedReferenceError):
-            ref.get()
+class TestReferenceConstruction:
+    def test_from_element_captures_id(self):
+        zone = edm.BiddingZone(name="SE4")
+        ref = edm.Reference(zone)
+        assert ref.id == zone.id
+        assert ref.is_resolved()
 
+    def test_from_uuid(self):
+        u = uuid4()
+        ref = edm.Reference(u)
+        assert ref.id == u
+        assert not ref.is_resolved()
+
+    def test_from_uuid_str(self):
+        s = "01970000-0000-7000-8000-000000000000"
+        ref = edm.Reference(s)
+        assert ref.id == UUID(s)
+        assert not ref.is_resolved()
+
+    def test_invalid_target_type_raises(self):
+        with pytest.raises(TypeError):
+            edm.Reference(42)
+
+
+class TestResolve:
     def test_resolve_against_tree(self):
         portfolio, se4, _, icx = _make_tree()
-        icx.from_element.resolve(portfolio)
-        assert icx.from_element.is_resolved()
-        assert icx.from_element.get() is se4
+        # The Reference was constructed from an Element, so it's already
+        # resolved. Build a UUID-only Reference to exercise resolution.
+        ref = edm.Reference(se4.id)
+        assert not ref.is_resolved()
+        ref.resolve(portfolio)
+        assert ref.is_resolved()
+        assert ref.get() is se4
 
-    def test_resolve_unknown_raises(self):
+    def test_resolve_against_index(self):
+        portfolio, se4, _, _ = _make_tree()
+        index = portfolio.index()
+        ref = edm.Reference(se4.id)
+        assert ref.resolve(index) is se4
+
+    def test_resolve_unknown_uuid_raises(self):
         portfolio, *_ = _make_tree()
-        ref = edm.Reference("NotThere")
+        ref = edm.Reference(uuid4())
         with pytest.raises(UnresolvedReferenceError):
             ref.resolve(portfolio)
 
-    def test_path_of_resolved(self):
+    def test_resolve_is_idempotent(self):
         portfolio, se4, _, _ = _make_tree()
-        ref = edm.Reference(se4)
-        assert ref.path(portfolio) == "Nordic/SE4"
+        ref = edm.Reference(se4.id)
+        first = ref.resolve(portfolio)
+        second = ref.resolve(portfolio)
+        assert first is second is se4
+
+    def test_get_unresolved_raises(self):
+        ref = edm.Reference(uuid4())
+        with pytest.raises(UnresolvedReferenceError):
+            ref.get()
+
+
+class TestPathHelper:
+    """``Reference.path`` — debug helper, not part of the wire format."""
+
+    def test_path_of_resolved(self):
+        portfolio, _, _, _ = _make_tree()
+        t01 = edm.wind.WindTurbine(name="T01")
+        farm = edm.wind.WindFarm(name="Lillgrund", members=[t01])
+        site = edm.Site(name="Sweden", members=[farm])
+        portfolio = edm.Portfolio(name="Nordic", members=[site])
+        ref = edm.Reference(t01)
+        assert ref.path(portfolio) == ("Nordic", "Sweden", "Lillgrund", "T01")
 
     def test_path_outside_tree_raises(self):
         portfolio, *_ = _make_tree()
@@ -47,56 +97,63 @@ class TestReference:
         with pytest.raises(UnresolvedReferenceError):
             ref.path(portfolio)
 
-    def test_nested_path(self):
-        t01 = edm.wind.WindTurbine(name="T01", capacity=3.5)
-        farm = edm.wind.WindFarm(name="Lillgrund", members=[t01])
-        site = edm.Site(name="Sweden", members=[farm])
-        portfolio = edm.Portfolio(name="Nordic", members=[site])
-        ref = edm.Reference("Nordic/Sweden/Lillgrund/T01")
-        ref.resolve(portfolio)
-        assert ref.get() is t01
-
-
-class TestReferenceTuple:
-    """Tuple-form references: identity-as-path that's safe for names with /."""
-
-    def test_construct_from_tuple(self):
-        ref = edm.Reference(("Nordic", "SE4"))
-        assert ref.target == ("Nordic", "SE4")
-        assert not ref.is_resolved()
-
-    def test_construct_from_list_normalises_to_tuple(self):
-        ref = edm.Reference(["Nordic", "SE4"])
-        assert ref.target == ("Nordic", "SE4")
-
-    def test_resolve_tuple_against_tree(self):
-        portfolio, se4, *_ = _make_tree()
-        ref = edm.Reference(("Nordic", "SE4"))
-        assert ref.resolve(portfolio) is se4
-
-    def test_path_tuple_of_resolved(self):
-        portfolio, se4, _, _ = _make_tree()
-        ref = edm.Reference(se4)
-        assert ref.path_tuple(portfolio) == ("Nordic", "SE4")
-
-    def test_path_tuple_of_unresolved_string(self):
-        portfolio, *_ = _make_tree()
-        ref = edm.Reference("Nordic/SE4")
-        assert ref.path_tuple(portfolio) == ("Nordic", "SE4")
-
-    def test_path_tuple_of_unresolved_tuple(self):
-        portfolio, *_ = _make_tree()
-        ref = edm.Reference(("Nordic", "SE4"))
-        assert ref.path_tuple(portfolio) == ("Nordic", "SE4")
-
-    def test_name_with_slash_only_works_via_tuple(self):
+    def test_name_with_slash_preserved_in_path_tuple(self):
         weird = edm.BiddingZone(name="A/B")
         portfolio = edm.Portfolio(name="P", members=[weird])
-        # String-path resolution mis-parses 'A/B' as two segments → fails.
-        bad = edm.Reference("P/A/B")
+        ref = edm.Reference(weird)
+        assert ref.path(portfolio) == ("P", "A/B")
+
+
+class TestIndex:
+    def test_build_index_on_tree(self):
+        portfolio, se4, dk2, icx = _make_tree()
+        index = portfolio.index()
+        assert portfolio.id in index
+        assert se4.id in index
+        assert dk2.id in index
+        assert icx.id in index
+        assert index[se4.id] is se4
+
+    def test_index_size(self):
+        portfolio, *_ = _make_tree()
+        index = portfolio.index()
+        assert len(index) == 4  # Portfolio + SE4 + DK2 + Interconnection
+
+    def test_index_missing_raises(self):
+        portfolio, *_ = _make_tree()
+        index = portfolio.index()
         with pytest.raises(UnresolvedReferenceError):
-            bad.resolve(portfolio)
-        # Tuple form preserves the slash literally.
-        good = edm.Reference(("P", "A/B"))
-        assert good.resolve(portfolio) is weird
-        assert good.path_tuple(portfolio) == ("P", "A/B")
+            index[uuid4()]
+
+    def test_duplicate_uuid_raises(self):
+        a = edm.BiddingZone(name="A")
+        b = edm.BiddingZone(name="B", id=a.id)
+        portfolio = edm.Portfolio(name="P", members=[a, b])
+        with pytest.raises(ValueError, match="Duplicate UUID"):
+            portfolio.index()
+
+
+class TestEquality:
+    def test_eq_by_id(self):
+        zone = edm.BiddingZone(name="SE4")
+        a = edm.Reference(zone)
+        b = edm.Reference(zone.id)  # different object, same id
+        assert a == b
+        assert hash(a) == hash(b)
+
+    def test_neq_different_id(self):
+        a = edm.Reference(uuid4())
+        b = edm.Reference(uuid4())
+        assert a != b
+
+
+class TestEdgeAutoWrap:
+    def test_bare_element_endpoint_auto_wrapped(self):
+        """Edge.__post_init__ wraps bare Element endpoints in Reference."""
+        a = edm.BiddingZone(name="A")
+        b = edm.BiddingZone(name="B")
+        icx = edm.grid.Interconnection(name="X", from_element=a, to_element=b)
+        assert isinstance(icx.from_element, edm.Reference)
+        assert isinstance(icx.to_element, edm.Reference)
+        assert icx.from_element.id == a.id
+        assert icx.to_element.id == b.id

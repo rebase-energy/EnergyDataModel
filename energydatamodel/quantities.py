@@ -8,10 +8,10 @@ dotted metric string built from ``(Quantity, Kind, Scope)`` via
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class Quantity(str, Enum):
+class Quantity(StrEnum):
     ELECTRICITY = "electricity"
     HEATING = "heating"
     COOLING = "cooling"
@@ -21,7 +21,7 @@ class Quantity(str, Enum):
     FREQUENCY = "frequency"  # grid frequency in Hz (per synchronous area)
 
 
-class Kind(str, Enum):
+class Kind(StrEnum):
     DEMAND = "demand"
     SUPPLY = "supply"
     BALANCE = "balance"
@@ -30,7 +30,7 @@ class Kind(str, Enum):
     FLOW = "flow"
 
 
-class Scope(str, Enum):
+class Scope(StrEnum):
     POINT = "point"
     AREA = "area"
 

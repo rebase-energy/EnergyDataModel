@@ -9,7 +9,6 @@ import pandas as pd
 import pvlib
 
 from energydatamodel.bases import NodeAsset
-from energydatamodel.element import Element
 
 __all__ = [
     "FixedMount",
@@ -55,9 +54,9 @@ class PVArray(NodeAsset):
 class PVSystem(NodeAsset):
     """A PV system — an Asset that contains :class:`PVArray` members.
 
-    Stored in the inherited ``members`` list. ``add_child`` enforces the type
-    at runtime. The ``__post_init__`` auto-creates a single PVArray from
-    top-level params if none were supplied (back-compat convenience).
+    Stored in the inherited ``members`` list. Attach arrays explicitly with
+    ``pv_system.members.append(PVArray(...))`` or via ``add_child(...)`` —
+    no auto-creation.
     """
 
     capacity: float | None = None
@@ -70,32 +69,15 @@ class PVSystem(NodeAsset):
     module_type: str = "glass_polymer"
     racking_model: str = "open_rack"
 
-    def __post_init__(self, lat: float | None = None, lon: float | None = None):
-        super().__post_init__(lat, lon)
-        # Auto-create a PVArray from top-level params if no members were supplied.
-        if not self.members and all(v is not None for v in (self.capacity, self.surface_azimuth, self.surface_tilt)):
-            self.members.append(
-                PVArray(
-                    capacity=self.capacity,
-                    surface_azimuth=self.surface_azimuth,
-                    surface_tilt=self.surface_tilt,
-                )
-            )
-
-    def add_child(self, obj: Element) -> None:
-        if not isinstance(obj, PVArray):
-            raise TypeError(f"PVSystem only accepts PVArray children, got {type(obj).__name__}")
-        self.members.append(obj)
-
     def to_pvlib(self, **kwargs):
         if self.module_parameters is None:
             self.module_parameters = {"pdc0": self.capacity}
-        if "pdc0" not in self.module_parameters.keys():
+        if "pdc0" not in self.module_parameters:
             self.module_parameters["pdc0"] = self.capacity
 
         if self.inverter_parameters is None:
             self.inverter_parameters = {"pdc0": self.capacity}
-        if "pdc0" not in self.inverter_parameters.keys():
+        if "pdc0" not in self.inverter_parameters:
             self.inverter_parameters["pdc0"] = self.capacity
 
         return pvlib.pvsystem.PVSystem(

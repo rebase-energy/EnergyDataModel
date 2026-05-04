@@ -579,9 +579,9 @@ const cy = cytoscape({
   boxSelectionEnabled: false,
 });
 
-// Layout: ELK layered, compound-aware, top-down. Aspect ratio tuned to
-// be closer to 1:1 so the diagram makes use of vertical space rather
-// than sprawling horizontally.
+// Layout: ELK layered, compound-aware, left-to-right. Class names extend
+// horizontally, so a horizontal hierarchy lets siblings stack vertically
+// (compact) while the long axis carries the inheritance chain.
 const LAYOUT = {
   name: 'elk',
   fit: true,
@@ -591,7 +591,7 @@ const LAYOUT = {
   animationEasing: 'ease-out',
   elk: {
     'algorithm': 'layered',
-    'elk.direction': 'DOWN',
+    'elk.direction': 'RIGHT',
     'elk.layered.spacing.nodeNodeBetweenLayers': 55,
     'elk.spacing.nodeNode': 28,
     // Brandes-Köpf gives cleaner sibling alignment than NETWORK_SIMPLEX
@@ -600,9 +600,9 @@ const LAYOUT = {
     'elk.layered.nodePlacement.bk.fixedAlignment': 'BALANCED',
     'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
     'elk.layered.compaction.postCompaction.strategy': 'LEFT',
-    'elk.aspectRatio': 0.8,
+    'elk.aspectRatio': 1.6,
     'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
-    'elk.padding': '[top=24,left=18,bottom=18,right=18]',
+    'elk.padding': '[top=18,left=24,bottom=18,right=18]',
   }
 };
 

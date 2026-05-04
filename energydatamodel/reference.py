@@ -1,192 +1,211 @@
-"""Path-based cross-tree references.
+"""UUID-based cross-tree references and the Index lookup primitive.
 
-A ``Reference[T]`` points to another Element by its position in the tree
-(e.g. ``"Nordic/SE4"``) rather than by Python identity. The reference starts
-as a path string and is resolved to an Element object once the tree is loaded.
+A ``Reference[T]`` points to another Element by its stable :pyclass:`UUID`
+identity. Resolution against a tree builds an :class:`Index` (``dict[UUID,
+Element]`` produced by DFS) and uses it for O(1) lookup. References are
+valid the moment they're constructed — no two-pass deserialize.
+
+Path-shaped operations (``Reference.path(root)``) are still available for
+human display and debug, but are not part of the wire format.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING
+from uuid import UUID
 
 if TYPE_CHECKING:
     from energydatamodel.element import Element
-
-
-T = TypeVar("T", bound="Element")
 
 
 class UnresolvedReferenceError(LookupError):
     """Raised when a Reference can't be resolved against a tree."""
 
 
-class Reference(Generic[T]):
-    """Typed marker for a cross-tree reference to another Element.
+# ---------------------------------------------------------------------
+# Index
+# ---------------------------------------------------------------------
 
-    Stores one of:
 
-    * a slash-joined ``str`` path (legacy form)
-    * a ``tuple[str, ...]`` path (preserves names containing slashes)
-    * an :class:`Element` object (resolved form)
+class Index:
+    """``dict[UUID, Element]`` lookup, built once via DFS.
 
-    Used on fields like ``Edge.from_element`` / ``Edge.to_element``.
+    The Index is *not* live-tracked: mutate the tree after building, and
+    the Index goes stale. Rebuild via :func:`build_index` when needed.
     """
 
-    __slots__ = ("_target",)
+    __slots__ = ("_by_id",)
 
-    def __init__(self, target: str | tuple[str, ...] | Element):
-        if isinstance(target, list):
-            target = tuple(target)
-        self._target = target
+    def __init__(self, by_id: dict[UUID, Element] | None = None):
+        self._by_id: dict[UUID, Element] = dict(by_id) if by_id else {}
 
-    # -----------------------------------------------------------------
-    def is_resolved(self) -> bool:
-        return not isinstance(self._target, (str, tuple))
+    def __contains__(self, key: UUID) -> bool:
+        return key in self._by_id
 
+    def __getitem__(self, key: UUID) -> Element:
+        try:
+            return self._by_id[key]
+        except KeyError:
+            raise UnresolvedReferenceError(f"No Element with id {key!s} in this index.") from None
+
+    def __len__(self) -> int:
+        return len(self._by_id)
+
+    def __iter__(self):
+        return iter(self._by_id)
+
+    def get(self, key: UUID, default=None):
+        return self._by_id.get(key, default)
+
+    def add(self, element: Element) -> None:
+        self._by_id[element.id] = element
+
+
+def build_index(root: Element) -> Index:
+    """Walk ``root`` (DFS via ``children()``) and collect every Element by id.
+
+    Detects cycles: a node visited twice via the same ``id()`` raises
+    :class:`ValueError`. Duplicate UUIDs (same id on two distinct objects)
+    raise :class:`ValueError` — UUIDs are supposed to be unique.
+    """
+    by_id: dict[UUID, Element] = {}
+    seen: set[int] = set()
+
+    def _walk(node: Element) -> None:
+        py_id = id(node)
+        if py_id in seen:
+            return  # already visited via another path; skip silently
+        seen.add(py_id)
+        if node.id in by_id and by_id[node.id] is not node:
+            raise ValueError(
+                f"Duplicate UUID {node.id} on two different Elements "
+                f"({type(by_id[node.id]).__name__}, {type(node).__name__})"
+            )
+        by_id[node.id] = node
+        for child in node.children():
+            _walk(child)
+
+    _walk(root)
+    return Index(by_id)
+
+
+# ---------------------------------------------------------------------
+# Reference
+# ---------------------------------------------------------------------
+
+
+class Reference[T: "Element"]:
+    """A reference to another Element by its UUID.
+
+    Holds either:
+
+    * a :pyclass:`UUID` (canonical, on the wire)
+    * an :class:`Element` (resolved cache)
+
+    Usage::
+
+        Reference(other_element)        # captures other_element.id
+        Reference(uuid_obj)             # by id directly
+        ref.resolve(root)               # builds Index, looks up
+        ref.get()                       # raises if not yet resolved
+    """
+
+    __slots__ = ("_id", "_target")
+
+    def __init__(self, target: UUID | str | T):
+        from energydatamodel.element import Element
+
+        if isinstance(target, Element):
+            self._id: UUID = target.id
+            self._target: Element | None = target
+        elif isinstance(target, UUID):
+            self._id = target
+            self._target = None
+        elif isinstance(target, str):
+            # Accept str form for hand-edited JSON / CLI convenience.
+            self._id = UUID(target)
+            self._target = None
+        else:
+            raise TypeError(f"Reference target must be Element | UUID | str, got {type(target).__name__}")
+
+    # ------------------------------------------------------------------
     @property
-    def target(self) -> str | tuple[str, ...] | Element:
-        return self._target
+    def id(self) -> UUID:
+        """The UUID this reference points at."""
+        return self._id
+
+    def is_resolved(self) -> bool:
+        return self._target is not None
 
     def get(self) -> Element:
-        """Return the resolved Element. Raises if still a path."""
-        if isinstance(self._target, (str, tuple)):
-            raise UnresolvedReferenceError(f"Reference to {self._target!r} has not been resolved.")
+        """Return the resolved Element. Raises if not resolved yet.
+
+        Use :meth:`resolve` to resolve against a tree root first.
+        """
+        if self._target is None:
+            raise UnresolvedReferenceError(
+                f"Reference to {self._id!s} has not been resolved. Call ref.resolve(root) first."
+            )
         return self._target
 
-    # -----------------------------------------------------------------
-    def resolve(self, root: Element) -> Element:
-        """Resolve the reference against ``root``. Idempotent."""
-        if not isinstance(self._target, (str, tuple)):
+    def resolve(self, root_or_index: Element | Index) -> Element:
+        """Resolve against a tree root or a pre-built :class:`Index`.
+
+        Idempotent — once resolved, subsequent calls return the cached
+        Element without re-walking. Pass an :class:`Index` directly when
+        resolving many References against the same tree.
+        """
+        if self._target is not None:
             return self._target
-        obj = _lookup_by_path(root, self._target)
-        if obj is None:
-            raise UnresolvedReferenceError(
-                f"Reference {self._target!r} does not resolve against {type(root).__name__}"
-                f"({getattr(root, 'name', None)!r})"
-            )
-        self._target = obj
-        return obj
 
-    def path(self, root: Element) -> str:
-        """Canonical path from ``root`` to the target.
+        index = root_or_index if isinstance(root_or_index, Index) else build_index(root_or_index)
 
-        Returns the same canonical full path whether ``self`` holds a string
-        path, a tuple path, or a resolved Element. Does not mutate ``self``.
-        Raises ``UnresolvedReferenceError`` if the target is not reachable
-        from ``root``.
+        try:
+            self._target = index[self._id]
+        except KeyError:
+            raise UnresolvedReferenceError(f"Reference {self._id!s} does not resolve against the given tree.") from None
+        return self._target
+
+    # ------------------------------------------------------------------
+    # Optional path helper (debug only — not in the wire format)
+    # ------------------------------------------------------------------
+    def path(self, root: Element) -> tuple[str, ...]:
+        """Best-effort name path from ``root`` to the target.
+
+        Walks ``root.children()`` looking for the target object. Used for
+        human-readable display only — the wire format records UUID, not path.
+        Names containing ``/`` are preserved as separate tuple elements.
         """
-        return "/".join(self.path_tuple(root))
+        target_id = self._id
+        trail: list[str] = []
 
-    def path_tuple(self, root: Element) -> tuple[str, ...]:
-        """Canonical path from ``root`` to the target as a tuple of names.
+        def _walk(node) -> bool:
+            trail.append(getattr(node, "name", None) or type(node).__name__)
+            if getattr(node, "id", None) == target_id:
+                return True
+            for child in node.children():
+                if _walk(child):
+                    return True
+            trail.pop()
+            return False
 
-        Same semantics as :meth:`path` but returns ``tuple[str, ...]`` rather
-        than a slash-joined string. Use this where names may contain slashes
-        or other punctuation that would be ambiguous in a string-encoded path.
-        """
-        if isinstance(self._target, (str, tuple)):
-            obj = _lookup_by_path(root, self._target)
-            if obj is None:
-                raise UnresolvedReferenceError(
-                    f"Reference {self._target!r} does not resolve against "
-                    f"{type(root).__name__}({getattr(root, 'name', None)!r})"
-                )
-        else:
-            obj = self._target
-        parts = _path_to_parts(root, obj)
-        if parts is None:
-            raise UnresolvedReferenceError(
-                f"Referenced entity {getattr(obj, 'name', obj)!r} "
-                f"is not reachable from root {getattr(root, 'name', root)!r}."
-            )
-        return tuple(parts)
+        if _walk(root):
+            return tuple(trail)
+        raise UnresolvedReferenceError(
+            f"Target {self._id!s} not reachable from root {type(root).__name__}({getattr(root, 'name', None)!r})."
+        )
 
-    # -----------------------------------------------------------------
-    def __repr__(self):
-        if isinstance(self._target, (str, tuple)):
-            return f"Reference({self._target!r})"
+    # ------------------------------------------------------------------
+    def __repr__(self) -> str:
+        if self._target is None:
+            return f"Reference({self._id!s})"
         name = getattr(self._target, "name", None)
         return f"Reference(<{type(self._target).__name__}({name!r})>)"
 
-    def __eq__(self, other):
-        """Equality for References.
-
-        Resolved targets compare by **identity** (``is``), matching the id-based
-        hash so the Python hash/equality contract holds when References are used
-        as ``set`` or ``dict`` keys. Unresolved path targets (string or tuple)
-        compare by value. A resolved and an unresolved reference are never equal.
-        """
+    def __eq__(self, other) -> bool:
         if not isinstance(other, Reference):
             return NotImplemented
-        self_is_path = isinstance(self._target, (str, tuple))
-        other_is_path = isinstance(other._target, (str, tuple))
-        if self_is_path and other_is_path:
-            return self._target == other._target
-        if self_is_path or other_is_path:
-            return False
-        return self._target is other._target
+        return self._id == other._id
 
-    def __hash__(self):
-        if isinstance(self._target, (str, tuple)):
-            return hash(("Reference", self._target))
-        return hash(("Reference", id(self._target)))
-
-
-# ---------------------------------------------------------------------
-# tree lookup helpers
-# ---------------------------------------------------------------------
-
-
-def _lookup_by_path(root: Element, path: str | tuple[str, ...]) -> Element | None:
-    """Resolve a path by walking ``name``s.
-
-    Accepts either a slash-separated string (legacy) or a tuple of name
-    parts. Tuple form is preferred when names may contain slashes.
-    """
-    if isinstance(path, str):
-        parts: list[str] = [p for p in path.split("/") if p]
-    else:
-        parts = [p for p in path if p]
-    if not parts:
-        return None
-    # Accept either path with or without the root's own name prepended.
-    if getattr(root, "name", None) == parts[0]:
-        parts = parts[1:]
-    node = root
-    for part in parts:
-        found = None
-        for child in node.children():
-            if getattr(child, "name", None) == part:
-                found = child
-                break
-        if found is None:
-            return None
-        node = found
-    return node
-
-
-def _path_to(root: Element, target: Element) -> str | None:
-    """Compute path from root → target, return None if target is not in the tree."""
-    parts = _path_to_parts(root, target)
-    if parts is None:
-        return None
-    return "/".join(parts)
-
-
-def _path_to_parts(root: Element, target: Element) -> list[str] | None:
-    """Compute path from root → target as a list of names. ``None`` if not in tree."""
-    trail: list[str] = []
-
-    def walk(node) -> bool:
-        trail.append(getattr(node, "name", None) or type(node).__name__)
-        if node is target:
-            return True
-        for child in node.children():
-            if walk(child):
-                return True
-        trail.pop()
-        return False
-
-    if walk(root):
-        return list(trail)
-    return None
+    def __hash__(self) -> int:
+        return hash(("Reference", self._id))

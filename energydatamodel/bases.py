@@ -14,9 +14,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from energydatamodel.asset import Asset
+from energydatamodel.element import infra
 from energydatamodel.node import Node
 
 if TYPE_CHECKING:
@@ -37,8 +38,6 @@ class NodeAsset(Node, Asset):
     all inherit from here. Single inheritance below this point.
     """
 
-    _BASE_FIELDS: ClassVar[frozenset] = Node._BASE_FIELDS | Asset._BASE_FIELDS
-
 
 # ---------------------------------------------------------------------
 # Sensor — measurement instruments
@@ -53,9 +52,7 @@ class Sensor(NodeAsset):
     inherit ``height`` from here and add no new fields.
     """
 
-    height: float | None = None
-
-    _BASE_FIELDS: ClassVar[frozenset] = NodeAsset._BASE_FIELDS | frozenset({"height"})
+    height: float | None = infra(default=None)
 
 
 # ---------------------------------------------------------------------
@@ -72,6 +69,4 @@ class GridNode(NodeAsset):
     assets by carrying a ``carrier``.
     """
 
-    carrier: Carrier | None = None
-
-    _BASE_FIELDS: ClassVar[frozenset] = NodeAsset._BASE_FIELDS | frozenset({"carrier"})
+    carrier: Carrier | None = infra(default=None)

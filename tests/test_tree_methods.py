@@ -48,6 +48,12 @@ class TestChildren:
         assert len(children) == 1
         assert isinstance(children[0], edm.solar.PVArray)
 
+    def test_pvsystem_does_not_auto_create_array(self):
+        # The old back-compat behavior of auto-creating a PVArray from
+        # top-level capacity/tilt/azimuth is gone — empty PVSystem stays empty.
+        pv = edm.solar.PVSystem(name="PV", capacity=5, surface_azimuth=180, surface_tilt=25)
+        assert pv.members == []
+
     def test_windturbine_no_children(self):
         t = edm.wind.WindTurbine(name="T01", capacity=3.5)
         assert t.children() == []
@@ -139,11 +145,13 @@ class TestAddChild:
         farm.add_child(t)
         assert len(farm.members) == 1
 
-    def test_windfarm_reject_non_turbine(self):
+    def test_windfarm_accepts_any_element(self):
+        # Real wind farms contain met masts, transformers, substations, ...
+        # so add_child accepts any Element, not just WindTurbine.
         farm = edm.wind.WindFarm(name="Lillgrund", capacity=110)
-        pv = edm.solar.PVSystem(name="PV01", capacity=10)
-        with pytest.raises(TypeError, match="WindTurbine"):
-            farm.add_child(pv)
+        bus = edm.grid.JunctionPoint(name="Bus1")
+        farm.add_child(bus)
+        assert len(farm.members) == 1
 
     def test_pvsystem_add_array(self):
         pv = edm.solar.PVSystem(name="PV01")
@@ -151,11 +159,12 @@ class TestAddChild:
         pv.add_child(arr)
         assert len(pv.members) == 1
 
-    def test_pvsystem_reject_non_array(self):
+    def test_pvsystem_accepts_any_element(self):
+        # PVSystem no longer enforces PVArray-only children.
         pv = edm.solar.PVSystem(name="PV01")
-        t = edm.wind.WindTurbine(name="T01", capacity=3.5)
-        with pytest.raises(TypeError, match="PVArray"):
-            pv.add_child(t)
+        sensor = edm.weather.RadiationSensor(name="R1", height=2.0)
+        pv.add_child(sensor)
+        assert len(pv.members) == 1
 
     def test_building_add_asset(self):
         b = edm.building.Building(name="B1")

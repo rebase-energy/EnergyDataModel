@@ -19,6 +19,7 @@ dependencies = [
     "shapely>=2.0.7",
     "timedatamodel>=0.2.1",
     "tzdata; sys_platform == 'win32'",
+    "uuid6>=2024.1",
 ]
 
 [project.urls]

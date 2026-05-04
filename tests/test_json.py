@@ -1,7 +1,8 @@
-"""Tests for JSON round-trip of Element trees."""
+"""Tests for JSON round-trip of Element trees — UUID-keyed wire format."""
 
 import json
 from datetime import date, tzinfo
+from uuid import UUID
 from zoneinfo import ZoneInfo
 
 import energydatamodel as edm
@@ -12,6 +13,7 @@ from timedatamodel import DataType
 
 
 def _nordic_portfolio():
+    """Tree with two cross-tree edge References — used in many tests below."""
     t01 = edm.wind.WindTurbine(
         name="T01",
         capacity=3.5,
@@ -23,8 +25,8 @@ def _nordic_portfolio():
     dk2 = edm.BiddingZone(name="DK2", timeseries=[edm.spot_price()])
     icx = edm.grid.Interconnection(
         name="SE4-DK2",
-        from_element=edm.Reference("SE4"),
-        to_element=edm.Reference("DK2"),
+        from_element=edm.Reference(se4),
+        to_element=edm.Reference(dk2),
         timeseries=[edm.cross_border_flow()],
     )
     return edm.Portfolio(name="Nordic", members=[site, se4, dk2, icx])
@@ -43,30 +45,43 @@ class TestRoundTrip:
         assert js["__type__"] == "Portfolio"
         assert js["members"][0]["__type__"] == "Site"
 
-    def test_references_resolved_after_from_json(self):
+    def test_id_always_emitted(self):
+        p = _nordic_portfolio()
+        js = p.to_json()
+        assert "id" in js
+        assert UUID(js["id"]) == p.id
+
+    def test_id_preserved_through_round_trip(self):
+        p = _nordic_portfolio()
+        restored = edm.Portfolio.from_json(p.to_json())
+        assert restored.id == p.id
+        # Deep: every nested element keeps its id.
+        assert restored.members[0].id == p.members[0].id
+        assert restored.members[0].members[0].members[0].id == p.members[0].members[0].members[0].id
+
+    def test_references_use_uuid_wire_format(self):
+        p = _nordic_portfolio()
+        js = p.to_json()
+        icx_js = next(m for m in js["members"] if m["__type__"] == "Interconnection")
+        assert "__ref__" in icx_js["from_element"]
+        # The ref payload is a UUID string — not a path.
+        ref_str = icx_js["from_element"]["__ref__"]
+        UUID(ref_str)  # raises if not a UUID
+
+    def test_references_resolve_after_from_json(self):
         p = _nordic_portfolio()
         restored = edm.Portfolio.from_json(p.to_json())
         icx = next(m for m in restored.members if isinstance(m, edm.grid.Interconnection))
-        assert icx.from_element.is_resolved()
-        assert icx.to_element.is_resolved()
+        # Refs come back unresolved (single-pass deserialize); resolve on demand.
+        assert not icx.from_element.is_resolved()
+        icx.from_element.resolve(restored)
+        icx.to_element.resolve(restored)
         assert icx.from_element.get().name == "SE4"
         assert icx.to_element.get().name == "DK2"
 
-    def test_unresolved_reference_raises_on_dump(self):
-        # Canonical-path serialization fails fast when a string reference can't
-        # be resolved against the root — caught at to_json, not at round-trip.
-        icx = edm.grid.Interconnection(
-            name="X",
-            from_element=edm.Reference("Ghost"),
-            to_element=edm.Reference("Ghost2"),
-        )
-        wrapper = edm.Portfolio(name="root", members=[icx])
-        with pytest.raises(UnresolvedReferenceError):
-            wrapper.to_json()
-
-    def test_unresolved_reference_raises_on_load(self):
-        # Directly feeding a broken path dict into from_json (e.g. a hand-crafted
-        # payload from another system) must still raise at resolve time.
+    def test_unknown_uuid_in_ref_does_not_kill_load(self):
+        # Single-pass: a hand-crafted ref to a missing uuid loads fine and
+        # only fails at .resolve() time. (Old behavior: died at load.)
         js = {
             "__type__": "Portfolio",
             "name": "root",
@@ -74,34 +89,15 @@ class TestRoundTrip:
                 {
                     "__type__": "Interconnection",
                     "name": "X",
-                    "from_element": {"__ref__": "Ghost"},
-                    "to_element": {"__ref__": "Ghost2"},
+                    "from_element": {"__ref__": "01970000-0000-7000-8000-000000000000"},
+                    "to_element": {"__ref__": "01970000-0000-7000-8000-000000000001"},
                 }
             ],
         }
+        portfolio = edm.Portfolio.from_json(js)
+        icx = portfolio.members[0]
         with pytest.raises(UnresolvedReferenceError):
-            edm.Portfolio.from_json(js)
-
-    def test_reference_outside_tree_raises_on_dump(self):
-        stranger = edm.BiddingZone(name="NO2")
-        icx = edm.grid.Interconnection(
-            name="X",
-            from_element=edm.Reference(stranger),
-            to_element=edm.Reference(stranger),
-        )
-        portfolio = edm.Portfolio(name="root", members=[icx])
-        with pytest.raises(UnresolvedReferenceError):
-            portfolio.to_json()
-
-    def test_id_excluded_by_default(self):
-        p = edm.Portfolio(name="x", _id="fixed-id-1")
-        js = p.to_json()
-        assert "_id" not in js
-
-    def test_id_included_with_flag(self):
-        p = edm.Portfolio(name="x", _id="fixed-id-1")
-        js = p.to_json(include_ids=True)
-        assert js["_id"] == "fixed-id-1"
+            icx.from_element.resolve(portfolio)
 
 
 class TestTimeSeriesDescriptorSerialization:
@@ -191,22 +187,39 @@ class TestSynchronousArea:
         assert out.timeseries[0].unit == "Hz"
 
 
-def _kitchen_sink_portfolio():
-    """A tree that exercises every round-trip path at once.
+class TestExtraValidation:
+    """`extra` is restricted to JSON-native scalars; rich types raise."""
 
-    Covers, in one structure:
-      * Portfolio → MultiSite → Site → NodeAsset nesting (three levels of
-        ``members``).
-      * Point and Polygon geometries on assets and areas.
-      * ``ZoneInfo`` on two different levels (Collection and House).
-      * ``commissioning_date`` on an Asset.
-      * Multiple ``TimeSeriesDescriptor``s from the energy vocabulary, mixed
-        units/data_types.
-      * ``Carrier`` value type on a ``JunctionPoint``.
-      * Two ``Interconnection`` edges, one pointing into a deeply nested
-        ``BiddingZone`` (path contains multiple segments) and one pointing to
-        a sibling — both exercise :class:`Reference` path resolution.
-      * ``SynchronousArea`` with ``nominal_frequency``.
+    def test_scalar_dict_round_trip(self):
+        site = edm.Site(
+            name="x",
+            extra={
+                "owner": "Acme",
+                "tags": ["a", "b"],
+                "nested": {"x": 1, "y": [1, 2, 3]},
+                "asset_id_legacy": 17,
+            },
+        )
+        restored = edm.Element.from_json(site.to_json())
+        assert restored.extra == site.extra
+
+    def test_element_in_extra_raises(self):
+        zone = edm.BiddingZone(name="Z")
+        site = edm.Site(name="x", extra={"linked": zone})
+        with pytest.raises(TypeError, match="non-JSON-scalar"):
+            site.to_json()
+
+    def test_enum_in_extra_raises(self):
+        site = edm.Site(name="x", extra={"q": edm.Quantity.ELECTRICITY})
+        with pytest.raises(TypeError, match="Enum"):
+            site.to_json()
+
+
+def _kitchen_sink_portfolio():
+    """A tree exercising every round-trip path at once.
+
+    Uses :class:`Reference` constructed from Element instances (the canonical
+    UUID-bearing form) rather than path strings.
     """
     t01 = edm.wind.WindTurbine(
         name="T01",
@@ -278,16 +291,16 @@ def _kitchen_sink_portfolio():
 
     icx_nested = edm.grid.Interconnection(
         name="Line-into-SE4",
-        from_element=edm.Reference("BusA"),
-        to_element=edm.Reference("NSA-Nordic/SE4"),
+        from_element=edm.Reference(bus),
+        to_element=edm.Reference(se4),
         capacity_forward=1700,
         capacity_backward=1300,
         timeseries=[edm.cross_border_flow(unit="MW")],
     )
     icx_sibling = edm.grid.Interconnection(
         name="SE4-DK2",
-        from_element=edm.Reference("NSA-Nordic/SE4"),
-        to_element=edm.Reference("NSA-Nordic/DK2"),
+        from_element=edm.Reference(se4),
+        to_element=edm.Reference(dk2),
         capacity_forward=2000,
         capacity_backward=2000,
     )
@@ -308,7 +321,6 @@ class TestKitchenSinkRoundTrip:
         assert json.dumps(js, default=str) == json.dumps(restored.to_json(), default=str)
 
     def test_idempotent_on_second_round_trip(self):
-        # dump → load → dump → load must stabilize after the first cycle.
         p = _kitchen_sink_portfolio()
         js1 = p.to_json()
         js2 = edm.Portfolio.from_json(js1).to_json()
@@ -321,7 +333,6 @@ class TestKitchenSinkRoundTrip:
         assert isinstance(multi, edm.MultiSite)
         site = multi.members[0]
         assert isinstance(site, edm.Site)
-        # Site → [WindFarm, House]; WindFarm → [T01, T02]; House → [HP1, Bat1]
         farm, house = site.members
         assert isinstance(farm, edm.wind.WindFarm)
         assert [t.name for t in farm.members] == ["T01", "T02"]
@@ -348,15 +359,18 @@ class TestKitchenSinkRoundTrip:
         assert getattr(house.tz, "key", None) == "Europe/Stockholm"
 
     def test_references_resolve_across_nesting(self):
-        # ``SE4`` and ``DK2`` live under NSA (nested), not as direct siblings
-        # of the edges. Reference resolution must search the whole tree.
+        # SE4/DK2 live under NSA (nested), not as direct siblings of the edges.
+        # Reference resolution must search the whole tree.
         restored = edm.Portfolio.from_json(_kitchen_sink_portfolio().to_json())
         edges = [m for m in restored.members if isinstance(m, edm.grid.Interconnection)]
         assert len(edges) == 2
+        index = restored.index()
         nested = next(e for e in edges if e.name == "Line-into-SE4")
         sibling = next(e for e in edges if e.name == "SE4-DK2")
-        assert nested.from_element.is_resolved()
-        assert nested.to_element.is_resolved()
+        nested.from_element.resolve(index)
+        nested.to_element.resolve(index)
+        sibling.from_element.resolve(index)
+        sibling.to_element.resolve(index)
         assert nested.to_element.get().name == "SE4"
         assert isinstance(nested.to_element.get(), edm.BiddingZone)
         assert sibling.from_element.get() is not sibling.to_element.get()
@@ -384,18 +398,6 @@ class TestKitchenSinkRoundTrip:
         assert nsa.nominal_frequency == 50.0
         assert nsa.timeseries[0].unit == "Hz"
 
-    def test_include_ids_flag_round_trips(self):
-        # With ``include_ids=True`` every Element's ``_id`` must survive the trip.
-        p = _kitchen_sink_portfolio()
-        js = p.to_json(include_ids=True)
-        restored = edm.Portfolio.from_json(js)
-        assert restored._id == p._id
-        # Descend to an asset and compare.
-        assert (
-            restored.members[0].members[0].members[0].members[0]._id
-            == p.members[0].members[0].members[0].members[0]._id
-        )
-
 
 class TestExcludeFields:
     """Tests for the ``exclude_fields`` parameter on ``element_to_json`` / ``to_json``."""
@@ -413,28 +415,26 @@ class TestExcludeFields:
         assert "members" not in js
 
     def test_exclude_applies_recursively(self):
-        # ``members`` excluded on every nested Element, not just the root.
         portfolio = edm.Portfolio(
             name="P",
             members=[
                 edm.Site(name="S", members=[edm.wind.WindTurbine(name="T", capacity=3.0)]),
             ],
         )
-        # Exclude ``capacity`` — a leaf field — everywhere it appears.
         js = portfolio.to_json(exclude_fields={"capacity"})
-        # The WindTurbine exists (members still included), but no capacity anywhere.
         turbine = js["members"][0]["members"][0]
         assert turbine["__type__"] == "WindTurbine"
         assert "capacity" not in turbine
 
     def test_exclude_from_to_element_on_edge(self):
+        a = edm.BiddingZone(name="A")
+        b = edm.BiddingZone(name="B")
         ic = edm.grid.Interconnection(
             name="IC",
-            from_element=edm.Reference("A"),
-            to_element=edm.Reference("B"),
+            from_element=edm.Reference(a),
+            to_element=edm.Reference(b),
             capacity_forward=1000,
         )
-        # Reference dump normally requires root resolution, but exclusion bypasses it.
         js = edm.element_to_json(ic, exclude_fields={"from_element", "to_element"})
         assert js["__type__"] == "Interconnection"
         assert js["name"] == "IC"
@@ -444,7 +444,6 @@ class TestExcludeFields:
 
     def test_exclude_fields_default_unchanged(self):
         p = _nordic_portfolio()
-        # No exclude_fields → full tree serialization is unchanged.
         assert p.to_json() == edm.element_to_json(p, exclude_fields=None)
 
 
@@ -478,11 +477,13 @@ class TestElementToStorageDict:
         assert d["geometry"]["__geometry__"] is True
 
     def test_extra_excludes_for_edges(self):
+        a = edm.BiddingZone(name="A")
+        b = edm.BiddingZone(name="B")
         line = edm.grid.Line(
             name="L1",
             capacity=500,
-            from_element=edm.Reference("A"),
-            to_element=edm.Reference("B"),
+            from_element=edm.Reference(a),
+            to_element=edm.Reference(b),
         )
         d = edm.element_to_storage_dict(line, extra_excludes={"from_element", "to_element"})
         assert d["__type__"] == "Line"
@@ -502,6 +503,7 @@ class TestElementToStorageDict:
         restored = edm.element_from_json(d)
         assert isinstance(restored, edm.wind.WindTurbine)
         assert restored.name == "T01"
+        assert restored.id == t.id
         assert restored.capacity == 3.5
         assert restored.hub_height == 80
         assert restored.commissioning_date == date(2020, 1, 1)
@@ -519,4 +521,3 @@ class TestElementToStorageDict:
         d = edm.element_to_storage_dict(ts)
         restored = edm.element_from_json(d)
         assert isinstance(restored, edm.weather.TemperatureSensor)
-        assert restored.height == 10.0

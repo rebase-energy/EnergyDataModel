@@ -7,7 +7,6 @@ from dataclasses import dataclass
 import pandas as pd
 
 from energydatamodel.bases import NodeAsset
-from energydatamodel.element import Element
 
 __all__ = ["WindTurbine", "WindFarm", "WindPowerArea"]
 
@@ -26,17 +25,13 @@ class WindTurbine(NodeAsset):
 class WindFarm(NodeAsset):
     """A wind farm — an Asset that contains :class:`WindTurbine` members.
 
-    Stored in the inherited ``members`` list (no separate typed field).
-    ``add_child`` enforces the type at runtime.
+    Members are stored in the inherited ``members`` list. Real wind farms
+    can also contain met masts, transformers and substations, so children
+    aren't restricted to ``WindTurbine`` — any :class:`Element` is accepted.
     """
 
     capacity: float | pd.DataFrame | None = None
     farm_efficiency: pd.DataFrame | None = None
-
-    def add_child(self, obj: Element) -> None:
-        if not isinstance(obj, WindTurbine):
-            raise TypeError(f"WindFarm only accepts WindTurbine children, got {type(obj).__name__}")
-        self.members.append(obj)
 
 
 @dataclass(repr=False, kw_only=True)

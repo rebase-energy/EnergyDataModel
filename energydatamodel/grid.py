@@ -15,7 +15,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import ClassVar
 
 from energydatamodel.asset import Asset
 from energydatamodel.bases import GridNode
@@ -56,8 +55,6 @@ class EdgeAsset(Edge, Asset):
     Single mixin point on the edge side. Concrete edge equipment classes
     (``Line``, ``Link``, ``Pipe``, ``Interconnection``) single-inherit from here.
     """
-
-    _BASE_FIELDS: ClassVar[frozenset] = Edge._BASE_FIELDS | Asset._BASE_FIELDS
 
 
 # --------------------------------------------------------------------- Nodes

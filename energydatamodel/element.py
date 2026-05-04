@@ -3,9 +3,11 @@
 ``Element`` is the shared base for everything in the model. It carries the
 fields that any persistable, named, geometry-bearing object needs:
 
-* ``name``, ``_id`` — identity
+* ``id`` — a stable UUID7, generated at construction
+* ``name`` — human label (display / CLI navigation)
 * ``timeseries`` — descriptors of attached time series
 * ``geometry`` — optional shapely geometry (Point, Polygon, LineString, ...)
+* ``extra`` — open dict of JSON-native scalars
 
 Sibling subtrees specialize ``Element``:
 
@@ -20,30 +22,90 @@ Sibling subtrees specialize ``Element``:
 * :class:`Collection` (in :mod:`energydatamodel.containers`) — groupings
   that aren't graph vertices (Portfolio, Site, Region, ...).
 
-``Element`` is abstract in spirit (never instantiated directly) but is a
-concrete dataclass so subclasses can ``super().__init__(...)`` cleanly.
+Identity is a UUID7 assigned at construction. The same Element instance keeps
+its ``id`` across renames and across JSON round-trips.
 """
 
 from __future__ import annotations
 
-import dataclasses
+from collections.abc import Callable
 from dataclasses import InitVar, dataclass, field, fields
-from typing import ClassVar
+from typing import Any, cast, overload
+from uuid import UUID
 
 import pandas as pd
 from shapely.geometry import LineString, Point, Polygon, mapping
 from shapely.geometry.base import BaseGeometry
 from timedatamodel import TimeSeriesDescriptor
+from uuid6 import uuid7
+
+# ---------------------------------------------------------------------
+# Field-metadata helpers
+# ---------------------------------------------------------------------
+#
+# Each Element field is tagged with one of two roles:
+#
+#   - "infra"    : framework-owned (id, name, geometry, timeseries, extra,
+#                  members, tz, commissioning_date, from_element, ...).
+#                  Excluded from ``to_properties()``.
+#   - "domain"   : everything else. The default if no metadata is set.
+#
+# ``infra(children=True)`` additionally marks a children-bearing field
+# (``members``), so that ``element_to_storage_dict`` can drop it when
+# the row is written flat (children stored via FK in DB).
+#
+# Concrete subclasses don't need to mark their domain fields — only
+# framework infra fields use ``infra(...)``.
+
+
+@overload
+def infra[T](*, default: T, children: bool = False) -> T: ...
+@overload
+def infra[T](*, default_factory: Callable[[], T], children: bool = False) -> T: ...
+@overload
+def infra(*, children: bool = False) -> Any: ...
+
+
+def infra(
+    *,
+    default: Any = None,
+    default_factory: Callable[[], Any] | None = None,
+    children: bool = False,
+) -> Any:
+    """Build a dataclass ``field`` marked as framework infrastructure.
+
+    Use in place of ``dataclasses.field`` for any non-domain attribute
+    declared on an Element subclass::
+
+        my_field: T = infra(default=None)
+        members: list[Element] = infra(default_factory=list, children=True)
+    """
+    metadata = {"role": "infra", "children": children}
+    if default_factory is not None:
+        return cast(Any, field(default_factory=default_factory, metadata=metadata))
+    return cast(Any, field(default=default, metadata=metadata))
+
+
+def is_infra_field(f) -> bool:
+    """``True`` if a dataclass field is framework infrastructure (excluded
+    from :meth:`Element.to_properties`)."""
+    return f.metadata.get("role") == "infra"
+
+
+def is_children_field(f) -> bool:
+    """``True`` if a dataclass field holds child Elements (excluded from
+    flat storage rows)."""
+    return f.metadata.get("children") is True
 
 
 def _tree_repr(obj, prefix: str = "", is_last: bool = True, is_root: bool = True) -> str:
     """Render a tree representation of an Element hierarchy via ``.children()``."""
     name = getattr(obj, "name", None)
     label = f"{type(obj).__name__}('{name}')" if name else f"{type(obj).__name__}()"
-    connector = "" if is_root else ("\u2514\u2500\u2500 " if is_last else "\u251c\u2500\u2500 ")
+    connector = "" if is_root else ("└── " if is_last else "├── ")
     lines = [prefix + connector + label]
     children = obj.children()
-    child_prefix = prefix + ("" if is_root else ("    " if is_last else "\u2502   "))
+    child_prefix = prefix + ("" if is_root else ("    " if is_last else "│   "))
     for i, child in enumerate(children):
         lines.append(_tree_repr(child, child_prefix, i == len(children) - 1, is_root=False))
     return "\n".join(lines)
@@ -53,23 +115,23 @@ def _tree_repr(obj, prefix: str = "", is_last: bool = True, is_root: bool = True
 class Element:
     """Common base for every persistable object in EDM.
 
-    Carries the fields shared by Nodes, Edges, Assets and Collections:
-    name, id, attached time-series descriptors, an optional shapely
-    geometry, and an ``extra`` dict for ad-hoc fields.
+    Identity is a UUID7 generated at construction. ``name`` is a mutable
+    human label; renames don't change the ``id``.
 
     Subclasses are auto-registered for JSON dispatch via
     ``__init_subclass__`` — defining ``class Foo(NodeAsset): ...`` is enough
     for round-trip serialization, no decorator required.
     """
 
-    name: str | None = None
-    _id: str | None = None
-    timeseries: list[TimeSeriesDescriptor] = field(default_factory=list)
-    geometry: BaseGeometry | None = None
-    # Free-form bag for ad-hoc fields not modeled here. Round-trips through JSON
-    # as long as values are JSON-native, shapely geometries, enums, dataclasses,
-    # or other registered EDM types — other types fall through to ``repr()``.
-    extra: dict = field(default_factory=dict)
+    id: UUID = field(default_factory=uuid7, metadata={"role": "infra"})
+    name: str | None = field(default=None, metadata={"role": "infra"})
+    timeseries: list[TimeSeriesDescriptor] = field(default_factory=list, metadata={"role": "infra"})
+    geometry: BaseGeometry | None = field(default=None, metadata={"role": "infra"})
+    # Free-form bag for ad-hoc scalar fields not modeled here. Restricted to
+    # JSON-native scalars (str / int / float / bool / None) plus nested
+    # dict / list of same. EDM types and enums are *not* allowed — define a
+    # typed subclass instead.
+    extra: dict = field(default_factory=dict, metadata={"role": "infra"})
     lat: InitVar[float | None] = None
     lon: InitVar[float | None] = None
 
@@ -83,20 +145,6 @@ class Element:
         from energydatamodel.json_io import _REGISTRY
 
         _REGISTRY[cls.__name__] = cls
-
-    # Fields excluded from ``to_properties()`` — stored as top-level DB columns
-    # or handled by the serialization layer directly.
-    _BASE_FIELDS: ClassVar[frozenset] = frozenset(
-        {
-            "name",
-            "_id",
-            "timeseries",
-            "geometry",
-            "extra",
-        }
-    )
-    # Fields that hold child objects — excluded from ``to_properties()``.
-    _CHILDREN_FIELDS: ClassVar[frozenset] = frozenset()
 
     def __post_init__(self, lat: float | None, lon: float | None) -> None:
         if (lat is None) != (lon is None):
@@ -158,38 +206,41 @@ class Element:
         """
         return _tree_repr(self)
 
+    def index(self):
+        """Build a ``dict[UUID, Element]`` index of the subtree rooted at self.
+
+        Use to resolve :class:`Reference` objects against this tree.
+        """
+        from energydatamodel.reference import build_index
+
+        return build_index(self)
+
     # --------------------------------------------------------------- props
     def to_properties(self) -> dict:
-        """Domain-specific fields as a dict (excludes base + children fields)."""
-        exclude = self._BASE_FIELDS | self._CHILDREN_FIELDS
-        props = {}
-        for f in dataclasses.fields(self):
-            if f.name in exclude:
+        """Domain-specific fields as a dict (excludes infra + children fields)."""
+        props: dict = {}
+        for f in fields(self):
+            if is_infra_field(f):
                 continue
             value = getattr(self, f.name)
             if value is None:
                 continue
-            # Empty containers also skipped (empty members list on a leaf is noise).
+            # Empty containers also skipped (empty lists/dicts are noise).
             if isinstance(value, (list, dict)) and len(value) == 0:
                 continue
             props[f.name] = value
         return props
 
     # --------------------------------------------------------------- json
-    def to_json(
-        self,
-        include_ids: bool = False,
-        *,
-        exclude_fields: set | None = None,
-    ) -> dict:
-        """Serialize to a JSON-compatible dict. Full implementation in ``json_io``."""
+    def to_json(self, *, exclude_fields: set | None = None) -> dict:
+        """Serialize to a JSON-compatible dict."""
         from energydatamodel.json_io import element_to_json
 
-        return element_to_json(self, include_ids=include_ids, exclude_fields=exclude_fields)
+        return element_to_json(self, exclude_fields=exclude_fields)
 
     @classmethod
     def from_json(cls, data: dict) -> Element:
-        """Deserialize from a JSON-compatible dict. Full implementation in ``json_io``."""
+        """Deserialize from a JSON-compatible dict."""
         from energydatamodel.json_io import element_from_json
 
         return element_from_json(data, expected_type=cls)

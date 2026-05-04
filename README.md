@@ -41,10 +41,12 @@
 
 ## Class hierarchy
 
-Everything in EnergyDataModel inherits from a single root, `Element`, which carries identity (`name`, `_id`), attached time-series descriptors, and an optional [shapely](https://shapely.readthedocs.io/) geometry. Three sibling subtrees specialize it, plus an `Asset` mixin:
+Everything in EnergyDataModel inherits from a single root, `Element`, which carries identity (`id: UUID`, `name`), attached time-series descriptors, an optional [shapely](https://shapely.readthedocs.io/) geometry, and an `extra` dict for ad-hoc JSON-scalar fields. Identity is a [UUID7](https://datatracker.ietf.org/doc/html/draft-ietf-uuidrev-rfc4122bis) generated at construction time — stable across renames, round-trips through JSON, and (when paired with [EnergyDB](https://github.com/rebase-energy/energydb)) sits as the row primary key in PostgreSQL.
+
+Three sibling subtrees specialize `Element`, plus an `Asset` mixin:
 
 * **`Node`** — graph vertices (equipment, areas, sensors, grid topology points). Adds `members` and `tz`.
-* **`Edge`** — relationships between two nodes (lines, transformers, interconnectors). Adds `from_element`, `to_element`, `directed`.
+* **`Edge`** — relationships between two nodes (lines, transformers, interconnectors). Adds `from_element`, `to_element`, `directed`. Endpoints are `Reference[T]` objects holding the target's UUID.
 * **`Collection`** — logical groupings (Portfolio, Site, ...). Adds `members` and `tz`. Not a graph vertex — `isinstance(portfolio, Node)` is False.
 * **`Asset`** — cross-cutting mixin marking physical equipment. Adds `commissioning_date`. Mixed into Node via `NodeAsset` and into Edge via `EdgeAsset`; never used as a leaf type.
 
@@ -155,13 +157,36 @@ assert isinstance(restored.members[0], Electrolyzer)
 
 The only requirement is that **the module defining your class is imported before `from_json` is called**. EDM looks up types by name in a process-wide registry, so the class must be defined for the loader to find it. In practice this means a single `import my_assets` (or `from my_assets import Electrolyzer`) at the top of any script that loads saved models — the same pattern used by every Python registry library. If the loader can't find a type, it raises `ValueError: Unknown Element type 'Electrolyzer'`.
 
-For one-off custom fields that don't justify a new class, every `Element` carries an `extra: dict` you can populate freely:
+For one-off custom fields that don't justify a new class, every `Element` carries an `extra: dict[str, JSONScalar]` you can populate freely:
 
 ```python
 pv = edm.solar.PVSystem(name="PV-1", capacity=2400, extra={"owner": "Acme", "asset_id_legacy": 17})
 ```
 
-Values in `extra` round-trip through JSON as long as they're JSON-native, shapely geometries, enums, or other dataclass / EDM types. Other types fall back to `repr()` on serialization, so prefer the typed-field route if fidelity matters.
+Values in `extra` are restricted to JSON-native scalars (`str`, `int`, `float`, `bool`, `None`) plus nested `dict` / `list` of the same. EDM types, enums, and shapely geometries are rejected — for typed values, define a typed subclass instead. This restriction is validated at `to_json` time and surfaces a clear `TypeError` when violated.
+
+## Cross-tree references
+
+Edges and other cross-cutting links use `Reference[T]` to point at another Element by its UUID. References are valid the moment they're constructed and resolve lazily against an `Index`:
+
+```python
+se4 = edm.BiddingZone(name="SE4")
+dk2 = edm.BiddingZone(name="DK2")
+icx = edm.grid.Interconnection(
+    name="SE4-DK2",
+    from_element=edm.Reference(se4),  # captures se4.id
+    to_element=edm.Reference(dk2),
+    capacity_forward=1700,
+    capacity_backward=1300,
+)
+portfolio = edm.Portfolio(name="Nordic", members=[se4, dk2, icx])
+
+# Resolve a Reference against the tree root (or pre-built Index).
+icx.from_element.resolve(portfolio)
+icx.from_element.get().name  # "SE4"
+```
+
+A bare `Element` passed as `from_element` / `to_element` on an `Edge` is auto-wrapped in a `Reference` at construction. JSON round-trip emits refs as `{"__ref__": "<uuid>"}` — single-pass deserialize, no two-pass walk.
 
 ## Installation
 We recommend installing using a virtual environment like [venv](https://docs.python.org/3/library/venv.html), [poetry](https://python-poetry.org/) or [uv](https://docs.astral.sh/uv/). 

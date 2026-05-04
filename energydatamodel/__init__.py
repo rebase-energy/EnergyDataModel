@@ -89,7 +89,7 @@ from .json_io import (
 )
 from .node import Node
 from .quantities import Kind, Quantity, Scope, build_metric
-from .reference import Reference, UnresolvedReferenceError
+from .reference import Index, Reference, UnresolvedReferenceError, build_index
 
 # Element subclasses self-register via ``Element.__init_subclass__`` at definition
 # time, so a separate walk is no longer required. Value dataclasses (non-Element)
@@ -123,6 +123,8 @@ __all__ = [
     "SynchronousArea",
     # Reference
     "Reference",
+    "Index",
+    "build_index",
     "UnresolvedReferenceError",
     # Quantities
     "Quantity",
