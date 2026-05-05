@@ -15,6 +15,7 @@ LV sides that lines connect to.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from uuid import UUID
 
 from energydatamodel.element import Element, infra
 from energydatamodel.reference import Reference
@@ -29,17 +30,20 @@ class Edge(Element):
     ``directed`` flag is kept for explicit cases (e.g. pure bidirectional
     pipes).
 
-    A bare :class:`Element` passed as ``from_element`` / ``to_element`` is
-    auto-wrapped in a :class:`Reference` at construction.
+    Endpoints accept an :class:`Element`, a :pyclass:`UUID`, or a
+    :class:`Reference`; ``__post_init__`` normalizes all of these to
+    :class:`Reference`. The widened input type is a constructor convenience
+    — once the edge is built, ``from_element`` and ``to_element`` always
+    hold ``Reference | None``.
     """
 
-    from_element: Reference | None = infra(default=None)
-    to_element: Reference | None = infra(default=None)
+    from_element: Reference | Element | UUID | None = infra(default=None)
+    to_element: Reference | Element | UUID | None = infra(default=None)
     directed: bool = infra(default=True)
 
     def __post_init__(self, lat=None, lon=None) -> None:
         super().__post_init__(lat, lon)
-        if isinstance(self.from_element, Element):
+        if self.from_element is not None and not isinstance(self.from_element, Reference):
             self.from_element = Reference(self.from_element)
-        if isinstance(self.to_element, Element):
+        if self.to_element is not None and not isinstance(self.to_element, Reference):
             self.to_element = Reference(self.to_element)
