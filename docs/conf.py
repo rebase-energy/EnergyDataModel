@@ -96,6 +96,34 @@ html_css_files = [
 ]
 
 
+# -- Notebook copy step ------------------------------------------------------
+# nbsphinx resolves notebook paths relative to the docs source directory, so
+# example notebooks under ../examples/ are copied into docs/notebooks/ at build
+# time. Keep build outputs out of git (docs/notebooks/ is gitignored).
+
+
+def _copy_notebooks(app):
+    import glob
+    import os
+    import shutil
+
+    docs_dir = os.path.dirname(os.path.abspath(__file__))
+    examples_src = os.path.join(docs_dir, "..", "examples")
+    notebooks_dir = os.path.join(docs_dir, "notebooks")
+
+    os.makedirs(notebooks_dir, exist_ok=True)
+    for nb_file in glob.glob(os.path.join(examples_src, "*.ipynb")):
+        dest = os.path.join(notebooks_dir, os.path.basename(nb_file))
+        if not os.path.exists(dest) or os.path.getmtime(nb_file) > os.path.getmtime(dest):
+            shutil.copy2(nb_file, dest)
+
+
+# nbsphinx — don't re-execute notebooks during the build (they're checked in
+# with their cell outputs).
+nbsphinx_execute = "never"
+nbsphinx_allow_errors = True
+
+
 # -- Class-explorer regeneration ---------------------------------------------
 # Regenerate edm-explorer.html (the Cytoscape class graph) before each build,
 # so the iframe served from _static/ is always in sync with the live class
@@ -112,4 +140,5 @@ def _build_class_explorer(app):
 
 
 def setup(app):
+    app.connect("builder-inited", _copy_notebooks)
     app.connect("builder-inited", _build_class_explorer)

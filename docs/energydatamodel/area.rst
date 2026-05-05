@@ -1,7 +1,7 @@
-🗺️ Geospatial classes
+Areas
 =======================
 
-.. automodule:: energydatamodel.geospatial
+.. automodule:: energydatamodel.area
    :members:
    :undoc-members:
    :show-inheritance:

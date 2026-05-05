@@ -7,7 +7,7 @@ Requirements
 
 Before installing **EnergyDataModel**, ensure that you have the following:
 
-- Python 3.6 or later
+- Python 3.12 or later
 - pip (Python package manager)
 
 Installing with pip

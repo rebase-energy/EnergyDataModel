@@ -30,7 +30,7 @@ class Edge(Element):
     ``directed`` flag is kept for explicit cases (e.g. pure bidirectional
     pipes).
 
-    Endpoints accept an :class:`Element`, a :pyclass:`UUID`, or a
+    Endpoints accept an :class:`Element`, a :class:`UUID`, or a
     :class:`Reference`; ``__post_init__`` normalizes all of these to
     :class:`Reference`. The widened input type is a constructor convenience
     — once the edge is built, ``from_element`` and ``to_element`` always

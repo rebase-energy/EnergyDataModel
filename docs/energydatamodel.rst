@@ -7,14 +7,16 @@ The energydatamodel package provides...
    :maxdepth: 2
 
    energydatamodel/base
-   energydatamodel/geospatial
-   energydatamodel/timeseries
+   energydatamodel/area
+   energydatamodel/collection
+   energydatamodel/grid
    energydatamodel/solar
    energydatamodel/wind
    energydatamodel/battery
    energydatamodel/hydro
    energydatamodel/heatpump
-   energydatamodel/grid
    energydatamodel/building
-   energydatamodel/collection
    energydatamodel/weather
+   energydatamodel/vocabulary
+   energydatamodel/reference
+   energydatamodel/json_io
