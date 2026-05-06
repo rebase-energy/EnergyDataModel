@@ -14,7 +14,7 @@ license = { text = "MIT" }
 requires-python = ">=3.12"
 dependencies = [
     "geopandas>=1.0.1",
-    "pandas>=2.2.2",
+    "pandas>=2.3.0",
     "pvlib>=0.12.0",
     "shapely>=2.0.7",
     "timedatamodel>=0.2.1",
