@@ -100,8 +100,8 @@ class TestRoundTrip:
             icx.from_element.resolve(portfolio)
 
 
-class TestTimeSeriesDescriptorSerialization:
-    def test_descriptor_round_trip(self):
+class TestTimeSeriesSerialization:
+    def test_timeseries_round_trip(self):
         t = edm.wind.WindTurbine(
             name="T",
             capacity=3.0,
@@ -389,7 +389,7 @@ class TestKitchenSinkRoundTrip:
         battery = site.members[1].members[1]
         assert battery.commissioning_date == date(2022, 1, 15)
 
-    def test_timeseries_descriptors_preserved(self):
+    def test_timeseries_metadata_preserved(self):
         restored = edm.Portfolio.from_json(_kitchen_sink_portfolio().to_json())
         t01 = restored.members[0].members[0].members[0].members[0]
         assert t01.timeseries[0].name == "electricity.supply"

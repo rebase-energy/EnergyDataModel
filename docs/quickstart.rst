@@ -45,5 +45,5 @@ serialize to JSON and reload losslessly.
    restored = edm.Portfolio.from_json(js)
 
 See the :doc:`examples` page and the ``examples/quickstart.ipynb`` notebook
-for a full walkthrough including time-series descriptors, areas, edges,
-cross-tree references, and geometry round-trip.
+for a full walkthrough including metadata-only ``TimeSeries`` declarations,
+areas, edges, cross-tree references, and geometry round-trip.

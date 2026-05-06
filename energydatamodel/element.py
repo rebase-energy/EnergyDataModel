@@ -5,7 +5,9 @@ fields that any persistable, named, geometry-bearing object needs:
 
 * ``id`` — a stable UUID7, generated at construction
 * ``name`` — human label (display / CLI navigation)
-* ``timeseries`` — descriptors of attached time series
+* ``timeseries`` — metadata-only ``TimeSeries`` declarations attached to
+  this element (``df=None``; the actual data is written via the energydb
+  data-write path, not carried inline on the EDM tree)
 * ``geometry`` — optional shapely geometry (Point, Polygon, LineString, ...)
 * ``extra`` — open dict of JSON-native scalars
 
@@ -36,7 +38,7 @@ from uuid import UUID
 import pandas as pd
 from shapely.geometry import LineString, Point, Polygon, mapping
 from shapely.geometry.base import BaseGeometry
-from timedatamodel import TimeSeriesDescriptor
+from timedatamodel import TimeSeries
 from uuid6 import uuid7
 
 # ---------------------------------------------------------------------
@@ -125,7 +127,7 @@ class Element:
 
     id: UUID = field(default_factory=uuid7, metadata={"role": "infra"})
     name: str | None = field(default=None, metadata={"role": "infra"})
-    timeseries: list[TimeSeriesDescriptor] = field(default_factory=list, metadata={"role": "infra"})
+    timeseries: list[TimeSeries] = field(default_factory=list, metadata={"role": "infra"})
     geometry: BaseGeometry | None = field(default=None, metadata={"role": "infra"})
     # Free-form bag for ad-hoc scalar fields not modeled here. Restricted to
     # JSON-native scalars (str / int / float / bool / None) plus nested

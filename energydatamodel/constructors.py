@@ -1,13 +1,13 @@
-"""Convenience constructors that build ``TimeSeriesDescriptor`` instances with
-pre-filled metric strings for common energy quantities.
+"""Convenience constructors that build metadata-only ``TimeSeries`` instances
+with pre-filled metric strings for common energy quantities.
 
-Each constructor returns a fresh ``TimeSeriesDescriptor`` (the underlying
-dataclass is frozen, so we always instantiate anew).
+Each constructor returns a fresh ``TimeSeries`` with ``df=None`` — suitable
+for declaring a series structure on an EDM element before any data exists.
 """
 
 from __future__ import annotations
 
-from timedatamodel import DataType, Frequency, TimeSeriesDescriptor
+from timedatamodel import DataType, Frequency, TimeSeries
 
 from energydatamodel.quantities import Kind, Quantity, Scope, build_metric
 
@@ -21,8 +21,8 @@ def _make(
     frequency: Frequency | None,
     timezone: str,
     description: str | None,
-) -> TimeSeriesDescriptor:
-    return TimeSeriesDescriptor(
+) -> TimeSeries:
+    return TimeSeries(
         name=build_metric(quantity, kind, scope),
         unit=unit,
         data_type=data_type,
@@ -43,7 +43,7 @@ def electricity_supply(
     frequency: Frequency | None = None,
     timezone: str = "UTC",
     description: str | None = None,
-) -> TimeSeriesDescriptor:
+) -> TimeSeries:
     return _make(Quantity.ELECTRICITY, Kind.SUPPLY, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
@@ -53,7 +53,7 @@ def electricity_demand(
     frequency: Frequency | None = None,
     timezone: str = "UTC",
     description: str | None = None,
-) -> TimeSeriesDescriptor:
+) -> TimeSeries:
     return _make(Quantity.ELECTRICITY, Kind.DEMAND, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
@@ -63,7 +63,7 @@ def electricity_supply_area(
     frequency: Frequency | None = None,
     timezone: str = "UTC",
     description: str | None = None,
-) -> TimeSeriesDescriptor:
+) -> TimeSeries:
     return _make(Quantity.ELECTRICITY, Kind.SUPPLY, Scope.AREA, unit, data_type, frequency, timezone, description)
 
 
@@ -73,7 +73,7 @@ def electricity_demand_area(
     frequency: Frequency | None = None,
     timezone: str = "UTC",
     description: str | None = None,
-) -> TimeSeriesDescriptor:
+) -> TimeSeries:
     return _make(Quantity.ELECTRICITY, Kind.DEMAND, Scope.AREA, unit, data_type, frequency, timezone, description)
 
 
@@ -88,7 +88,7 @@ def spot_price(
     frequency: Frequency | None = None,
     timezone: str = "UTC",
     description: str | None = None,
-) -> TimeSeriesDescriptor:
+) -> TimeSeries:
     return _make(Quantity.PRICE, Kind.SPOT, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
@@ -98,7 +98,7 @@ def cross_border_flow(
     frequency: Frequency | None = None,
     timezone: str = "UTC",
     description: str | None = None,
-) -> TimeSeriesDescriptor:
+) -> TimeSeries:
     return _make(Quantity.ELECTRICITY, Kind.FLOW, Scope.AREA, unit, data_type, frequency, timezone, description)
 
 
@@ -113,7 +113,7 @@ def temperature(
     frequency: Frequency | None = None,
     timezone: str = "UTC",
     description: str | None = None,
-) -> TimeSeriesDescriptor:
+) -> TimeSeries:
     return _make(Quantity.TEMPERATURE, Kind.STATE, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
@@ -123,7 +123,7 @@ def gas_supply(
     frequency: Frequency | None = None,
     timezone: str = "UTC",
     description: str | None = None,
-) -> TimeSeriesDescriptor:
+) -> TimeSeries:
     return _make(Quantity.GAS, Kind.SUPPLY, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
@@ -133,7 +133,7 @@ def gas_demand(
     frequency: Frequency | None = None,
     timezone: str = "UTC",
     description: str | None = None,
-) -> TimeSeriesDescriptor:
+) -> TimeSeries:
     return _make(Quantity.GAS, Kind.DEMAND, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
@@ -143,7 +143,7 @@ def heating_demand(
     frequency: Frequency | None = None,
     timezone: str = "UTC",
     description: str | None = None,
-) -> TimeSeriesDescriptor:
+) -> TimeSeries:
     return _make(Quantity.HEATING, Kind.DEMAND, Scope.POINT, unit, data_type, frequency, timezone, description)
 
 
@@ -158,13 +158,13 @@ def grid_frequency(
     frequency: Frequency | None = Frequency.PT1S,
     timezone: str = "UTC",
     description: str | None = None,
-) -> TimeSeriesDescriptor:
+) -> TimeSeries:
     """Grid frequency (Hz) — a per-synchronous-area observation.
 
     Frequency is shared across all zones in an AC-synchronous grid (NSA, CESA,
     GBSA, ISA, BSA, IPSA), so this constructor uses :data:`Scope.AREA`. Default
     sample interval is one second; nominal value (50 / 60 Hz) lives on the
-    :class:`SynchronousArea` itself, not on the descriptor.
+    :class:`SynchronousArea` itself, not on the series declaration.
     """
     return _make(
         Quantity.FREQUENCY,

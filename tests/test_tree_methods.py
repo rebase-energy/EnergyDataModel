@@ -3,7 +3,7 @@
 import energydatamodel as edm
 import pytest
 from shapely.geometry import Point
-from timedatamodel import DataType, TimeSeriesDescriptor
+from timedatamodel import DataType, TimeSeries
 
 # ---------------------------------------------------------------------------
 # children()
@@ -261,8 +261,8 @@ class TestToProperties:
         assert "rotor_diameter" not in props
 
     def test_timeseries_excluded(self):
-        desc = TimeSeriesDescriptor(name="electricity.supply", data_type=DataType.FORECAST)
-        t = edm.wind.WindTurbine(name="T01", capacity=3.5, timeseries=[desc])
+        ts = TimeSeries(name="electricity.supply", data_type=DataType.FORECAST)
+        t = edm.wind.WindTurbine(name="T01", capacity=3.5, timeseries=[ts])
         props = t.to_properties()
         assert "timeseries" not in props
 

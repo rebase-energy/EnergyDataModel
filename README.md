@@ -41,7 +41,7 @@
 
 ## Class hierarchy
 
-Everything in EnergyDataModel inherits from a single root, `Element`, which carries identity (`id: UUID`, `name`), attached time-series descriptors, an optional [shapely](https://shapely.readthedocs.io/) geometry, and an `extra` dict for ad-hoc JSON-scalar fields. Identity is a [UUID7](https://datatracker.ietf.org/doc/html/draft-ietf-uuidrev-rfc4122bis) generated at construction time — stable across renames, round-trips through JSON, and (when paired with [EnergyDB](https://github.com/rebase-energy/energydb)) sits as the row primary key in PostgreSQL.
+Everything in EnergyDataModel inherits from a single root, `Element`, which carries identity (`id: UUID`, `name`), a list of attached `TimeSeries` (typically metadata-only — declarations of the series this element exposes), an optional [shapely](https://shapely.readthedocs.io/) geometry, and an `extra` dict for ad-hoc JSON-scalar fields. Identity is a [UUID7](https://datatracker.ietf.org/doc/html/draft-ietf-uuidrev-rfc4122bis) generated at construction time — stable across renames, round-trips through JSON, and (when paired with [EnergyDB](https://github.com/rebase-energy/energydb)) sits as the row primary key in PostgreSQL.
 
 Three sibling subtrees specialize `Element`, plus an `Asset` mixin:
 

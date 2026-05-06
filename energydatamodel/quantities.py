@@ -1,8 +1,8 @@
 """Energy vocabulary — Quantity / Kind / Scope enums + ``build_metric()``.
 
 Replaces the old ``ElectricityDemand(TimeSeries)`` subclass pattern: a
-``TimeSeriesDescriptor`` carries a string ``name`` field whose value is a
-dotted metric string built from ``(Quantity, Kind, Scope)`` via
+``TimeSeries`` carries a string ``name`` field whose value is a dotted
+metric string built from ``(Quantity, Kind, Scope)`` via
 :func:`build_metric`.
 """
 

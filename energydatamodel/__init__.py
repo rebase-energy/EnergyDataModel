@@ -25,7 +25,6 @@ from timedatamodel import (
     DataType,
     Frequency,
     TimeSeries,
-    TimeSeriesDescriptor,
     TimeSeriesType,
 )
 from timedatamodel import GeoLocation as TDMGeoLocation
@@ -157,7 +156,6 @@ __all__ = [
     "DataType",
     "Frequency",
     "TimeSeries",
-    "TimeSeriesDescriptor",
     "TimeSeriesType",
     "TDMGeoLocation",
     # Sub-namespaces

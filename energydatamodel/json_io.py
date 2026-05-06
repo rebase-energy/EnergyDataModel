@@ -32,7 +32,7 @@ from zoneinfo import ZoneInfo
 
 from shapely.geometry import mapping, shape
 from shapely.geometry.base import BaseGeometry
-from timedatamodel import DataType, Frequency, TimeSeriesDescriptor, TimeSeriesType
+from timedatamodel import DataType, Frequency, TimeSeries, TimeSeriesType
 
 from energydatamodel.element import Element, is_children_field
 from energydatamodel.reference import Reference
@@ -157,8 +157,8 @@ def _serialize_value(value: Any, *, exclude_fields: set | None = None) -> Any:
         # in-memory dict compares equal to the JSONB read-back (JSON has no tuple type).
         geo = mapping(value)
         return {"__geometry__": True, "type": geo["type"], "coordinates": _tuples_to_lists(geo["coordinates"])}
-    if isinstance(value, TimeSeriesDescriptor):
-        return _descriptor_to_dict(value)
+    if isinstance(value, TimeSeries):
+        return _timeseries_to_dict(value)
     if dataclasses.is_dataclass(value) and not isinstance(value, type):
         return _plain_dataclass_to_dict(value)
     if isinstance(value, list):
@@ -173,14 +173,27 @@ def _serialize_value(value: Any, *, exclude_fields: set | None = None) -> Any:
     return repr(value)
 
 
-def _descriptor_to_dict(desc: TimeSeriesDescriptor) -> dict:
-    out: dict = {"__type__": "TimeSeriesDescriptor"}
-    for f in dataclasses.fields(desc):
-        v = getattr(desc, f.name)
+_TIMESERIES_METADATA_FIELDS = (
+    "name",
+    "unit",
+    "data_type",
+    "timeseries_type",
+    "frequency",
+    "timezone",
+    "description",
+)
+
+
+def _timeseries_to_dict(ts: TimeSeries) -> dict:
+    """Serialize the metadata of a ``TimeSeries``. Any attached df is ignored —
+    EDM trees carry only structure; data is written separately via energydb."""
+    out: dict = {"__type__": "TimeSeries"}
+    for fname in _TIMESERIES_METADATA_FIELDS:
+        v = getattr(ts, fname)
         if isinstance(v, Enum):
-            out[f.name] = v.value
+            out[fname] = v.value
         else:
-            out[f.name] = v
+            out[fname] = v
     return out
 
 
@@ -292,8 +305,8 @@ def _instantiate(data: Any) -> Any:
     if isinstance(data, dict) and data.get("__geometry__") is True:
         payload = {k: v for k, v in data.items() if k != "__geometry__"}
         return shape(payload)
-    if isinstance(data, dict) and data.get("__type__") == "TimeSeriesDescriptor":
-        return _descriptor_from_dict(data)
+    if isinstance(data, dict) and data.get("__type__") == "TimeSeries":
+        return _timeseries_from_dict(data)
     if isinstance(data, dict) and data.get("__type__") in _VALUE_REGISTRY:
         cls = _VALUE_REGISTRY[data["__type__"]]
         kwargs = {k: _instantiate(v) for k, v in data.items() if k != "__type__"}
@@ -381,7 +394,7 @@ def _unwrap_optional(tp: Any) -> list:
     return result
 
 
-def _descriptor_from_dict(d: dict) -> TimeSeriesDescriptor:
+def _timeseries_from_dict(d: dict) -> TimeSeries:
     kwargs = {}
     for k, v in d.items():
         if k == "__type__":
@@ -394,7 +407,7 @@ def _descriptor_from_dict(d: dict) -> TimeSeriesDescriptor:
             kwargs[k] = Frequency(v)
         else:
             kwargs[k] = v
-    return TimeSeriesDescriptor(**kwargs)
+    return TimeSeries(df=None, **kwargs)
 
 
 # ---------------------------------------------------------------------
