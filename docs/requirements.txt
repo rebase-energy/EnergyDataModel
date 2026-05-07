@@ -1,1 +1,1 @@
-energydatamodel[dev] @ git+https://github.com/rebase-energy/EnergyDataModel.git@main
+energydatamodel[docs] @ git+https://github.com/rebase-energy/EnergyDataModel.git@main
