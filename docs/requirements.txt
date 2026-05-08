@@ -3,3 +3,4 @@ sphinx-autodoc-typehints>=2.0.1
 sphinx-rtd-theme>=3.0.2
 nbsphinx>=0.9
 docutils>=0.20
+ipython>=8.0

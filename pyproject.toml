@@ -34,6 +34,7 @@ docs = [
     "sphinx-rtd-theme>=3.0.2",
     "nbsphinx>=0.9",
     "docutils>=0.20",
+    "ipython>=8.0",  # provides the 'ipython3' Pygments lexer used by quickstart.ipynb
 ]
 
 [tool.setuptools]
