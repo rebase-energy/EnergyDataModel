@@ -1,7 +1,6 @@
 """Tests for children(), add_child(), and to_properties() methods on EDM classes."""
 
 import energydatamodel as edm
-import pytest
 from shapely.geometry import Point
 from timedatamodel import DataType, TimeSeries
 

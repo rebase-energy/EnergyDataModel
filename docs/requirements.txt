@@ -1,1 +1,5 @@
-energydatamodel[docs] @ git+https://github.com/rebase-energy/EnergyDataModel.git@main
+sphinx>=7.4
+sphinx-autodoc-typehints>=2.0.1
+sphinx-rtd-theme>=3.0.2
+nbsphinx>=0.9
+docutils>=0.20

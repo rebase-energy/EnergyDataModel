@@ -12,8 +12,6 @@ classes inherit from ``Asset`` together with either :class:`Node` or
 uniformly across node- and edge-shaped classes.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from datetime import date
 

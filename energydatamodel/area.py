@@ -15,8 +15,6 @@ The geometry (Polygon / MultiPolygon) lives on :class:`Element` and is
 inherited; areas without a known polygon simply leave it ``None``.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 from energydatamodel.node import Node

@@ -14,8 +14,6 @@ groupings (Portfolio, Site, ...) live in :class:`Collection`, which is a
 sibling of Node under :class:`Element` — not a subclass of Node.
 """
 
-from __future__ import annotations
-
 import datetime
 from dataclasses import dataclass
 

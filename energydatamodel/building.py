@@ -1,7 +1,5 @@
 """Building and House — Assets that also contain other Assets via inherited members."""
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 from energydatamodel.bases import NodeAsset

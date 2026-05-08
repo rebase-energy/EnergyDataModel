@@ -12,8 +12,6 @@
 * ``Carrier`` is a plain value type (not an Element).
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 
 from energydatamodel.asset import Asset

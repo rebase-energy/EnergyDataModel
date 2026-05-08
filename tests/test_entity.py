@@ -162,12 +162,12 @@ class TestNodeAssetEdgeAsset:
         assert isinstance(t, edm.Element)
 
     def test_line_is_edge_asset(self):
-        l = edm.grid.Line(name="L", capacity=100)
-        assert isinstance(l, edm.grid.EdgeAsset)
-        assert isinstance(l, edm.Edge)
-        assert isinstance(l, edm.Asset)
-        assert isinstance(l, edm.Element)
-        assert not isinstance(l, edm.Node)
+        line = edm.grid.Line(name="L", capacity=100)
+        assert isinstance(line, edm.grid.EdgeAsset)
+        assert isinstance(line, edm.Edge)
+        assert isinstance(line, edm.Asset)
+        assert isinstance(line, edm.Element)
+        assert not isinstance(line, edm.Node)
 
     def test_sensor_mro(self):
         s = edm.weather.TemperatureSensor(name="t", height=2.0)

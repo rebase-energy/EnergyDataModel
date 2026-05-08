@@ -1,6 +1,6 @@
 """UUID-based cross-tree references and the Index lookup primitive.
 
-A ``Reference[T]`` points to another Element by its stable :pyclass:`UUID`
+A ``Reference[T]`` points to another Element by its stable :class:`UUID`
 identity. Resolution against a tree builds an :class:`Index` (``dict[UUID,
 Element]`` produced by DFS) and uses it for O(1) lookup. References are
 valid the moment they're constructed — no two-pass deserialize.
@@ -99,7 +99,7 @@ class Reference[T: "Element"]:
 
     Holds either:
 
-    * a :pyclass:`UUID` (canonical, on the wire)
+    * a :class:`UUID` (canonical, on the wire)
     * an :class:`Element` (resolved cache)
 
     Usage::

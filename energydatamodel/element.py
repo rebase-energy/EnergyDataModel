@@ -28,8 +28,6 @@ Identity is a UUID7 assigned at construction. The same Element instance keeps
 its ``id`` across renames and across JSON round-trips.
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from dataclasses import InitVar, dataclass, field, fields
 from typing import Any, cast, overload
@@ -241,7 +239,7 @@ class Element:
         return element_to_json(self, exclude_fields=exclude_fields)
 
     @classmethod
-    def from_json(cls, data: dict) -> Element:
+    def from_json(cls, data: dict) -> "Element":
         """Deserialize from a JSON-compatible dict."""
         from energydatamodel.json_io import element_from_json
 

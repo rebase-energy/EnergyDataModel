@@ -12,8 +12,6 @@ live in :mod:`energydatamodel.grid` under :class:`EdgeAsset`. Note that
 LV sides that lines connect to.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from uuid import UUID
 
