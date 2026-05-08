@@ -60,6 +60,14 @@ Quick Start
    restored = edm.Portfolio.from_json(js)
 
 
+Release Notes
+-------------
+
+For version-by-version changes, see:
+
+- `Changelog <https://github.com/rebase-energy/EnergyDataModel/blob/main/CHANGELOG.md>`_
+
+
 Documentation
 -------------
 

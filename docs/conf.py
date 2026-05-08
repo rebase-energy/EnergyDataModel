@@ -31,8 +31,8 @@ for nb_file in glob.glob(os.path.join(_examples_src, "*.ipynb")):
 project = "EnergyDataModel"
 copyright = "Rebase Energy"
 author = "Rebase Energy"
-release = "0.1.0"
-version = "0.1.0"
+release = "0.2.0"
+version = "0.2.0"
 
 # -- General configuration ---------------------------------------------------
 
