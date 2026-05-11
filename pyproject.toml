@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "energydatamodel"
-version = "0.2.0"
+version = "0.5.0"
 authors = [
     { name = "rebase.energy" }
 ]
@@ -17,7 +17,7 @@ dependencies = [
     "pandas>=2.3.0",
     "pvlib>=0.12.0",
     "shapely>=2.0.7",
-    "timedatamodel==0.3.0",
+    "timedatamodel==0.5.0",
     "tzdata; sys_platform == 'win32'",
     "uuid6>=2024.1",
 ]
