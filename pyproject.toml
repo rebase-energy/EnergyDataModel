@@ -17,7 +17,7 @@ dependencies = [
     "pandas>=2.3.0",
     "pvlib>=0.12.0",
     "shapely>=2.0.7",
-    "timedatamodel>=0.3.0",
+    "timedatamodel==0.3.0",
     "tzdata; sys_platform == 'win32'",
     "uuid6>=2024.1",
 ]
